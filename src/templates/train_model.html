@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Train Model</h2>
+                </div>
+                <div class="card-body">
+                    <p>Current sounds in dictionary:</p>
+                    <ul>
+                        {% for sound in sounds %}
+                        <li>{{ sound }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Adjust the form's action to point to your blueprint route -->
+                    <form id="train-form" method="POST" action="{{ url_for('ml.train_model') }}">
+                        <div class="form-group mb-3">
+                            <label for="train_method">Select Training Method:</label>
+                            <select name="train_method" id="train_method" class="form-control">
+                                <option value="cnn">CNN Only</option>
+                                <option value="rf">Random Forest Only</option>
+                                <option value="ensemble">Ensemble Only</option>
+                                <option value="all">Train Both + Ensemble</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Start Training
+                        </button>
+                    </form>
+
+                    <div id="training-status" class="d-none mt-4">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: 0%">
+                            </div>
+                        </div>
+                        <p id="status-text" class="text-center">Training in progress...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('train-form').addEventListener('submit', function() {
+    // Show progress bar
+    document.getElementById('training-status').classList.remove('d-none');
+    // Optionally start polling after a short delay
+    setTimeout(updateProgress, 1000);
+});
+
+function updateProgress() {
+    // If your /training_status route is under the ml blueprint, use url_for('ml.training_status').
+    // If it's still in app.py, keep it as fetch('/training_status').
+    fetch("{{ url_for('ml.training_status') }}")
+        .then(res => res.json())
+        .then(data => {
+            const bar = document.querySelector('.progress-bar');
+            const statusText = document.getElementById('status-text');
+            bar.style.width = data.progress + '%';
+            statusText.textContent = data.status;
+            if (data.progress < 100) {
+                setTimeout(updateProgress, 1000);
+            }
+        })
+        .catch(err => console.error(err));
+}
+</script>
+{% endblock %}

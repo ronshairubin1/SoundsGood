@@ -1,0 +1,14 @@
+{
+  "model_type": "CNN",
+  "dictionary": "Two words",
+  "model_path": "models/Two_words/CNN/v1/cnn_model.h5",
+  "epochs": 11,
+  "train_params": {
+    "class_weights": {
+      "0": 1.0197628458498025,
+      "1": 0.9809885931558935
+    },
+    "augmentation": {}
+  },
+  "timestamp": "2025-02-22 17:55:49.428138"
+}

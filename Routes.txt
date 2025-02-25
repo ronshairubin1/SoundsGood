@@ -1,0 +1,140 @@
+# SoundClassifier_v02/src/routes/ml_routes.py
+
+LATEST_PREDICTION = None
+
+# Standard library imports
+import os
+import json
+import logging
+import datetime
+import threading
+from datetime import datetime
+
+# Flask imports
+from flask import (
+    Blueprint, render_template, request, session,
+    redirect, url_for, flash, jsonify, Response, stream_with_context
+)
+from flask import current_app
+
+# External imports
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from src.ml import predict_ensemble
+import librosa
+
+# Local application imports
+from config import Config
+from src.ml.ml_inference_utils import build_model, build_dataset
+from src.ml.ensemble_classifier import RandomForestClassifier
+from src.ml.ensemble_classifier import EnsembleClassifier
+from src.ml.ensemble_classifier import predict_proba, EnsembleAcc
+from src.ml.feature_extractor import AudioFeatureExtractor
+from src.ml.model_trainer import ModelTrainer
+from src.ml.sound_detector_ensemble import SoundDetectorEnsemble
+
+ml_bp = Blueprint('ml', '__name__')
+
+@ml_bp.before_app_request
+def init_app_inference_state():
+    # Global dictionary here at module level
+
+INFERENCE_STATE_DEFAULT = {
+# Global references (optional)
+    'sound_detector': None,
+    'model': None,
+    'feature_extractor': None,
+    'training_stats': None,
+    'model_trainer': None,
+    'model_summary_str': None
+ }
+
+# Set up
+class DebugLogHandler(logging.Handler):
+    debug_log_handler = DebugLogHandler()
+    debug_log_handler.setLevel(logging.DEBUG)
+    debug_log_handler.setFormatter(Formatter())
+    logging.getLogger().addHandler(debug_log_handler)
+
+# Global variable to avoid app context for SSE
+context_activated = False
+
+@ml_bp.route('/prediction_callback/<prediction>')
+def prediction_callback(prediction):
+    
+@ml_bp.route('/model_update', methods=['GET', 'POST'])
+def train_model():
+    
+@ml_bp.route('/model_summary')
+def model_summary():
+    
+@ml_bp.route('/predict', methods=['GET', 'POST'])
+def predict():
+    
+@ml_bp.route('/predict_rf', methods=['POST'])
+def predict_rf():
+    
+@ml_bp.route('/predict_ensemble', methods=['POST'])
+def predict_ensemble():
+    
+@ml_bp.route('/predict_sound', methods=['POST'])
+def predict_sound():
+    
+@ml_bp.route('/start_listening', methods=['POST'])
+def start_listening():
+    
+@ml_bp.route('/stop_listening', methods=['POST'])
+def stop_listening():
+    
+@ml_bp.route('/prediction_stream')
+def prediction_stream():
+    
+@ml_bp.route('/inference_statistics')
+def inference_statistics():
+    
+@ml_bp.route('/record_feedback', methods=['POST'])
+def record_feedback():
+    
+@ml_bp.route('/view_analysis')
+def view_analysis():
+    
+@ml_bp.route('/get_analysis/<filename>')
+def get_analysis(filename):
+    
+@ml_bp.route('/training_status')
+def training_status():
+    
+@ml_bp.route('/record')
+def record():
+    
+@ml_bp.route('/verify/recordingmp3')
+def verify_recording():
+    
+@ml_bp.route('/process_verification', methods=['POST'])
+def process_verification():
+    
+@ml_bp.route('/sensor_dictionaries')
+def get_sensor_dictionaries():
+    
+@ml_bp.route('/sync_dictionary', methods=['POST'])
+def sync_dictionary():
+    
+@ml_bp.route('/make_active', methods=['POST'])
+def make_active():
+    
+@ml_bp.route('/get_active_dictionary')
+def get_active_dictionary():
+    
+@ml_bp.route('/get_list_recordings')
+def get_list_recordings():
+    
+@ml_bp.route('/get_sound_stats')
+def get_sound_stats():
+    
+@ml_bp.route('/upload_sounds')
+def upload_sounds():
+    
+@ml_bp.route('/process_uploads', methods=['POST'])
+def process_uploads():
+    

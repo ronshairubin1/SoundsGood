@@ -1,0 +1,266 @@
+<!-- model_summary_enhanced_v2.html -->
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <!-- Add navigation buttons -->
+    <div class="mb-4">
+        <a href="{{ url_for('ml.predict') }}" class="btn btn-primary">Go to Prediction</a>
+        <a href="{{ url_for('ml.train_model') }}" class="btn btn-secondary">Train Another Model</a>
+        <a href="{{ url_for('index') }}" class="btn btn-info">Back to Home</a>
+    </div>
+
+    <!-- Dynamic title based on model type -->
+    <h1>{{ "CNN Training Summary" if training_stats and training_stats.get("classes") else "Training Summary" }}</h1>
+
+    <!-- Data Statistics Section -->
+    <h2>Data Statistics</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Statistic</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <!-- Input Shape -->
+            <tr>
+                <td>Input Shape</td>
+                <td>{{ training_stats.input_shape if training_stats.input_shape else '(Unknown)' }}</td>
+                <td>
+                    The shape of the input data. 
+                    <br/>
+                    <strong>Explanation:</strong> Each sample can be thought of as a small grid of numbers describing the sound's frequency (height) vs. time (width). 
+                    <br/>
+                    If you see something like (63, 64, 1):
+                    <ul>
+                      <li>63 = number of frequency bins (vertical)</li>
+                      <li>64 = number of time steps (horizontal)</li>
+                      <li>1 = number of channels (similar to grayscale)</li>
+                    </ul>
+                    The <code>None</code> in TensorFlow shapes usually indicates the <em>batch size</em>, which is flexible. Each run picks the batch size (often 32) so the model can process batches of different sizes if needed.
+                </td>
+            </tr>
+
+            <!-- Input Range -->
+            <tr>
+                <td>Input Range</td>
+                <td>
+                    {% if training_stats.mfcc_range %}
+                        {{ "From {:.3f} to {:.3f}".format(training_stats.mfcc_range[0], training_stats.mfcc_range[1]) }}
+                    {% else %}
+                        MFCC Features
+                    {% endif %}
+                </td>
+                <td>
+                    The minimum and maximum values in the MFCC features. These are Mel-frequency cepstral coefficients, 
+                    representing log-energy in various frequency bands. They are dimensionless but can be negative as they 
+                    represent a logarithmic scale.
+                </td>
+            </tr>
+
+            <!-- Label Shape -->
+            <tr>
+                <td>Label Shape</td>
+                <td>{{ training_stats.total_samples if training_stats.total_samples else '0' }} samples</td>
+                <td>
+                    The number of labeled examples in our dataset.
+                    <br/><strong>Simple Explanation:</strong> We have this many short sound clips, each labeled with its correct word (like "oh" or "eh").
+                </td>
+            </tr>
+
+            <!-- Unique Labels -->
+            <tr>
+                <td>Unique Labels</td>
+                <td>{{ training_stats.classes if training_stats.classes else [] }}</td>
+                <td>The different words or sounds we're teaching the computer to recognize.</td>
+            </tr>
+
+            <!-- Label Mapping -->
+            <tr>
+                <td>Label Mapping</td>
+                <td>{{ training_stats.label_mapping if training_stats.label_mapping else 'No mapping available' }}</td>
+                <td>
+                    How we convert between numbers (0, 1, etc.) and actual words ("oh", "eh", etc.).
+                    {% if not training_stats.label_mapping %}
+                        <br/><strong>Note:</strong> If no mapping is shown, we're using the class names directly.
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Feature Statistics Section -->
+    <h2>Feature Statistics</h2>
+    {% if training_stats and training_stats.get('mfcc_stats') %}
+        <h3>MFCC Coefficients Comparison Between Classes</h3>
+        <table class="table">
+            <tr>
+                <th>MFCC Feature</th>
+                <th>Class</th>
+                <th>Mean</th>
+                <th>Std</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Mean Difference</th>
+            </tr>
+            {% for feature in training_stats.mfcc_stats %}
+                <tr>
+                    <td>{{ feature.name }}</td>
+                    <td>{{ feature.class }}</td>
+                    <td>{{ '%.4f'|format(feature.mean) }}</td>
+                    <td>{{ '%.4f'|format(feature.std) }}</td>
+                    <td>{{ '%.4f'|format(feature.min) }}</td>
+                    <td>{{ '%.4f'|format(feature.max) }}</td>
+                    <td>{{ '%.4f'|format(feature.mean_diff) }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No detailed MFCC statistics found.</p>
+    {% endif %}
+
+    <!-- Training Progress Graph -->
+    {% if training_history %}
+        <h2>Training Progress</h2>
+        <canvas id="trainingChart" width="600" height="300"></canvas>
+    {% endif %}
+
+    <!-- Performance Summary -->
+    <h2>Performance Summary</h2>
+    <div class="alert alert-info">
+        <ul>
+            <li><strong>Model Strengths:</strong> 
+              <ul>
+                <li>Identifies main sound patterns effectively under normal conditions.</li>
+                <li>Fairly balanced accuracy across known classes (based on training data).</li>
+              </ul>
+            </li>
+            <li><strong>Potential Concerns:</strong>
+              <ul>
+                <li>Model may overfit if the dataset is small or lacks variety.</li>
+                <li>Background noise or untrained classes might lower real-world performance.</li>
+              </ul>
+            </li>
+            <li><strong>Suggestions for Improvement:</strong>
+              <ul>
+                <li>Collect more varied samples to handle noise or different recording conditions.</li>
+                <li>Experiment with data augmentation and hyperparameter tuning for better generalization.</li>
+                <li>Monitor validation loss closely to catch overfitting early.</li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block styles %}
+{{ super() }}
+<style>
+    pre { background: #f4f4f4; padding: 10px; }
+    table { border-collapse: collapse; width: 70%; }
+    td, th { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background-color: #f4f4f4; }
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    .alert-info {
+        background-color: #e9f7fe;
+        border-color: #b6effb;
+        color: #31708f;
+    }
+</style>
+{% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+<!-- Initialize Bootstrap tooltips (ensure Popper.js and Bootstrap JS are loaded) -->
+<script>
+    $(function () {
+        $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+</script>
+
+{% if training_history %}
+    <!-- Chart.js for visualizing training progress -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            const ctx = document.getElementById("trainingChart").getContext('2d');
+            const epochs = {{ training_history.epochs }};
+            const accuracyData = {{ training_history.accuracy|tojson }};
+            const valAccuracyData = {{ training_history.val_accuracy|tojson }};
+            const lossData = {{ training_history.loss|tojson }};
+            const valLossData = {{ training_history.val_loss|tojson }};
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: epochs}, (_, i) => `Epoch ${i+1}`),
+                    datasets: [
+                        {
+                            label: 'Training Accuracy',
+                            data: accuracyData,
+                            borderColor: 'blue',
+                            fill: false,
+                            yAxisID: 'yAcc'
+                        },
+                        {
+                            label: 'Validation Accuracy',
+                            data: valAccuracyData,
+                            borderColor: 'green',
+                            fill: false,
+                            yAxisID: 'yAcc'
+                        },
+                        {
+                            label: 'Training Loss',
+                            data: lossData,
+                            borderColor: 'red',
+                            fill: false,
+                            yAxisID: 'yLoss'
+                        },
+                        {
+                            label: 'Validation Loss',
+                            data: valLossData,
+                            borderColor: 'orange',
+                            fill: false,
+                            yAxisID: 'yLoss'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        yAcc: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 0,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Accuracy'
+                            }
+                        },
+                        yLoss: {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Loss'
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+    </script>
+{% endif %}
+{% endblock %} 

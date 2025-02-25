@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Prediction Hub</h2>
+    <p>Choose a model to make predictions with:</p>
+    <div class="list-group">
+        <a href="{{ url_for('ml.predict_cnn') }}" class="list-group-item list-group-item-action">
+            <i class="fas fa-brain"></i> Predict with CNN 
+        </a>
+        <a href="{{ url_for('ml.predict_rf') }}" class="list-group-item list-group-item-action">
+            <i class="fas fa-tree"></i> Predict with RF
+        </a>
+        <a href="{{ url_for('ml.predict_ensemble') }}" class="list-group-item list-group-item-action">
+            <i class="fas fa-layer-group"></i> Predict with Ensemble
+        </a>
+    </div>
+</div>
+{% endblock %}

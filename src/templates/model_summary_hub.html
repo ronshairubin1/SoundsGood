@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mt-4">
+    <h2>Model Summaries</h2>
+    <p>
+        Below are links to the four new summary pages you created:
+    </p>
+    <ul>
+        <li><a href="{{ url_for('ml.cnn_training_summary') }}">CNN Training Summary</a></li>
+        <li><a href="{{ url_for('ml.rf_training_summary') }}">RF Training Summary</a></li>
+        <li><a href="{{ url_for('ml.ensemble_training_summary') }}">Ensemble Training Summary</a></li>
+        <li><a href="{{ url_for('ml.training_model_comparisons') }}">Comparison Across All Models</a></li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+/* Global styles */
+
+
+:root {
+    --primary-color: #4A90E2;    /* Professional blue */
+    --secondary-color: #34C759;  /* Success green */
+    --accent-color: #5856D6;     /* Purple accent */
+    --text-color: #2C3E50;       /* Dark blue-gray */
+    --background-light: #f8f9fa;
+    --shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Branding */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+}
+
+.navbar-brand:after {
+    content: "SoundsEasy.ai";
+    font-size: 0.8em;
+    opacity: 0.8;
+    margin-left: 0.5rem;
+}
+
+/* Login styles */
+.login-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.admin-login, .user-login {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+}
+
+.admin-login:hover, .user-login:hover {
+    transform: translateY(-2px);
+}
+
+/* Recording styles */
+.record-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+/* Verification styles */
+.verify-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+/* Dictionary management styles */
+.dictionary-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+/* Enhanced Button Styles */
+.btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-success {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Enhanced Form Styles */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Alert Enhancements */
+.alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--shadow);
+}
+
+/* Card Enhancements */
+.card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--shadow);
+} 

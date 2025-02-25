@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Inference Statistics</h1>
+    <p><strong>Total Predictions Made:</strong> {{ inference_stats.total_predictions }}</p>
+    <p><strong>Average Confidence Level:</strong> {{ avg_confidence | round(4) }}</p>
+
+    <h2>Class Counts</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Class Name</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class_name, count in inference_stats.class_counts.items() %}
+            <tr>
+                <td>{{ class_name }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="/predict" class="btn btn-primary">Back to Prediction</a>
+</div>
+{% endblock %} 

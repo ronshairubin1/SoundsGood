@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Model Comparisons for {{ training_stats.classes if training_stats.classes else [] }}</h1>
+    <!-- This page should compare the three trained models: RF, CNN, and Ensemble. -->
+
+    <table class="table">
+        <thead>
+            <tr><th>Model</th><th>Accuracy</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>RF</td>
+                <td>{{ training_stats.get('rf_accuracy', 'N/A') }}</td>
+                <td>Potential overfitting if dataset is small, or check data leakage.</td>
+            </tr>
+            <tr>
+                <td>CNN</td>
+                <td>{{ training_stats.get('cnn_val_accuracy', 'N/A') }}</td>
+                <td>Strength in recognizing frequency/time patterns from spectrograms.</td>
+            </tr>
+            <tr>
+                <td>Ensemble</td>
+                <td>{{ training_stats.get('ensemble_accuracy', 'N/A') }}</td>
+                <td>Combines both above if the code was run to train them together.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
