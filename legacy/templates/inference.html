@@ -1,0 +1,1020 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='Frontend/css/style.css') }}">
+
+<style>
+    .predict-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .recording-status {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .status-indicator {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: #dc3545;
+    }
+    .status-indicator.recording {
+        background: #28a745;
+        animation: pulse 1s infinite;
+    }
+    .predictions-list {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .prediction-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .prediction-item .probability {
+        color: #666;
+    }
+    .feedback-form {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .sound-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+    .sound-button {
+        min-width: 80px;
+    }
+    .sound-button.correct {
+        background-color: #28a745;
+        color: white;
+    }
+    .sound-button.incorrect {
+        background-color: #dc3545;
+        color: white;
+    }
+    .predicted-sound {
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .statistics {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+    }
+    #perSoundStats {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    .sound-stat {
+        background: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+    }
+    .debug-container {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+        height: 300px;
+        overflow-y: auto;
+    }
+    .debug-container .log-entry {
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.9; }
+        70% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(0.95); opacity: 0.9; }
+    }
+    .sounds-list {
+        margin: 1rem 0;
+    }
+    .sound-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        margin: 0.25rem;
+        background: #e9ecef;
+        border-radius: 1rem;
+        font-size: 0.9em;
+    }
+    .confusion-matrix {
+        background: white;
+        border-radius: 4px;
+        margin-top: 1rem;
+    }
+    .confusion-matrix th, .confusion-matrix td {
+        text-align: center;
+        font-size: 0.9em;
+        padding: 0.3rem !important;
+    }
+    .confusion-matrix td.correct {
+        background-color: #d4edda;
+    }
+    .confusion-matrix td.error {
+        background-color: #f8d7da;
+    }
+    .patterns-list,
+    .recent-errors-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .pattern-item,
+    .error-item {
+        background: white;
+        padding: 0.5rem;
+        margin: 0.25rem 0;
+        border-radius: 4px;
+    }
+    .error-item .timestamp {
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    .toggle-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Error Logs styling */
+    #errorLogsContainer {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    #errorLogsContainer h4 {
+        margin-top: 0;
+    }
+    .error-log-entry {
+        background: #fff;
+        border: 1px solid #ffeeba;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+    }
+    .model-section {
+        border: 1px solid #ccc;
+        margin: 15px 0;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .model-section h2 {
+        margin-top: 0;
+    }
+    #results-container {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px dashed #666;
+    }
+    #logs {
+        white-space: pre-wrap;
+        background: #f7f7f7;
+        padding: 1em;
+        margin-top: 10px;
+        height: 200px;
+        overflow-y: scroll;
+        border: 1px solid #ccc;
+    }
+</style>
+{% endblock styles %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- ================== MODEL & FEEDBACK OPTIONS ================== -->
+    <div class="toggle-bar">
+        <label for="sseModelSelect"><strong>SSE Model:</strong></label>
+        <select id="sseModelSelect" class="form-control" style="width: 150px;">
+            <option value="cnn" selected>CNN</option>
+            <option value="rf">RF</option>
+            <option value="ensemble">Ensemble</option>
+        </select>
+    </div>
+
+    <!-- ================== SSE-BASED "PREDICT" SECTION ================== -->
+    <div class="model-section" id="cnn-section">
+        <h2>CNN Inference (Streamed via SSE)</h2>
+        <div class="predict-container mb-5">
+            <h2><i class="fas fa-microphone"></i> SSE Real-Time Prediction</h2>
+
+            <!-- Dictionary display -->
+            <div class="current-dictionary">
+                <h4>Current Dictionary: {{ active_dict.name }}</h4>
+                <div class="sounds-list">
+                    {% for sound in active_dict.sounds %}
+                    <span class="sound-badge" style="font-size: 2rem; color: red; font-weight: bold;">
+                        {{ sound }}{% if not loop.last %},&nbsp;&nbsp;&nbsp;{% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="prediction-box">
+                <div class="recording-status">
+                    <div class="status-indicator" id="sseStatusIndicator"></div>
+                    <span id="statusTextSSE">Click to start recording (SSE mode)</span>
+                </div>
+
+                <button id="listenButton" class="btn btn-primary btn-lg">
+                    <i class="fas fa-microphone"></i> Start Listening
+                </button>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <!-- SSE predictions list -->
+                        <div id="predictions" class="predictions-list">
+                            <h4>Predictions</h4>
+                            <div id="predictionsList" style="font-size: 2rem;color: red;">
+                            </div>
+                        </div>
+
+                        <!-- Single Feedback Form (SSE approach) -->
+                        <div id="feedbackForm" class="feedback-form d-none">
+                            <h4>Was this prediction correct?</h4>
+                            <p>Predicted: <span id="predictedSound" class="predicted-sound"></span></p>
+                            <p>What sound did you actually make?</p>
+                            <div id="soundButtons" class="sound-buttons">
+                                {% for sound in active_dict.sounds %}
+                                <button class="btn btn-outline-primary sound-button" data-sound="{{ sound }}">
+                                    {{ sound }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-3">
+                                <button id="skipFeedback" class="btn btn-secondary">Skip</button>
+                            </div>
+                        </div>
+
+                        <!-- Stats/Confusion Matrix -->
+                        <div id="statistics" class="statistics mt-4">
+                            <h4>Accuracy Statistics</h4>
+                            <div id="overallAccuracy">
+                                Overall Accuracy: <span>0%</span>
+                            </div>
+                            <div id="perSoundAccuracy">
+                                <h5>Per Sound Accuracy:</h5>
+                                <div id="perSoundStats"></div>
+                            </div>
+                            <div id="confusionMatrix" class="mt-4">
+                                <h5>Confusion Matrix</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm confusion-matrix">
+                                        <thead>
+                                            <tr>
+                                                <th>Actual ↓ / Predicted →</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div id="misclassificationPatterns" class="mt-4">
+                                <h5>Common Misclassifications</h5>
+                                <div class="patterns-list"></div>
+                            </div>
+                            <div id="recentErrors" class="mt-4">
+                                <h5>Recent Misclassifications</h5>
+                                <div class="recent-errors-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button id="saveAnalysisBtn" class="btn btn-outline-primary">Save Analysis Data</button>
+                            <a href="{{ url_for('ml.view_analysis') }}" class="btn btn-outline-secondary">View Analysis History</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="debug-container">
+                            <h4>Debug Logs</h4>
+                            <div id="debugLogs"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== CHUNK-BASED RECORDING SECTION ================== -->
+    <div class="toggle-bar">
+
+        <label for="chunkModelSelect"><strong>Chunk Model:</strong></label>
+        <select id="chunkModelSelect" class="form-control" style="width: 150px;">
+            <option value="cnn">CNN</option>
+            <option value="rf" selected>RF</option>
+            <option value="ensemble">Ensemble</option>
+        </select>
+
+        <label for="feedbackModeSelect"><strong>Feedback Mode (Chunk):</strong></label>
+        <select id="feedbackModeSelect" class="form-control" style="width: 150px;">
+            <option value="dictionary" selected>Dictionary UI</option>
+            <option value="prompt">Prompt</option>
+        </select>
+    </div>
+
+    <div class="model-section" id="rf-section">
+        <h2 id="chunkedHeading">Chunked Inference</h2>
+        <div class="predict-container">
+            <h2>Chunk-Based Overlapping Recording</h2>
+            <p class="mb-3">This mode records overlapping short chunks on the client side, then calls predict route each time.</p>
+
+            <div class="recording-status">
+                <div class="status-indicator" id="chunkStatusIndicator"></div>
+                <span id="chunkStatusText">Not recording (chunk mode)</span>
+            </div>
+
+            <button id="start-button" class="btn btn-primary">Start Overlapping Recording</button>
+            <button id="stop-button" class="btn btn-danger" disabled>Stop</button>
+
+            <div id="predictionsChunk" class="mt-4 predictions-list"></div>
+            
+            <!-- Optional debug logs for chunk-based approach -->
+            <div class="debug-container mt-3">
+                <h4>Chunk Debug Logs</h4>
+                <div id="debugLogsChunk"></div>
+            </div>
+        </div>
+
+        <!-- Chunk-based feedback form (dictionary-based) -->
+        <div id="chunkFeedbackForm" class="feedback-form d-none mt-3">
+            <h4>Chunk-Based Feedback</h4>
+            <p>Predicted: <span id="chunkPredictedSound" class="predicted-sound"></span></p>
+            <p>What sound did you actually make?</p>
+            <div id="chunkSoundButtons" class="sound-buttons">
+                {% for sound in active_dict.sounds %}
+                <button class="btn btn-outline-primary chunk-sound-button" data-sound="{{ sound }}">
+                    {{ sound }}
+                </button>
+                {% endfor %}
+            </div>
+            <div class="mt-3">
+                <button id="skipChunkFeedback" class="btn btn-secondary">Skip</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== Error Logs Section ================== -->
+    <div id="errorLogsContainer" class="mt-3 d-none">
+        <h4>Client-Side Error Logs</h4>
+        <div id="errorLogs"></div>
+    </div>
+
+    <!-- RESULTS AREA -->
+    <div id="results-container">
+        <h3>Prediction / Output:</h3>
+        <p>When a model finishes inference, its results will be shown here or in the logs below.</p>
+        <!-- 
+           Optionally, add an element for final predictions. 
+           Your SSE or chunked code can insert text here:
+        -->
+        <div id="finalOutput" style="margin-top: 10px; font-weight: bold;">
+            <!-- e.g., "CNN predicted: X" or "RF predicted: Y" -->
+        </div>
+    </div>
+
+    <!-- LOG AREA -->
+    <div id="logs" aria-label="Logs console">
+        <!-- SSE and chunked logs appear here -->
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+/* =========================
+   UTILITY: ERROR LOGGING
+   ========================= */
+function logError(msg, errorObj=null) {
+    console.error("ERROR:", msg, errorObj || "");
+    const container = document.getElementById('errorLogsContainer');
+    const logs = document.getElementById('errorLogs');
+    container.classList.remove('d-none');
+
+    const div = document.createElement('div');
+    div.className = 'error-log-entry';
+    div.textContent = msg + (errorObj ? " | " + errorObj : "");
+    logs.prepend(div);
+}
+
+/* 
+   We'll also patch window.addEventListener('error') and 'unhandledrejection'
+   so that any uncaught exceptions show up in error logs.
+*/
+window.addEventListener('error', (event)=>{
+    logError(`Global error caught: ${event.message} @ ${event.filename}:${event.lineno}`, event.error);
+});
+window.addEventListener('unhandledrejection', (event)=>{
+    logError(`Unhandled promise rejection: ${event.reason}`, null);
+});
+
+
+/* =========================
+   GLOBAL UI SELECTORS
+   ========================= */
+const sseModelSelect = document.getElementById('sseModelSelect');
+const chunkModelSelect = document.getElementById('chunkModelSelect');
+const feedbackModeSelect = document.getElementById('feedbackModeSelect');
+
+
+/* =========================
+   1) SSE-based real-time
+   ========================= */
+let statistics = {
+    total: 0,
+    correct: 0,
+    perSound: {}
+};
+let lastPredictionConfidence = 0;  // store confidence of last SSE prediction
+
+const soundList = JSON.parse('{{ active_dict.sounds|tojson|safe }}');
+soundList.forEach(sound => {
+    statistics.perSound[sound] = {
+        total: 0,
+        correct: 0,
+        predictions: {}
+    };
+});
+
+function updateStatistics() {
+    const overallAccuracy = statistics.total > 0
+        ? (statistics.correct / statistics.total * 100).toFixed(1)
+        : 0;
+    document.querySelector('#overallAccuracy span').textContent = `${overallAccuracy}%`;
+
+    const perSoundStats = document.getElementById('perSoundStats');
+    if (!perSoundStats) return; // safety check
+    perSoundStats.innerHTML = '';
+
+    Object.entries(statistics.perSound).forEach(([sound, stats]) => {
+        const accuracy = stats.total > 0
+            ? (stats.correct / stats.total * 100).toFixed(1)
+            : 0;
+        const div = document.createElement('div');
+        div.className = 'sound-stat';
+        div.innerHTML = `<strong>${sound}</strong><br>
+                         ${accuracy}% (${stats.correct}/${stats.total})`;
+        perSoundStats.appendChild(div);
+    });
+}
+
+function updateConfusionMatrix(infStats) {
+    const matrix = infStats.confusion_matrix;
+    if (!matrix) return;
+    const sounds = Object.keys(statistics.perSound);
+    const table = document.querySelector('.confusion-matrix');
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    if (!thead || !tbody) return;
+
+    thead.innerHTML = '<tr><th>Actual ↓ / Predicted →</th></tr>';
+    tbody.innerHTML = '';
+
+    const headerRow = thead.querySelector('tr');
+    sounds.forEach(sound => {
+        const th = document.createElement('th');
+        th.textContent = sound;
+        headerRow.appendChild(th);
+    });
+
+    sounds.forEach(actualSound => {
+        const row = document.createElement('tr');
+        const header = document.createElement('th');
+        header.textContent = actualSound;
+        row.appendChild(header);
+
+        sounds.forEach(predictedSound => {
+            const td = document.createElement('td');
+            const count = matrix[actualSound]?.[predictedSound] || 0;
+            td.textContent = count;
+
+            if (count > 0) {
+                if (actualSound === predictedSound) {
+                    td.classList.add('correct');
+                } else {
+                    td.classList.add('error');
+                }
+            }
+            row.appendChild(td);
+        });
+        tbody.appendChild(row);
+    });
+}
+
+function updateMisclassificationPatterns(infStats) {
+    const patterns = infStats.misclassification_patterns || [];
+    const container = document.querySelector('.patterns-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    patterns.forEach(pattern => {
+        const div = document.createElement('div');
+        div.className = 'pattern-item';
+        div.innerHTML = `
+            <span>"${pattern.actual}" misclassified as "${pattern.predicted}"</span>
+            <span class="badge bg-secondary">${pattern.count} times</span>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function updateRecentErrors(infStats) {
+    const errors = infStats.recent_misclassifications || [];
+    const container = document.querySelector('.recent-errors-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    errors.forEach(error => {
+        const div = document.createElement('div');
+        div.className = 'error-item';
+        div.innerHTML = `
+            <div>Predicted "${error.predicted}" but was "${error.actual}"</div>
+            <div>Confidence: ${(error.confidence * 100).toFixed(1)}%</div>
+            <div class="timestamp">${error.timestamp}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+updateStatistics(); // Initialize stats
+
+const listenButton = document.getElementById('listenButton');
+if (listenButton) {
+    listenButton.addEventListener('click', function() {
+        const button = this;
+        const predictionsList = document.getElementById('predictionsList');
+        const debugLogs = document.getElementById('debugLogs');
+        const statusIndicator = document.getElementById('sseStatusIndicator');
+        const statusText = document.getElementById('statusTextSSE');
+        const feedbackForm = document.getElementById('feedbackForm');
+
+        // We'll attach the selected model as a query param
+        const selectedModel = sseModelSelect.value;
+        const startListeningURL = "{{ url_for('ml.start_listening') }}" + "?model=" + encodeURIComponent(selectedModel);
+
+        if (button.textContent.includes('Start')) {
+            // Start SSE
+            fetch(startListeningURL, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        button.innerHTML = '<i class="fas fa-stop"></i> Stop Listening';
+                        button.classList.replace('btn-primary', 'btn-danger');
+                        statusIndicator.classList.add('recording');
+                        statusText.textContent = 'Listening for sounds...';
+                        feedbackForm.classList.add('d-none');
+
+                        const eventSource = new EventSource("{{ url_for('ml.prediction_stream') }}");
+                        eventSource.onmessage = function(event) {
+                            if (event.data === 'heartbeat') return;
+                            try {
+                                const d = JSON.parse(event.data);
+
+                                // Show predictions
+                                if (d.prediction) {
+                                    const item = document.createElement('div');
+                                    item.className = 'prediction-item';
+                                    item.innerHTML = `
+                                        <span class="sound">${d.prediction.class}</span>
+                                        <span class="probability">${(d.prediction.confidence*100).toFixed(1)}%</span>
+                                    `;
+                                    predictionsList.insertBefore(item, predictionsList.firstChild);
+
+                                    lastPredictionConfidence = d.prediction.confidence;
+                                    document.getElementById('predictedSound').textContent = d.prediction.class;
+                                    feedbackForm.classList.remove('d-none');
+
+                                    // limit displayed predictions
+                                    while (predictionsList.children.length > 10) {
+                                        predictionsList.removeChild(predictionsList.lastChild);
+                                    }
+                                }
+
+                                // Show log lines
+                                if (d.log) {
+                                    const logItem = document.createElement('div');
+                                    logItem.className = 'log-entry';
+                                    logItem.textContent = d.log;
+                                    debugLogs.insertBefore(logItem, debugLogs.firstChild);
+                                    while (debugLogs.children.length > 50) {
+                                        debugLogs.removeChild(debugLogs.lastChild);
+                                    }
+                                }
+                            } catch (err) {
+                                logError("Error parsing SSE message data", err);
+                            }
+                        };
+                        eventSource.onerror = function(e) {
+                            logError("SSE error event", e);
+                        };
+                        button.eventSource = eventSource;
+                    } else {
+                        alert(data.message || 'Error starting listener');
+                        logError("start_listening responded with error", data.message);
+                    }
+                })
+                .catch(e => {
+                    logError("Error starting SSE listening fetch", e);
+                });
+        } else {
+            // Stop SSE
+            if (button.eventSource) {
+                button.eventSource.close();
+                delete button.eventSource;
+            }
+
+            fetch("{{ url_for('ml.stop_listening') }}", { method: 'POST' })
+                .then(r=>r.json())
+                .then(data => {
+                    button.innerHTML = '<i class="fas fa-microphone"></i> Start Listening';
+                    button.classList.replace('btn-danger', 'btn-primary');
+                    statusIndicator.classList.remove('recording');
+                    statusText.textContent = 'Click to start recording (SSE mode)';
+                    feedbackForm.classList.add('d-none');
+
+                    // final stats
+                    fetch("{{ url_for('ml.inference_statistics') }}")
+                        .then(r => r.json())
+                        .then(infStats => {
+                            const statsDiv = document.createElement('div');
+                            statsDiv.className = 'prediction-item stats';
+                            statsDiv.innerHTML = `
+                                <div class="stats-content">
+                                    <h4>Session Statistics</h4>
+                                    <p>Total Predictions: ${infStats.total_predictions}</p>
+                                    <p>Average Confidence: ${(infStats.average_confidence * 100).toFixed(1)}%</p>
+                                    <p>Class Distribution: ${JSON.stringify(infStats.class_counts)}</p>
+                                </div>
+                            `;
+                            predictionsList.insertBefore(statsDiv, predictionsList.firstChild);
+
+                            updateConfusionMatrix(infStats);
+                            updateMisclassificationPatterns(infStats);
+                            updateRecentErrors(infStats);
+                        })
+                        .catch(e => {
+                            logError("Error fetching final SSE stats", e);
+                        });
+                })
+                .catch(e => {
+                    logError("Error stopping SSE listening fetch", e);
+                });
+        }
+    });
+}
+
+// SSE feedback buttons
+const sseSoundButtons = document.getElementById('soundButtons');
+if (sseSoundButtons) {
+    sseSoundButtons.addEventListener('click', e => {
+        if (!e.target.classList.contains('sound-button')) return;
+        const actualSound = e.target.dataset.sound;
+        const predictedSound = document.getElementById('predictedSound').textContent;
+        const isCorrect = (actualSound === predictedSound);
+
+        // send feedback to the server
+        fetch("{{ url_for('ml.record_feedback') }}", {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify({
+                predicted_sound: predictedSound,
+                actual_sound: actualSound,
+                confidence: lastPredictionConfidence
+            })
+        })
+        .catch(err => {
+            logError("Error recording SSE feedback", err);
+        });
+
+        // update local stats
+        statistics.total++;
+        if (isCorrect) statistics.correct++;
+        statistics.perSound[actualSound].total++;
+        if (isCorrect) statistics.perSound[actualSound].correct++;
+        if (!statistics.perSound[actualSound].predictions[predictedSound]) {
+            statistics.perSound[actualSound].predictions[predictedSound] = 0;
+        }
+        statistics.perSound[actualSound].predictions[predictedSound]++;
+
+        updateStatistics();
+
+        // flash correct/incorrect color
+        e.target.classList.add(isCorrect ? 'correct' : 'incorrect');
+        setTimeout(() => {
+            e.target.classList.remove('correct','incorrect');
+            document.getElementById('feedbackForm').classList.add('d-none');
+        }, 1000);
+    });
+}
+
+// skip button
+const skipFeedbackBtn = document.getElementById('skipFeedback');
+if (skipFeedbackBtn) {
+    skipFeedbackBtn.addEventListener('click', () => {
+        document.getElementById('feedbackForm').classList.add('d-none');
+    });
+}
+
+// Save analysis data
+const saveAnalysisBtn = document.getElementById('saveAnalysisBtn');
+if (saveAnalysisBtn) {
+    saveAnalysisBtn.addEventListener('click', () => {
+        fetch("{{ url_for('ml.save_analysis') }}", {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json'}
+        })
+        .then(r=>r.json())
+        .then(data=>{
+            if(data.status==='success'){
+                alert('Analysis data saved successfully');
+            } else {
+                alert('Error saving analysis data: '+ data.message);
+                logError("Error saving analysis data", data.message);
+            }
+        })
+        .catch(e=>logError("Error in saveAnalysis fetch", e));
+    });
+}
+
+
+/* =========================
+   2) CHUNK-BASED Overlapping
+   ========================= */
+let recordingChunk = false;
+let mediaRecorder = null;
+let audioContext = null;
+let chunkQueue = [];
+let streamGlobal = null;
+let lastChunkConfidence = 0; 
+let lastChunkPredicted = null;
+
+// UI
+const startChunkBtn = document.getElementById('start-button');
+const stopChunkBtn = document.getElementById('stop-button');
+const chunkStatusIndicator = document.getElementById('chunkStatusIndicator');
+const chunkStatusText = document.getElementById('chunkStatusText');
+
+if (startChunkBtn && stopChunkBtn) {
+    startChunkBtn.onclick = async function() {
+        if (recordingChunk) return;
+        recordingChunk = true;
+        startChunkBtn.disabled = true;
+        stopChunkBtn.disabled = false;
+
+        chunkStatusIndicator.classList.add('recording');
+        chunkStatusText.textContent = 'Recording (chunk mode)...';
+
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            streamGlobal = await navigator.mediaDevices.getUserMedia({ audio: true });
+            startOverlappingRecording(streamGlobal);
+        } catch (err) {
+            logError("Error starting chunk-based recording (getUserMedia)", err);
+            recordingChunk = false;
+            startChunkBtn.disabled = false;
+            stopChunkBtn.disabled = true;
+            chunkStatusIndicator.classList.remove('recording');
+            chunkStatusText.textContent = 'Not recording (chunk mode)';
+        }
+    };
+
+    stopChunkBtn.onclick = function() {
+        if (!recordingChunk) return;
+        recordingChunk = false;
+        startChunkBtn.disabled = false;
+        stopChunkBtn.disabled = true;
+
+        chunkStatusIndicator.classList.remove('recording');
+        chunkStatusText.textContent = 'Not recording (chunk mode)';
+
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        if (audioContext) {
+            audioContext.close();
+        }
+        stopChunkRecording();
+    };
+}
+
+function startOverlappingRecording(stream) {
+    const debugLogsChunk = document.getElementById('debugLogsChunk');
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = function(event) {
+        if (event.data.size > 0) {
+            chunkQueue.push(event.data);
+
+            // keep only the last two chunks (overlap)
+            if (chunkQueue.length > 2) {
+                chunkQueue.shift();
+            }
+            // combine last two chunks
+            const combinedChunks = new Blob(chunkQueue, { type: 'audio/webm' });
+            processAudioChunk(combinedChunks);
+        }
+    };
+
+    mediaRecorder.onstop = function() {
+        if (debugLogsChunk) {
+            const logItem = document.createElement('div');
+            logItem.className = 'log-entry';
+            logItem.textContent = 'MediaRecorder stopped (chunk-based).';
+            debugLogsChunk.appendChild(logItem);
+        }
+    };
+
+    // Record in short intervals to get overlapping chunks
+    mediaRecorder.start(250); // chunk length in ms
+    if (debugLogsChunk) {
+        const logItem = document.createElement('div');
+        logItem.className = 'log-entry';
+        logItem.textContent = 'Chunk-based MediaRecorder started (250ms chunks).';
+        debugLogsChunk.appendChild(logItem);
+    }
+}
+
+function processAudioChunk(audioBlob) {
+    // read from <select>
+    const modelChoice = chunkModelSelect.value; // "cnn" or "rf" or "ensemble"
+
+    let targetRoute;
+    if (modelChoice === 'rf') {
+        targetRoute = "{{ url_for('ml.predict_rf') }}"; 
+    } else if (modelChoice === 'ensemble') {
+        targetRoute = "{{ url_for('ml.predict_ensemble') }}"; 
+    } else {
+        // default = CNN
+        targetRoute = "{{ url_for('ml.predict_sound_endpoint') }}";
+    }
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+
+    fetch(targetRoute, {
+        method:'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            logError("Server error in chunk-based route", data.error);
+        } else if (data.predictions){
+            displayPredictionsChunk(data.predictions);
+        }
+    })
+    .catch(e => {
+        logError("Error in chunk-based fetch", e);
+    });
+}
+
+function displayPredictionsChunk(predictions) {
+    const container = document.getElementById('predictionsChunk');
+    if (!container) return;
+    
+    // We'll just replace or prepend the new set of predictions
+    // For demonstration, let's always prepend
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'prediction-item';
+    groupDiv.style.flexDirection = 'column';
+
+    predictions.forEach(pred => {
+        const { sound, probability } = pred;
+        const row = document.createElement('div');
+        row.className = 'prediction-item';
+        row.innerHTML = `
+            <span>Predicted: <strong>${sound}</strong></span>
+            <span class="probability">${(probability*100).toFixed(1)}%</span>
+            <button class="btn btn-sm btn-info ml-2 feedback-btn" 
+                    data-predicted="${sound}"
+                    data-confidence="${probability}">
+                Mark as correct/incorrect
+            </button>
+        `;
+        groupDiv.appendChild(row);
+    });
+
+    container.prepend(groupDiv);
+
+    // Attach click listeners for chunk-based feedback
+    groupDiv.querySelectorAll('.feedback-btn').forEach(btn => {
+       btn.addEventListener('click', e => {
+         const predictedSound = e.target.dataset.predicted;
+         const conf = parseFloat(e.target.dataset.confidence);
+
+         const mode = feedbackModeSelect.value; // "dictionary" or "prompt"
+         if (mode === 'prompt') {
+             const actual = prompt(`We predicted "${predictedSound}". What was it really?`, predictedSound);
+             if (!actual) return;
+             recordFeedbackChunk(predictedSound, actual, conf);
+         } else {
+             lastChunkPredicted = predictedSound;
+             lastChunkConfidence = conf;
+             document.getElementById('chunkPredictedSound').textContent = predictedSound;
+             document.getElementById('chunkFeedbackForm').classList.remove('d-none');
+         }
+       });
+    });
+}
+
+// If dictionary-based feedback
+const chunkSoundButtons = document.getElementById('chunkSoundButtons');
+if (chunkSoundButtons) {
+    chunkSoundButtons.addEventListener('click', e => {
+        if (!e.target.classList.contains('chunk-sound-button')) return;
+        const actualSound = e.target.dataset.sound;
+        const predictedSound = lastChunkPredicted;
+        const confidence = lastChunkConfidence;
+        if (!predictedSound) return;
+
+        recordFeedbackChunk(predictedSound, actualSound, confidence);
+
+        // flash correct/incorrect
+        const isCorrect = (actualSound === predictedSound);
+        e.target.classList.add(isCorrect ? 'correct' : 'incorrect');
+        setTimeout(() => {
+            e.target.classList.remove('correct','incorrect');
+            document.getElementById('chunkFeedbackForm').classList.add('d-none');
+        }, 1000);
+    });
+}
+
+const skipChunkFeedback = document.getElementById('skipChunkFeedback');
+if (skipChunkFeedback) {
+    skipChunkFeedback.addEventListener('click', () => {
+        document.getElementById('chunkFeedbackForm').classList.add('d-none');
+    });
+}
+
+// Actually record the chunk-based feedback to the server
+function recordFeedbackChunk(predicted, actual, confidence) {
+    fetch("{{ url_for('ml.record_feedback') }}", {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({
+            predicted_sound: predicted,
+            actual_sound: actual,
+            confidence: confidence
+        })
+    })
+    .then(r => r.json())
+    .then(resp => {
+       if (resp.status === 'success') {
+         console.log(`Chunk feedback recorded! Predicted=${predicted}, actual=${actual}`);
+       } else {
+         logError("Error recording chunk feedback", resp.message);
+       }
+    })
+    .catch(err => {
+        logError("Feedback error chunk-based", err);
+    });
+}
+
+// Called on chunk-based stop
+function stopChunkRecording(){
+    const debugLogsChunk = document.getElementById('debugLogsChunk');
+    if (debugLogsChunk) {
+        const logItem = document.createElement('div');
+        logItem.className = 'log-entry';
+        logItem.textContent = 'Stopped chunk-based recording.';
+        debugLogsChunk.appendChild(logItem);
+    }
+    console.log('Stopped chunk-based recording.');
+}
+
+const chunkSelect = document.getElementById('chunkModelSelect');
+const chunkHeading = document.getElementById('chunkedHeading');
+chunkSelect.addEventListener('change', () => {
+    const val = chunkSelect.value;
+    // Adjust heading:
+    chunkHeading.textContent = val.toUpperCase() + " Inference (Chunked)";
+});
+</script>
+{% endblock scripts %}

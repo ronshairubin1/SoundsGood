@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Add navigation buttons -->
+    <div class="mb-4">
+        <a href="{{ url_for('ml.predict') }}" class="btn btn-primary">Go to Prediction</a>
+        <a href="{{ url_for('ml.train_model') }}" class="btn btn-secondary">Train Another Model</a>
+        <a href="{{ url_for('index') }}" class="btn btn-info">Back to Home</a>
+    </div>
+
+    <h1>{{ "CNN Training Summary" if training_stats and training_stats.get("classes") else "Training Summary" }}</h1>
+
+    <h2>Data Statistics</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Statistic</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Input Shape</td>
+                <td>
+                    {{ training_stats.input_shape if training_stats.input_shape else '(13, 32, 1)' }}
+                </td>
+                <td>
+                    The shape of the input data. 
+                    <br/>
+                    <strong>Explanation:</strong> Think of each sample as a small grid of numbers that describe the sound's frequency (height) and time segments (width), plus 1 channel for amplitude. 
+                    <br/>
+                    For example, (13,32,1) means we have 13 frequency bins, 32 "time steps," and 1 channel. It's like a black-and-white image of 13 by 32 pixels for each audio.
+                </td>
+            </tr>
+            <tr>
+                <td>Input Range</td>
+                <td>
+                    {{ training_stats.input_range if training_stats.input_range else '(No numeric range found)' }}
+                </td>
+                <td>
+                    The minimum and maximum values in the input data (helpful to understand scaling).
+                    {% if not training_stats.input_range %}
+                        <br/><strong>Note:</strong> We only see "MFCC Features" or generic text instead of a numeric range because the code did not store exact min/max values. 
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Label Shape</td>
+                <td>{{ training_stats.total_samples if training_stats.total_samples else '??' }} samples</td>
+                <td>
+                    This means we have that many labeled examples. 
+                    <br/><strong>Explanation:</strong> We had {{ training_stats.total_samples }} short sounds, each tagged with the correct word ("oh" or "eh"), so the computer knows what each example is.
+                </td>
+            </tr>
+            <tr>
+                <td>Unique Labels</td>
+                <td>
+                    {{ training_stats.original_counts.keys()|list if training_stats.original_counts else training_stats.get('classes', []) }}
+                </td>
+                <td>
+                    The distinct class labels present in the dataset. 
+                    <br/>
+                    <strong>Why is this important?</strong> It tells us how many different words or categories we're teaching the CNN to recognize.
+                </td>
+            </tr>
+            <tr>
+                <td>Label Mapping</td>
+                <td>
+                    {% if training_stats.original_counts %}
+                        {% for class_name, count in training_stats.original_counts.items() %}
+                            {{ class_name }}: {{ count }} original, {{ training_stats.augmented_counts[class_name] }} augmented<br>
+                        {% endfor %}
+                    {% elif training_stats.classes %}
+                        {% for cls in training_stats.classes %}
+                            {{ loop.index0 }} -> {{ cls }} <br/>
+                        {% endfor %}
+                    {% else %}
+                        No mapping available
+                    {% endif %}
+                </td>
+                <td>
+                     A list mapping label indices (0,1,2...) to word classes (like "eh", "oh").
+                     <br/>
+                     <strong>Explanation:</strong> The computer uses numbers (0 or 1) to represent each word. This row shows how each number matches a word.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Feature Statistics</h2>
+    {% if feature_stats %}
+    <h3>MFCC Features</h3>
+    <table class="table">
+        <tr>
+            <th>Feature Type</th>
+            <th>Mean</th>
+            <th>Std</th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>First MFCC (Energy)</td>
+            <td>{{ '%.4f'|format(feature_stats.first_mfcc.mean) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.first_mfcc.std) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.first_mfcc.min) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.first_mfcc.max) }}</td>
+        </tr>
+        <tr>
+            <td>Other MFCCs</td>
+            <td>{{ '%.4f'|format(feature_stats.other_mfcc.mean) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.other_mfcc.std) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.other_mfcc.min) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.other_mfcc.max) }}</td>
+        </tr>
+    </table>
+
+    <h3>Other Features</h3>
+    <table class="table">
+        <tr>
+            <th>Feature Type</th>
+            <th>Shape</th>
+            <th>Mean</th>
+            <th>Std</th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        {% for feature_name in ['delta', 'delta2', 'centroid', 'rolloff', 'rms'] %}
+        <tr>
+            <td>{{ feature_name }}</td>
+            <td>{{ feature_stats[feature_name].shape }}</td>
+            <td>{{ '%.4f'|format(feature_stats[feature_name].mean) }}</td>
+            <td>{{ '%.4f'|format(feature_stats[feature_name].std) }}</td>
+            <td>{{ '%.4f'|format(feature_stats[feature_name].min) }}</td>
+            <td>{{ '%.4f'|format(feature_stats[feature_name].max) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Normalization Effect</h3>
+    <table class="table">
+        <tr>
+            <th>Stage</th>
+            <th>Shape</th>
+            <th>Mean</th>
+            <th>Std</th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>Pre-normalization</td>
+            <td>{{ feature_stats.pre_normalization.shape }}</td>
+            <td>{{ '%.4f'|format(feature_stats.pre_normalization.mean) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.pre_normalization.std) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.pre_normalization.min) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.pre_normalization.max) }}</td>
+        </tr>
+        <tr>
+            <td>Post-normalization</td>
+            <td>N/A</td>
+            <td>{{ '%.4f'|format(feature_stats.post_normalization.mean) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.post_normalization.std) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.post_normalization.min) }}</td>
+            <td>{{ '%.4f'|format(feature_stats.post_normalization.max) }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <p>No feature statistics available. This might mean we did not compute MFCC or other features in the code.</p>
+    {% endif %}
+
+    {% if training_stats and training_stats.get('energy_comparison') %}
+    <h3>Energy Coefficient Comparison Between Classes</h3>
+    <table class="table">
+        <tr>
+            <th>Class</th>
+            <th>Mean</th>
+            <th>Std</th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>'eh' sounds</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('eh', {}).get('mean', 0)) }}</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('eh', {}).get('std', 0)) }}</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('eh', {}).get('min', 0)) }}</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('eh', {}).get('max', 0)) }}</td>
+        </tr>
+        <tr>
+            <td>'oh' sounds</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('oh', {}).get('mean', 0)) }}</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('oh', {}).get('std', 0)) }}</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('oh', {}).get('min', 0)) }}</td>
+            <td>{{ '%.4f'|format(training_stats.get('energy_comparison', {}).get('oh', {}).get('max', 0)) }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <p>No energy coefficient comparison found. Possibly the code to compute it was never called or is commented out.</p>
+    {% endif %}
+
+    {% if training_stats %}
+    <h3>MFCC Coefficients Comparison Between Classes</h3>
+    {% set any_data = false %}
+    <table class="table">
+        <tr>
+            <th>MFCC Feature</th>
+            <th>Class</th>
+            <th>Mean</th>
+            <th>Std</th>
+            <th>Min</th>
+            <th>Max</th>
+            <th>Mean Difference</th>
+        </tr>
+        {% for i in range(13) %}
+        {% set mfcc_key = 'mfcc_' ~ i ~ '_comparison' if i > 0 else 'energy_comparison' %}
+        {% if training_stats.get(mfcc_key) %}
+        {% set any_data = true %}
+        <tr>
+            <td rowspan="2">MFCC_{{ i }} {% if i == 0 %}(Energy){% endif %}</td>
+            <td>'eh' sounds</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].eh.mean) }}</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].eh.std) }}</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].eh.min) }}</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].eh.max) }}</td>
+            <td rowspan="2">{{ '%.4f'|format(training_stats[mfcc_key].eh.mean - training_stats[mfcc_key].oh.mean) }}</td>
+        </tr>
+        <tr>
+            <td>'oh' sounds</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].oh.mean) }}</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].oh.std) }}</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].oh.min) }}</td>
+            <td>{{ '%.4f'|format(training_stats[mfcc_key].oh.max) }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+    {% if not any_data %}
+    <p>No MFCC comparison data to display. This could be because your code to compute MFCC differences is disabled or didn't run.</p>
+    {% endif %}
+    {% endif %}
+
+    <h2>Model Architecture</h2>
+    <pre>{{ model_summary }}</pre>
+    <p><strong>Hover over layer names to learn more:</strong></p>
+    <p>
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="The input layer defines the shape of data entering the network. 'None' means the batch can be any size. (63,64,1) means each sample has 63 'time/frequency steps' by 64 'frequency bins' and 1 channel.">
+            InputLayer
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Conv2D (2D Convolution) filters your audio spectrogram image, extracting patterns of frequencies over time. 16 or 32 filters each produce a new 'channel' of features.">
+            Conv2D
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Batch Normalization normalizes the outputs of a layer, stabilizing training and potentially speeding it up.">
+            BatchNormalization
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Activation applies a non-linear function (like ReLU) so your model can learn complex patterns.">
+            Activation
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="MaxPooling2D cuts down on height/width, reducing computation and helping to avoid overfitting.">
+            MaxPooling2D
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Dropout randomly sets a fraction of inputs to zero, helping the model generalize instead of memorize.">
+            Dropout
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Flatten collapses your 2D feature maps into a 1D vector so they can be fed into dense (fully connected) layers.">
+            Flatten
+        </span>, 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Dense means every input unit connects to every output unit in this layer. '256' is the number of neurons in that layer.">
+            Dense(256)
+        </span>, 
+        ... 
+        <span data-bs-toggle="tooltip" data-bs-placement="right" title="Non-trainable params are things like scaling factors for batch norm that may not update or remain frozen if set so. Trainable params are all the weights the model can adjust.">
+            Trainable vs Non-Trainable
+        </span>.
+    </p>
+</div>
+
+<h2>Explanation of Model Parameters</h2>
+<p>The model is a Convolutional Neural Network (CNN) designed for audio classification. Here's a breakdown of each parameter:</p>
+<ul>
+    <li><strong>Input Shape:</strong> We see something like (63,64,1). This means each audio spectrogram is 63 "rows," 64 "columns," and 1 channel (like grayscale).</li>
+    <li><strong>Convolutional Layers:</strong> They take small patches of the input (like 3×3 squares) and learn filters that respond to certain frequency/time patterns.</li>
+    <li><strong>Pooling Layers:</strong> We reduce the size of the representation, so we don't get stuck with too huge a matrix. This helps control overfitting.</li>
+    <li><strong>Dense Layers:</strong> Classic fully-connected layers that combine everything learned by the convolutional layers to decide which class it is.</li>
+    <li><strong>Activation Functions:</strong> They make the model non-linear, so it can detect more complex patterns.</li>
+    <li><strong>Dropout Layer:</strong> Means that some fraction (like 25%) of neurons are temporarily ignored during training, which helps reduce memorization.</li>
+</ul>
+
+<h2>Expectations from the Model</h2>
+{% if training_stats['num_classes'] == 1 %}
+    <p>Since the model is trained only on one sound class ("{{ training_stats['label_mapping'][0] }}"), it will learn to recognize patterns associated with that sound. However, it won't be able to distinguish "{{ training_stats['label_mapping'][0] }}" from other sounds because it hasn't been trained on any other class. Essentially, the model will classify any input it receives as "{{ training_stats['label_mapping'][0] }}" because that's the only class it knows.</p>
+
+    <h2>Recommendations</h2>
+    <p>For the model to be useful in distinguishing "{{ training_stats['label_mapping'][0] }}" from other sounds, you need to introduce additional classes or a negative class representing other sounds.</p>
+    <ul>
+        <li><strong>Add More Classes:</strong> Include other sounds you wish the model to distinguish from "{{ training_stats['label_mapping'][0] }}".</li>
+        <li><strong>Binary Classification:</strong> Introduce a "not {{ training_stats['label_mapping'][0] }}" class with various other sounds, allowing the model to learn the difference between "{{ training_stats['label_mapping'][0] }}" and "not {{ training_stats['label_mapping'][0] }}".</li>
+    </ul>
+{% else %}
+    <p>The model is trained on {{ training_stats['num_classes'] }} classes: {{ training_stats['label_mapping'] if training_stats['label_mapping'] else training_stats.get('classes', []) }}. It has learned to recognize patterns associated with each sound and can distinguish between them based on the training data provided.</p>
+
+    <h2>Recommendations</h2>
+    <p>To improve the model:</p>
+    <ul>
+        <li><strong>Increase Data Quality:</strong> Ensure that each class has sufficient and diverse examples.</li>
+        <li><strong>Data Augmentation:</strong> Apply techniques like noise addition, time-stretching, and pitch shifting to augment your dataset.</li>
+        <li><strong>Balance Classes:</strong> Make sure that the number of samples in each class is balanced to prevent bias.</li>
+        <li><strong>Regularization Techniques:</strong> Use techniques like dropout and weight decay to prevent overfitting.</li>
+    </ul>
+{% endif %}
+
+<!-- Include training performance if available -->
+{% if training_history %}
+<h2>Training Performance</h2>
+<table class="table">
+    <tr>
+        <th>Epoch</th><th>Accuracy</th><th>Validation Accuracy</th><th>Loss</th><th>Validation Loss</th>
+    </tr>
+    {% for i in range(training_history['epochs']) %}
+    <tr>
+        <td>{{ i+1 }}</td>
+        <td>{{ '%.4f'|format(training_history['accuracy'][i]) }}</td>
+        <td>{{ '%.4f'|format(training_history['val_accuracy'][i]) }}</td>
+        <td>{{ '%.4f'|format(training_history['loss'][i]) }}</td>
+        <td>{{ '%.4f'|format(training_history['val_loss'][i]) }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p>
+    <strong>What do these numbers mean?</strong><br/>
+    - <strong>Accuracy / Validation Accuracy:</strong> A percentage (0 to 1) of how many examples the model got right. "Validation" is on unseen data.<br/>
+    - <strong>Loss / Validation Loss:</strong> A measure of how wrong the model's predictions are. Lower is better.<br/>
+    - If your <em>validation accuracy</em> is close to training accuracy, you likely have a well-generalized model. If training accuracy is very high but validation accuracy is notably lower, watch out for overfitting.
+</p>
+{% endif %}
+
+{% if training_stats.rf_summary %}
+<hr/>
+<h2>Random Forest Summary</h2>
+<p>Below are details of the trained Random Forest:</p>
+<table class="table">
+    <tr>
+        <th>Statistic</th>
+        <th>Value</th>
+    </tr>
+    <tr>
+        <td>Number of Samples</td>
+        <td>{{ training_stats.rf_summary.num_samples }}</td>
+    </tr>
+    <tr>
+        <td>Number of Classes</td>
+        <td>{{ training_stats.rf_summary.num_classes }}</td>
+    </tr>
+    <tr>
+        <td>Model Path</td>
+        <td>{{ training_stats.rf_summary.rf_model_path }}</td>
+    </tr>
+</table>
+
+<h3>Random Forest Recommendations</h3>
+<ul>
+    <li><strong>Parameter Tuning:</strong> Consider tuning the number of trees, max depth, or min samples split for better performance.</li>
+    <li><strong>Feature Importance Analysis:</strong> RF can provide an importance ranking of features (e.g., MFCCs) to see which are most relevant.</li>
+</ul>
+{% endif %}
+
+{% if training_stats.ensemble_summary %}
+<hr/>
+<h2>Ensemble Summary</h2>
+<p>Below are details of the trained Ensemble Model:</p>
+<table class="table">
+    <tr>
+        <th>Method</th>
+        <td>{{ training_stats.ensemble_summary.method }}</td>
+    </tr>
+    <tr>
+        <th>CNN Path</th>
+        <td>{{ training_stats.ensemble_summary.cnn_path }}</td>
+    </tr>
+    <tr>
+        <th>RF Path</th>
+        <td>{{ training_stats.ensemble_summary.rf_path }}</td>
+    </tr>
+</table>
+
+<h3>Ensemble Recommendations</h3>
+<ul>
+    <li><strong>Weight Adjustments:</strong> Adjust the weighting between CNN and RF to see if it improves performance.</li>
+    <li><strong>Data Quality:</strong> Ensure both CNN and RF have sufficient data to avoid ensemble bias.</li>
+</ul>
+{% endif %}
+
+{% if training_stats.cnn_acc and training_stats.rf_acc and training_stats.ensemble_acc %}
+<hr/>
+<h2>Comparison of CNN, RF, and Ensemble</h2>
+<table class="table">
+    <tr>
+        <th>Method</th>
+        <th>Accuracy</th>
+    </tr>
+    <tr>
+        <td>CNN</td>
+        <td>{{ '%.3f'|format(training_stats.cnn_acc) }}</td>
+    </tr>
+    <tr>
+        <td>RF</td>
+        <td>{{ '%.3f'|format(training_stats.rf_acc) }}</td>
+    </tr>
+    <tr>
+        <td>Ensemble</td>
+        <td>{{ '%.3f'|format(training_stats.ensemble_acc) }}</td>
+    </tr>
+</table>
+{% endif %}
+
+<h2>Model Summary</h2>
+
+{% if training_stats.simple_explanation %}
+  <p>{{ training_stats.simple_explanation }}</p>
+{% endif %}
+
+{% if training_stats.classes %}
+  <p>The model was trained on these classes:</p>
+  <ul>
+    {% for cls in training_stats.classes %}
+      <li>{{ cls }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- If you want to show training_history as well -->
+<h3>Training History</h3>
+{% if training_history %}
+  <p>Trained for {{ training_history.epochs }} epochs.</p>
+  <p>Final Training Accuracy: {{ training_history.accuracy|last|round(3) }}</p>
+  <p>Final Validation Accuracy: {{ training_history.val_accuracy|last|round(3) }}</p>
+{% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+    pre { background: #f4f4f4; padding: 10px; }
+    table { border-collapse: collapse; width: 70%; }
+    td, th { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background-color: #f4f4f4; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+  })
+</script>
+{% endblock %} 
