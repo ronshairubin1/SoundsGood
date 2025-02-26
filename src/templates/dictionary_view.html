@@ -1,0 +1,855 @@
+{% extends "base.html" %}
+
+{% block title %}{{ dictionary.name }} - Dictionary View{% endblock %}
+
+{% block custom_styles %}
+.sound-card {
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+.sound-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+.waveform-container {
+    height: 80px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+.class-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.recording-controls {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.audio-controls button {
+    margin-right: 0.5rem;
+}
+.no-samples {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title mb-0">
+            <i class="bi bi-folder2-open me-2"></i>{{ dictionary.name }}
+        </h1>
+        <p class="text-muted">{{ dictionary.description }}</p>
+    </div>
+    <div>
+        <a href="/dictionaries/manage" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dictionaries
+        </a>
+        <a href="/training?dictionary={{ dictionary.name }}" class="btn btn-success">
+            <i class="bi bi-gear me-1"></i>Train Model
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Dictionary Information</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Created:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ dictionary.created_at|default('N/A', true) }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Last Updated:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ dictionary.updated_at|default('N/A', true) }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Classes:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {% if dictionary.classes %}
+                            {% for class in dictionary.classes %}
+                            <span class="badge bg-primary me-1">{{ class }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted fst-italic">No classes defined</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Total Samples:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ dictionary.sample_count|default('0', true) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Actions</h5>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClassModal">
+                        <i class="bi bi-folder-plus me-1"></i>Add New Class
+                    </button>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recordAudioModal">
+                        <i class="bi bi-mic-fill me-1"></i>Record New Sample
+                    </button>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#uploadAudioModal">
+                        <i class="bi bi-upload me-1"></i>Upload Audio Files
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="confirmDeleteDictionary('{{ dictionary.name }}', '{{ dictionary.name }}')">
+                        <i class="bi bi-trash me-1"></i>Delete Dictionary
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-3 mt-5">Sound Classes</h2>
+
+{% if dictionary.classes %}
+    {% for class in dictionary.classes %}
+    <div class="class-section mb-5">
+        <div class="class-header">
+            <h3 class="mb-0"><i class="bi bi-folder me-2"></i>{{ class }}</h3>
+            <div>
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#recordAudioModal" 
+                        onclick="setSelectedClass('{{ class }}')">
+                    <i class="bi bi-mic-fill me-1"></i>Record
+                </button>
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#uploadAudioModal"
+                        onclick="setSelectedClass('{{ class }}')">
+                    <i class="bi bi-upload me-1"></i>Upload
+                </button>
+                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#deleteClassModal"
+                        onclick="setClassToDelete('{{ class }}')">
+                    <i class="bi bi-x-circle me-1"></i>Remove from Dictionary
+                </button>
+            </div>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 samples-container" id="samples-{{ class }}">
+            <!-- This will be populated with samples via AJAX -->
+            <div class="col-12 no-samples">
+                <i class="bi bi-music-note-beamed display-4 d-block mb-3 text-muted"></i>
+                <h5>No samples yet</h5>
+                <p class="text-muted">Record or upload audio samples for this class</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>No classes have been created yet. Add a class to get started.
+    </div>
+{% endif %}
+
+<!-- Add Class Modal -->
+<div class="modal fade" id="addClassModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Sound Class</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addClassForm">
+                    <div class="mb-3">
+                        <label for="className" class="form-label">Class Name</label>
+                        <input type="text" class="form-control" id="className" required>
+                        <div class="form-text">
+                            Use a descriptive name for the sound class (e.g., "cat", "dog", "doorbell")
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addClassBtn">Add Class</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Audio Modal -->
+<div class="modal fade" id="recordAudioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Audio Sample</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label for="recordingClass" class="form-label">Sound Class</label>
+                    <select class="form-select" id="recordingClass" required>
+                        <option value="" selected disabled>Select a class</option>
+                        {% for class in dictionary.classes %}
+                        <option value="{{ class }}">{{ class }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="recordingSampleName" class="form-label">Sample Name (Optional)</label>
+                    <input type="text" class="form-control" id="recordingSampleName" 
+                           placeholder="Leave blank for automatic naming">
+                </div>
+                
+                <div class="recording-controls">
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="audio-controls">
+                            <button id="startRecording" class="btn btn-danger">
+                                <i class="bi bi-record-fill me-1"></i>Start Recording
+                            </button>
+                            <button id="stopRecording" class="btn btn-secondary" disabled>
+                                <i class="bi bi-stop-fill me-1"></i>Stop
+                            </button>
+                            <button id="playRecording" class="btn btn-primary" disabled>
+                                <i class="bi bi-play-fill me-1"></i>Play
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="waveform-container" id="waveform">
+                        <!-- Waveform will be rendered here -->
+                    </div>
+                    
+                    <div class="text-center">
+                        <span id="recordingStatus" class="text-muted">Ready to record</span>
+                        <span id="recordingTime" class="badge bg-danger ms-2" style="display: none;">00:00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="saveRecordingBtn" disabled>
+                    <i class="bi bi-save me-1"></i>Save Recording
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Audio Modal -->
+<div class="modal fade" id="uploadAudioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Audio Files</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadAudioForm">
+                    <div class="mb-3">
+                        <label for="uploadClass" class="form-label">Sound Class</label>
+                        <select class="form-select" id="uploadClass" required>
+                            <option value="" selected disabled>Select a class</option>
+                            {% for class in dictionary.classes %}
+                            <option value="{{ class }}">{{ class }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="audioFiles" class="form-label">Audio Files (.wav only)</label>
+                        <input type="file" class="form-control" id="audioFiles" accept=".wav" multiple required>
+                        <div class="form-text">
+                            You can select multiple files at once
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="progress mt-3" style="display: none;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                
+                <div id="uploadResults" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uploadAudioBtn">Upload Files</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Dictionary Confirmation Modal -->
+<div class="modal fade" id="deleteDictionaryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Note:</strong> This will only delete the dictionary itself, not the sound classes or recordings within it.
+                </div>
+                <p>Are you sure you want to delete the dictionary "<span id="deleteTargetName"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteDictBtn">Delete Dictionary</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Class Modal -->
+<div class="modal fade" id="deleteClassModal" tabindex="-1" aria-labelledby="deleteClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteClassModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Note:</strong> This will only remove the class from this dictionary. The sound files will remain intact.
+                </div>
+                <p>Are you sure you want to remove the class <strong id="classNameToDelete"></strong> from this dictionary?</p>
+                <p>You can always add the class back to this dictionary later.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteClass">Remove Class</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Wavesurfer.js for audio visualization -->
+<script src="https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.js"></script>
+
+<script>
+let wavesurfer;
+let audioBlob;
+let mediaRecorder;
+let recordedChunks = [];
+let isRecording = false;
+let recordingInterval;
+let recordingSeconds = 0;
+let selectedClass = '';
+
+// Initialize wavesurfer
+document.addEventListener('DOMContentLoaded', function() {
+    wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'rgba(67, 97, 238, 0.3)',
+        progressColor: 'rgba(67, 97, 238, 0.8)',
+        cursorColor: '#4361ee',
+        barWidth: 2,
+        barRadius: 2,
+        cursorWidth: 1,
+        height: 80,
+        barGap: 1
+    });
+    
+    // Load samples for each class
+    // Convert dictionary name to safe name once
+    const dictSafeName = '{{ dictionary.name }}'.replace(/ /g, '_').toLowerCase();
+    {% for class in dictionary.classes %}
+    loadSamples(dictSafeName, '{{ class }}');
+    {% endfor %}
+});
+
+// Set selected class for recording/uploading
+function setSelectedClass(className) {
+    selectedClass = className;
+    document.getElementById('recordingClass').value = className;
+    document.getElementById('uploadClass').value = className;
+}
+
+// Recording functionality
+document.getElementById('startRecording').addEventListener('click', function() {
+    // Start recording
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                // Create audio blob and set up wavesurfer
+                audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                wavesurfer.load(audioUrl);
+                
+                // Update UI
+                document.getElementById('playRecording').disabled = false;
+                document.getElementById('saveRecordingBtn').disabled = false;
+                document.getElementById('recordingStatus').textContent = 'Recording ready';
+                document.getElementById('recordingTime').style.display = 'none';
+                
+                // Stop the recording timer
+                clearInterval(recordingInterval);
+                recordingSeconds = 0;
+            };
+            
+            // Start recording
+            recordedChunks = [];
+            mediaRecorder.start();
+            isRecording = true;
+            
+            // Update UI
+            document.getElementById('startRecording').disabled = true;
+            document.getElementById('stopRecording').disabled = false;
+            document.getElementById('recordingStatus').textContent = 'Recording...';
+            document.getElementById('recordingTime').style.display = 'inline';
+            
+            // Start recording timer
+            recordingInterval = setInterval(() => {
+                recordingSeconds++;
+                const minutes = Math.floor(recordingSeconds / 60);
+                const seconds = recordingSeconds % 60;
+                document.getElementById('recordingTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        })
+        .catch(err => {
+            console.error('Error accessing microphone:', err);
+            alert('Could not access the microphone. Please check your permissions.');
+        });
+});
+
+document.getElementById('stopRecording').addEventListener('click', function() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        // Update UI
+        document.getElementById('startRecording').disabled = false;
+        document.getElementById('stopRecording').disabled = true;
+    }
+});
+
+document.getElementById('playRecording').addEventListener('click', function() {
+    wavesurfer.playPause();
+});
+
+// Save recording
+document.getElementById('saveRecordingBtn').addEventListener('click', function() {
+    const className = document.getElementById('recordingClass').value;
+    const sampleName = document.getElementById('recordingSampleName').value || 
+                      `recording_${new Date().toISOString().replace(/[:.-]/g, '_')}.wav`;
+    
+    if (!className) {
+        alert('Please select a sound class');
+        return;
+    }
+    
+    if (!audioBlob) {
+        alert('No recording to save');
+        return;
+    }
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', audioBlob, sampleName);
+    formData.append('sample_name', sampleName);
+    
+    // Convert dictionary name to safe name
+    const dictSafeName = '{{ dictionary.name }}'.replace(/ /g, '_').toLowerCase();
+    
+    // Send to server
+    $.ajax({
+        url: `/api/dictionary/${dictSafeName}/${className}/add_sample`,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.success) {
+                // Close modal
+                $('#recordAudioModal').modal('hide');
+                
+                // Reset recording state
+                audioBlob = null;
+                document.getElementById('playRecording').disabled = true;
+                document.getElementById('saveRecordingBtn').disabled = true;
+                document.getElementById('recordingStatus').textContent = 'Ready to record';
+                
+                // Reload samples for the class
+                loadSamples(dictSafeName, className);
+                
+                // Show success message
+                alert('Recording saved successfully!');
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function() {
+            alert('Failed to save recording');
+        }
+    });
+});
+
+// Upload audio files
+document.getElementById('uploadAudioBtn').addEventListener('click', function() {
+    const className = document.getElementById('uploadClass').value;
+    const fileInput = document.getElementById('audioFiles');
+    
+    if (!className) {
+        alert('Please select a sound class');
+        return;
+    }
+    
+    if (!fileInput.files.length) {
+        alert('Please select audio files to upload');
+        return;
+    }
+    
+    // Convert dictionary name to safe name
+    const dictSafeName = '{{ dictionary.name }}'.replace(/ /g, '_').toLowerCase();
+    
+    // Update UI
+    const progressBar = document.querySelector('.progress');
+    const progressBarInner = progressBar.querySelector('.progress-bar');
+    progressBar.style.display = 'block';
+    progressBarInner.style.width = '0%';
+    
+    const resultsDiv = document.getElementById('uploadResults');
+    resultsDiv.innerHTML = '';
+    
+    // Upload each file
+    const files = fileInput.files;
+    let filesProcessed = 0;
+    
+    for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        
+        $.ajax({
+            url: `/api/dictionary/${dictSafeName}/${className}/add_sample`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                filesProcessed++;
+                
+                // Update progress
+                const progress = Math.round((filesProcessed / files.length) * 100);
+                progressBarInner.style.width = `${progress}%`;
+                
+                // Add result
+                const resultItem = document.createElement('div');
+                if (response.success) {
+                    resultItem.className = 'alert alert-success mt-2';
+                    resultItem.innerHTML = `<i class="bi bi-check-circle me-2"></i>${files[i].name} uploaded successfully`;
+                } else {
+                    resultItem.className = 'alert alert-danger mt-2';
+                    resultItem.innerHTML = `<i class="bi bi-x-circle me-2"></i>${files[i].name}: ${response.error}`;
+                }
+                resultsDiv.appendChild(resultItem);
+                
+                // If all files processed, reload samples
+                if (filesProcessed === files.length) {
+                    loadSamples(dictSafeName, className);
+                }
+            },
+            error: function() {
+                filesProcessed++;
+                
+                // Update progress
+                const progress = Math.round((filesProcessed / files.length) * 100);
+                progressBarInner.style.width = `${progress}%`;
+                
+                // Add error result
+                const resultItem = document.createElement('div');
+                resultItem.className = 'alert alert-danger mt-2';
+                resultItem.innerHTML = `<i class="bi bi-x-circle me-2"></i>${files[i].name}: Upload failed`;
+                resultsDiv.appendChild(resultItem);
+            }
+        });
+    }
+});
+
+// Add new class
+document.getElementById('addClassBtn').addEventListener('click', function() {
+    const className = document.getElementById('className').value;
+    
+    if (!className) {
+        alert('Please enter a class name');
+        return;
+    }
+    
+    // Convert dictionary name to safe name (lowercase with underscores)
+    const dictSafeName = '{{ dictionary.name }}'.replace(/ /g, '_').toLowerCase();
+    console.log("Using dictionary safe name:", dictSafeName);
+    
+    // Disable the button to prevent multiple submissions
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Adding...';
+    
+    $.ajax({
+        url: `/api/dictionary/${dictSafeName}/add_class`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ class_name: className }),
+        success: function(response) {
+            console.log("Add class response:", response);
+            if (response.success) {
+                alert('Class added successfully! The page will now refresh.');
+                // Force a hard refresh to ensure we get the latest data
+                window.location.href = window.location.href.split('#')[0];
+            } else {
+                alert('Error: ' + response.error);
+                // Re-enable the button
+                const btn = document.getElementById('addClassBtn');
+                btn.disabled = false;
+                btn.innerHTML = 'Add Class';
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Add class error:", textStatus, errorThrown);
+            console.error("Response text:", jqXHR.responseText);
+            alert('Failed to add class: ' + errorThrown);
+            // Re-enable the button
+            const btn = document.getElementById('addClassBtn');
+            btn.disabled = false;
+            btn.innerHTML = 'Add Class';
+        }
+    });
+});
+
+// Load samples for a class
+function loadSamples(dictionaryName, className) {
+    console.log(`Loading samples for dictionary: ${dictionaryName}, class: ${className}`);
+    
+    $.ajax({
+        url: `/api/dictionary/${dictionaryName}/${className}/samples`,
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                const samplesContainer = document.getElementById(`samples-${className}`);
+                
+                if (!samplesContainer) {
+                    console.error(`Container for class ${className} not found`);
+                    return;
+                }
+                
+                // Clear container
+                samplesContainer.innerHTML = '';
+                
+                if (!response.samples || response.samples.length === 0) {
+                    // Show no samples message
+                    samplesContainer.innerHTML = `
+                        <div class="col-12 no-samples">
+                            <i class="bi bi-music-note-beamed display-4 d-block mb-3 text-muted"></i>
+                            <h5>No samples yet</h5>
+                            <p class="text-muted">Record or upload audio samples for this class</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Add each sample
+                response.samples.forEach(sample => {
+                    const sampleCard = document.createElement('div');
+                    sampleCard.className = 'col';
+                    sampleCard.innerHTML = `
+                        <div class="card sound-card">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">${sample.name}</h5>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <button class="btn btn-sm btn-primary play-sample" 
+                                            data-path="${sample.path}">
+                                        <i class="bi bi-play-fill"></i> Play
+                                    </button>
+                                    <span class="badge bg-secondary">${Math.round(sample.size / 1024)} KB</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    samplesContainer.appendChild(sampleCard);
+                });
+                
+                // Add play functionality
+                samplesContainer.querySelectorAll('.play-sample').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const audioPath = this.getAttribute('data-path');
+                        const audio = new Audio(audioPath);
+                        audio.play();
+                    });
+                });
+            } else {
+                console.error("Error loading samples:", response.error);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Failed to load samples:", textStatus, errorThrown);
+        }
+    });
+}
+
+// Function to confirm dictionary deletion
+function confirmDeleteDictionary(name, displayName) {
+    document.getElementById('deleteTargetName').textContent = displayName;
+    // Convert to safe name
+    const safeName = name.replace(/ /g, '_').toLowerCase();
+    document.getElementById('confirmDeleteDictBtn').dataset.name = safeName;
+    new bootstrap.Modal(document.getElementById('deleteDictionaryModal')).show();
+}
+
+// Function to set the class to delete
+function setClassToDelete(className) {
+    $('#confirmDeleteClass').data('className', className);
+    document.getElementById('classNameToDelete').textContent = className;
+}
+
+// Update the confirmDeleteClass event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmDeleteClassBtn = document.getElementById('confirmDeleteClass');
+    if (confirmDeleteClassBtn) {
+        confirmDeleteClassBtn.addEventListener('click', function() {
+            const className = $(this).data('className');
+            if (!className) {
+                console.error('No class selected for deletion');
+                return;
+            }
+            
+            // Convert dictionary name to safe name (lowercase with underscores)
+            const dictSafeName = '{{ dictionary.name }}'.replace(/ /g, '_').toLowerCase();
+            
+            // Disable the button to prevent multiple submissions
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Deleting...';
+            
+            $.ajax({
+                url: `/api/dictionary/${dictSafeName}/${className}`,
+                type: 'DELETE',
+                success: function(response) {
+                    console.log("Delete class response:", response);
+                    if (response.success) {
+                        alert('Class deleted successfully! The page will now refresh.');
+                        // Force a hard refresh to ensure we get the latest data
+                        window.location.href = window.location.href.split('#')[0];
+                    } else {
+                        alert('Error: ' + response.error);
+                        // Re-enable the button
+                        const btn = document.getElementById('confirmDeleteClass');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Remove Class';
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Delete class error:", textStatus, errorThrown);
+                    console.error("Response text:", jqXHR.responseText);
+                    alert('Failed to delete class: ' + errorThrown);
+                    // Re-enable the button
+                    const btn = document.getElementById('confirmDeleteClass');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Remove Class';
+                }
+            });
+        });
+    }
+});
+
+// Also fix the confirmDeleteDictBtn functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmDeleteDictBtn = document.getElementById('confirmDeleteDictBtn');
+    if (confirmDeleteDictBtn) {
+        confirmDeleteDictBtn.addEventListener('click', function() {
+            const name = this.dataset.name;
+            console.log("Deleting dictionary with safe name:", name);
+            
+            $.ajax({
+                url: '/api/dictionary/' + name,
+                type: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = '/dictionaries/manage';
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Delete error:", textStatus, errorThrown);
+                    alert('Failed to delete dictionary: ' + errorThrown);
+                }
+            });
+        });
+    }
+});
+
+// Reset modals when hidden
+$('#recordAudioModal').on('hidden.bs.modal', function () {
+    // Stop recording if in progress
+    if (isRecording && mediaRecorder) {
+        mediaRecorder.stop();
+        isRecording = false;
+    }
+    
+    // Reset UI
+    document.getElementById('startRecording').disabled = false;
+    document.getElementById('stopRecording').disabled = true;
+    document.getElementById('playRecording').disabled = true;
+    document.getElementById('saveRecordingBtn').disabled = true;
+    document.getElementById('recordingStatus').textContent = 'Ready to record';
+    document.getElementById('recordingTime').style.display = 'none';
+    document.getElementById('recordingSampleName').value = '';
+    
+    // Reset wavesurfer
+    wavesurfer.empty();
+    
+    // Clear recording data
+    audioBlob = null;
+    recordedChunks = [];
+    
+    // Stop timer
+    clearInterval(recordingInterval);
+    recordingSeconds = 0;
+});
+
+$('#uploadAudioModal').on('hidden.bs.modal', function () {
+    // Reset form
+    document.getElementById('uploadAudioForm').reset();
+    
+    // Hide progress bar
+    document.querySelector('.progress').style.display = 'none';
+    
+    // Clear results
+    document.getElementById('uploadResults').innerHTML = '';
+});
+</script>
+{% endblock %} 

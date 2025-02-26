@@ -1,235 +1,426 @@
 {% extends "base.html" %}
 
+{% block title %}Manage Dictionaries - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.dictionary-card {
+    height: 100%;
+}
+.dictionary-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.class-badge {
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.sample-count {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+}
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    margin-top: 2rem;
+}
+.class-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.class-item {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 4px 8px;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.class-item .badge {
+    margin-right: 5px;
+}
+{% endblock %}
+
 {% block content %}
-<div class="dictionary-layout">
-    <div class="dictionary-main">
-        <h2><i class="fas fa-book"></i> Manage Dictionaries</h2>
-        
-        <div class="available-dictionaries mb-4">
-            <h3>Available Dictionaries</h3>
-            <div class="dictionary-list">
-                {% for dict in dictionaries %}
-                <div class="dictionary-item {% if dict.name == active_dictionary.name %}active{% endif %}">
-                    <div class="dictionary-info">
-                        <h4>{{ dict.name }}</h4>
-                        <small>{{ dict.sounds|length }} sounds</small>
-                    </div>
-                    <form method="POST" action="{{ url_for('ml.set_active_dictionary') }}" class="d-inline">
-                        <input type="hidden" name="name" value="{{ dict.name }}">
-                        <button type="submit" class="btn btn-sm {% if dict.name == active_dictionary.name %}btn-success{% else %}btn-outline-primary{% endif %}">
-                            {% if dict.name == active_dictionary.name %}
-                            <i class="fas fa-check"></i> Active
-                            {% else %}
-                            <i class="fas fa-check-circle"></i> Make Active
-                            {% endif %}
-                        </button>
-                    </form>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="current-dictionary">
-            <h3>Current Dictionary: {{ active_dictionary.name }}</h3>
-            <div class="sounds-list">
-                {% for sound in active_dictionary.sounds %}
-                <span class="sound-badge">{{ sound }}</span>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="edit-dictionary mt-4">
-            <h3>Edit Dictionary</h3>
-            <form method="POST" action="{{ url_for('ml.save_dictionary') }}">
-                <div class="form-group mb-3">
-                    <label for="name">Dictionary Name:</label>
-                    <input type="text" 
-                           id="name" 
-                           name="name" 
-                           class="form-control" 
-                           value="{{ active_dictionary.name }}" 
-                           required>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <label for="sounds">Sounds (comma-separated):</label>
-                    <input type="text" 
-                           id="sounds" 
-                           name="sounds" 
-                           class="form-control" 
-                           value="{{ active_dictionary.sounds|join(', ') }}" 
-                           required>
-                    <small class="form-text text-muted">
-                        Example: ah, eh, ee, oh, oo
-                    </small>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Save Dictionary
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title">
+                <i class="bi bi-folder2 me-2"></i>Sound Dictionaries
+            </h1>
+            <div>
+                <button id="syncCounts" class="btn btn-outline-info me-2">
+                    <i class="bi bi-sync me-1"></i>Sync Sample Counts
                 </button>
-            </form>
+                <a href="/dictionaries/create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>New Dictionary
+                </a>
+            </div>
         </div>
+        <p class="text-muted">Create and manage your custom sound dictionaries for training models</p>
     </div>
+</div>
 
-    <div class="stats-panel">
-        <h4>
-            <i class="fas fa-chart-bar"></i> Sound Statistics
-            <small class="refresh-status" id="refreshStatus"></small>
-        </h4>
-        <div class="stats-table-container">
-            <table class="stats-table" id="statsTable">
-                <thead>
-                    <tr>
-                        <th>Sound</th>
-                        <th>System</th>
-                        <th>User</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for sound in active_dictionary.sounds %}
-                    <tr>
-                        <td>{{ sound }}</td>
-                        <td>{{ sound_stats.get(sound, {}).get('system_total', 0) }}</td>
-                        <td>{{ sound_stats.get(sound, {}).get('user_total', 0) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newDictionaryModal">
+            <i class="bi bi-plus-circle me-2"></i>Create New Dictionary
+        </button>
+    </div>
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="dictionarySearch" placeholder="Search dictionaries...">
         </div>
     </div>
 </div>
 
-<style>
-.dictionary-layout {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
+<!-- Dictionaries Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="dictionariesGrid">
+    {% for dict in dictionaries %}
+    <div class="col dictionary-item">
+        <div class="card dictionary-card h-100">
+            <div class="card-body">
+                <div class="dictionary-actions dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/dictionaries/{{ dict.name }}/edit">
+                            <i class="bi bi-pencil me-2"></i>Edit
+                        </a></li>
+                        <li><a class="dropdown-item" href="/dictionaries/{{ dict.name }}/export">
+                            <i class="bi bi-download me-2"></i>Export
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" 
+                               onclick="confirmDelete('{{ dict.name }}', '{{ dict.name }}')">
+                            <i class="bi bi-trash me-2"></i>Delete
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <h5 class="card-title">{{ dict.name }}</h5>
+                <p class="card-text text-muted small">{{ dict.description }}</p>
+                
+                <div class="mt-3 mb-4">
+                    <strong class="d-block mb-2">Sound Classes:</strong>
+                    {% if dict.classes %}
+                        <div class="class-list">
+                            {% for class_detail in dict.class_details %}
+                            <div class="class-item">
+                                <span class="badge bg-primary class-badge">{{ class_detail.name }}</span>
+                                <span class="badge bg-secondary">{{ class_detail.sample_count }} samples</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-muted fst-italic">No classes yet</span>
+                    {% endif %}
+                </div>
+                
+                <span class="sample-count">
+                    <i class="bi bi-file-earmark-music me-1"></i>{{ dict.sample_count }} samples
+                </span>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="/dictionaries/{{ dict.name }}/view" class="btn btn-sm btn-primary">
+                        <i class="bi bi-folder2-open me-1"></i>Open
+                    </a>
+                    <a href="/training?dictionary={{ dict.name }}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-gear me-1"></i>Train Model
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-folder2 display-1 text-muted mb-3"></i>
+            <h3>No Dictionaries Yet</h3>
+            <p class="text-muted">Create your first dictionary to start organizing sound samples</p>
+            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newDictionaryModal">
+                <i class="bi bi-plus-circle me-2"></i>Create New Dictionary
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-.dictionary-main {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+<!-- New Dictionary Modal -->
+<div class="modal fade" id="newDictionaryModal" tabindex="-1" aria-labelledby="newDictionaryModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newDictionaryModalLabel">Create New Dictionary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="dictionaryFormError" class="alert alert-danger" style="display: none;"></div>
+                <form id="newDictionaryForm" method="POST" action="/api/dictionary/create">
+                    <div class="mb-3">
+                        <label for="dictionaryName" class="form-label">Dictionary Name</label>
+                        <input type="text" class="form-control" id="dictionaryName" name="name" required 
+                               placeholder="Enter a unique name for your dictionary">
+                        <div class="form-text">Name should be unique and contain only letters, numbers, and spaces.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dictionaryDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="dictionaryDescription" name="description" rows="3" 
+                                  placeholder="Optional description for your dictionary"></textarea>
+                    </div>
+                    <input type="hidden" name="redirect" value="/dictionaries/manage">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createDictionaryBtn">Create Dictionary</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-.stats-panel {
-    background: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: fit-content;
-}
-
-.stats-table-container {
-    margin-top: 1rem;
-    font-size: 0.85rem;
-}
-
-.stats-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.stats-table th,
-.stats-table td {
-    padding: 0.25rem 0.5rem;
-    text-align: center;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.stats-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-}
-
-.stats-table tr:hover {
-    background: #f8f9fa;
-}
-
-.sound-badge {
-    background: #e9ecef;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.9em;
-    color: #495057;
-    margin: 0.25rem;
-    display: inline-block;
-}
-
-.refresh-status {
-    font-size: 0.7rem;
-    color: #666;
-    margin-left: 0.5rem;
-    font-weight: normal;
-}
-
-.dictionary-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.dictionary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-}
-
-.dictionary-item.active {
-    border-color: #28a745;
-    background: #f0fff4;
-}
-
-.dictionary-info h4 {
-    margin: 0;
-    font-size: 1rem;
-}
-
-.dictionary-info small {
-    color: #666;
-}
-</style>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteDictionaryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the dictionary "<span id="deleteTargetName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone. All sound samples in this dictionary will be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block scripts %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-async function refreshStats() {
+$(document).ready(function() {
+    console.log("Document ready for dictionary management");
+
+    // Initialize modals
     try {
-        const response = await fetch("{{ url_for('ml.get_sound_stats') }}");
-        const stats = await response.json();
-        
-        const tbody = document.querySelector('#statsTable tbody');
-        tbody.innerHTML = '';
-        
-        for (const sound of {{ active_dictionary.sounds|tojson }}) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${sound}</td>
-                <td>${stats[sound].system_total}</td>
-                <td>${stats[sound].user_total}</td>
-            `;
-            tbody.appendChild(row);
+        const newDictionaryModalEl = document.getElementById('newDictionaryModal');
+        if (newDictionaryModalEl) {
+            const newDictionaryModal = new bootstrap.Modal(newDictionaryModalEl);
+            console.log("New dictionary modal initialized");
+            
+            // Clear form when modal is hidden
+            newDictionaryModalEl.addEventListener('hidden.bs.modal', function() {
+                console.log("Modal hidden, resetting form");
+                document.getElementById('newDictionaryForm').reset();
+                document.getElementById('dictionaryFormError').style.display = 'none';
+                const createBtn = document.getElementById('createDictionaryBtn');
+                if (createBtn) {
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = 'Create Dictionary';
+                }
+            });
+        } else {
+            console.error("Could not find new dictionary modal element");
         }
-        
-        document.getElementById('refreshStatus').textContent = 
-            `Updated: ${new Date().toLocaleTimeString()}`;
-    } catch (error) {
-        console.error('Error refreshing stats:', error);
+    } catch (e) {
+        console.error("Error initializing modals:", e);
     }
+    
+    // Create dictionary
+    console.log("Document ready, setting up dictionary creation handler");
+    const createDictionaryBtn = document.getElementById('createDictionaryBtn');
+    
+    if (createDictionaryBtn) {
+        console.log("Found createDictionaryBtn, adding click handler");
+        createDictionaryBtn.addEventListener('click', function() {
+            console.log("CREATE DICTIONARY BUTTON CLICKED");
+            
+            const form = document.getElementById('newDictionaryForm');
+            if (!form) {
+                console.error("Could not find newDictionaryForm");
+                return;
+            }
+            
+            const nameInput = document.getElementById('dictionaryName');
+            if (!nameInput) {
+                console.error("Dictionary name input element not found!");
+                return;
+            }
+            
+            const name = nameInput.value.trim();
+            console.log("Dictionary name:", name);
+            
+            if (!name) {
+                console.warn("Dictionary name is empty!");
+                // Show error
+                const errorDiv = document.getElementById('dictionaryFormError');
+                if (errorDiv) {
+                    errorDiv.textContent = "Dictionary name is required";
+                    errorDiv.style.display = 'block';
+                } else {
+                    alert("Dictionary name is required");
+                }
+                nameInput.focus();
+                return;
+            }
+            
+            // All good, submit the form
+            console.log("Submitting form to create dictionary");
+            form.submit();
+        });
+    } else {
+        console.error("Could not find createDictionaryBtn element!");
+    }
+    
+    // Search functionality
+    $('#dictionarySearch').on('input', function() {
+        const query = $(this).val().toLowerCase();
+        $('.dictionary-item').each(function() {
+            const dictName = $(this).find('.card-title').text().toLowerCase();
+            const dictDesc = $(this).find('.card-text').text().toLowerCase();
+            if (dictName.includes(query) || dictDesc.includes(query)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+});
+
+// Delete confirmation
+function confirmDelete(name, displayName) {
+    $('#deleteTargetName').text(displayName);
+    $('#confirmDeleteBtn').data('name', name);
+    new bootstrap.Modal(document.getElementById('deleteDictionaryModal')).show();
 }
 
-// Refresh every 5 seconds
-setInterval(refreshStats, 5000);
+$('#confirmDeleteBtn').click(function() {
+    const name = $(this).data('name');
+    
+    $.ajax({
+        url: '/api/dictionary/' + name,
+        type: 'DELETE',
+        success: function(response) {
+            if (response.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function() {
+            alert('Failed to delete dictionary');
+        }
+    });
+});
 </script>
-{% endblock scripts %}
 
-{% endblock content %} 
+{% block custom_scripts %}
+// Add this at the end of the custom_scripts block
+document.getElementById('syncCounts').addEventListener('click', function() {
+    // Show loading state
+    this.innerHTML = '<i class="bi bi-arrow-repeat me-1 spin"></i>Syncing...';
+    this.disabled = true;
+    
+    // Call the API to sync sample counts
+    fetch('/api/dictionary/sync_counts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button state
+        this.innerHTML = '<i class="bi bi-sync me-1"></i>Sync Sample Counts';
+        this.disabled = false;
+        
+        if (data.success) {
+            // Show success notification
+            showToast('Success', data.message, 'success');
+            
+            // Reload the page to show updated counts
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            // Show error notification
+            showToast('Error', data.error || 'Failed to sync sample counts', 'danger');
+        }
+    })
+    .catch(error => {
+        // Reset button state and show error
+        this.innerHTML = '<i class="bi bi-sync me-1"></i>Sync Sample Counts';
+        this.disabled = false;
+        showToast('Error', 'Failed to sync sample counts: ' + error, 'danger');
+    });
+});
+
+// Helper function to show toast notifications
+function showToast(title, message, type) {
+    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+    
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+    
+    toastEl.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>${title}</strong>: ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toastEl);
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+    
+    // Remove toast after it's hidden
+    toastEl.addEventListener('hidden.bs.toast', function () {
+        toastEl.remove();
+    });
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1050';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Add a CSS class for spinning icon
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+{% endblock %} 

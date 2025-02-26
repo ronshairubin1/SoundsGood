@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}Model Training - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.model-selection-card {
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+.model-selection-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.model-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+.training-parameters {
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+.dictionary-selection {
+    margin-bottom: 2rem;
+}
+.training-status {
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-top: 2rem;
+    background-color: #f8f9fa;
+}
+.progress-container {
+    margin: 1.5rem 0;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-gear me-2"></i>Model Training
+        </h1>
+        <p class="text-muted">Train machine learning models on your sound dictionaries to classify sounds</p>
+    </div>
+</div>
+
+<div class="dictionary-selection">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-folder2 me-2"></i>Select Dictionary
+            </h5>
+            <p class="text-muted">Choose a dictionary to use for training your model</p>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <select class="form-select" id="dictionarySelect">
+                        <option value="">-- Select a dictionary --</option>
+                        {% for dict in dictionaries %}
+                        <option value="{{ dict.name }}" {% if selected_dict == dict.name %}selected{% endif %}>
+                            {{ dict.name }} ({{ dict.classes|length }} classes, {{ dict.sample_count }} samples)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <a href="/dictionaries/manage" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Create New Dictionary
+                    </a>
+                </div>
+            </div>
+            
+            <div class="selected-dictionary-info mt-4" id="dictionaryInfo" style="display: none;">
+                <h6>Dictionary Information:</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Classes:</strong> <span id="classCount">0</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Samples:</strong> <span id="sampleCount">0</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Created by:</strong> <span id="createdBy">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card model-selection-card">
+            <div class="card-body text-center">
+                <div class="model-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h4>CNN Model</h4>
+                <p class="text-muted">Convolutional Neural Network for audio classification.</p>
+                <p>Good for complex sound patterns.</p>
+                <button class="btn btn-primary mt-2" onclick="selectModel('cnn')">
+                    <i class="bi bi-gear me-1"></i>Select CNN
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card model-selection-card">
+            <div class="card-body text-center">
+                <div class="model-icon">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <h4>Random Forest</h4>
+                <p class="text-muted">Random Forest classifier using audio features.</p>
+                <p>Fast training with good accuracy.</p>
+                <button class="btn btn-primary mt-2" onclick="selectModel('rf')">
+                    <i class="bi bi-gear me-1"></i>Select Random Forest
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card model-selection-card">
+            <div class="card-body text-center">
+                <div class="model-icon">
+                    <i class="bi bi-layers"></i>
+                </div>
+                <h4>Ensemble Model</h4>
+                <p class="text-muted">Combination of CNN and Random Forest.</p>
+                <p>Best accuracy by leveraging both models.</p>
+                <button class="btn btn-primary mt-2" onclick="selectModel('ensemble')">
+                    <i class="bi bi-gear me-1"></i>Select Ensemble
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="trainingParameters" class="training-parameters" style="display: none;">
+    <h3>Training Parameters</h3>
+    <div class="card">
+        <div class="card-body">
+            <form id="trainingForm">
+                <input type="hidden" id="modelType" name="model_type" value="">
+                <input type="hidden" id="dictName" name="dict_name" value="">
+                
+                <div class="row mb-3" id="cnnParameters" style="display: none;">
+                    <div class="col-md-4">
+                        <label for="cnnEpochs" class="form-label">Epochs</label>
+                        <input type="number" class="form-control" id="cnnEpochs" name="epochs" value="50" min="1" max="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cnnBatchSize" class="form-label">Batch Size</label>
+                        <input type="number" class="form-control" id="cnnBatchSize" name="batch_size" value="32" min="1" max="128">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cnnLearningRate" class="form-label">Learning Rate</label>
+                        <input type="number" class="form-control" id="cnnLearningRate" name="learning_rate" value="0.001" step="0.0001" min="0.0001" max="0.1">
+                    </div>
+                </div>
+                
+                <div class="row mb-3" id="rfParameters" style="display: none;">
+                    <div class="col-md-6">
+                        <label for="rfEstimators" class="form-label">Number of Estimators</label>
+                        <input type="number" class="form-control" id="rfEstimators" name="n_estimators" value="100" min="10" max="500">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="rfMaxDepth" class="form-label">Max Depth</label>
+                        <input type="number" class="form-control" id="rfMaxDepth" name="max_depth" value="10" min="1" max="100">
+                        <div class="form-text">Leave empty for unlimited depth</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3" id="ensembleParameters" style="display: none;">
+                    <div class="col-md-6">
+                        <label for="rfWeight" class="form-label">Random Forest Weight</label>
+                        <input type="range" class="form-range" id="rfWeight" name="rf_weight" min="0" max="1" step="0.1" value="0.5">
+                        <div class="d-flex justify-content-between">
+                            <span>0.0 (CNN only)</span>
+                            <span>0.5 (Equal)</span>
+                            <span>1.0 (RF only)</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="useClassWeights" name="use_class_weights" checked>
+                            <label class="form-check-label" for="useClassWeights">
+                                Use class weights (for imbalanced data)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-success" id="startTrainingBtn">
+                        <i class="bi bi-play-fill me-1"></i>Start Training
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="trainingStatus" class="training-status" style="display: none;">
+    <h3><i class="bi bi-arrow-repeat me-2"></i>Training in Progress</h3>
+    <div class="progress progress-container">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" id="trainingProgress" role="progressbar" style="width: 0%"></div>
+    </div>
+    <div id="trainingLog" class="mt-3">
+        <p class="mb-2"><strong>Status:</strong> <span id="statusMessage">Initializing...</span></p>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>Training your model may take several minutes depending on the size of your dictionary and the chosen parameters.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedModel = null;
+let selectedDictionary = null;
+let trainingInterval = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Dictionary selection
+    const dictionarySelect = document.getElementById('dictionarySelect');
+    if (dictionarySelect) {
+        dictionarySelect.addEventListener('change', function() {
+            selectedDictionary = this.value;
+            document.getElementById('dictName').value = selectedDictionary;
+            
+            if (selectedDictionary) {
+                // Show dictionary info
+                updateDictionaryInfo(selectedDictionary);
+                document.getElementById('dictionaryInfo').style.display = 'block';
+                
+                // Enable model selection buttons
+                document.querySelectorAll('.model-selection-card button').forEach(btn => {
+                    btn.disabled = false;
+                });
+            } else {
+                document.getElementById('dictionaryInfo').style.display = 'none';
+                
+                // Disable model selection buttons
+                document.querySelectorAll('.model-selection-card button').forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                // Hide training parameters
+                document.getElementById('trainingParameters').style.display = 'none';
+            }
+        });
+        
+        // Trigger change event if a dictionary is pre-selected
+        if (dictionarySelect.value) {
+            dictionarySelect.dispatchEvent(new Event('change'));
+        } else {
+            // Initially disable model selection buttons
+            document.querySelectorAll('.model-selection-card button').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+    }
+    
+    // Start training button
+    const startTrainingBtn = document.getElementById('startTrainingBtn');
+    if (startTrainingBtn) {
+        startTrainingBtn.addEventListener('click', startTraining);
+    }
+    
+    // Check if training is in progress
+    checkTrainingStatus();
+});
+
+function selectModel(modelType) {
+    selectedModel = modelType;
+    document.getElementById('modelType').value = modelType;
+    
+    // Show the training parameters section
+    document.getElementById('trainingParameters').style.display = 'block';
+    
+    // Hide all parameter sections
+    document.getElementById('cnnParameters').style.display = 'none';
+    document.getElementById('rfParameters').style.display = 'none';
+    document.getElementById('ensembleParameters').style.display = 'none';
+    
+    // Show relevant parameter section
+    if (modelType === 'cnn') {
+        document.getElementById('cnnParameters').style.display = 'flex';
+    } else if (modelType === 'rf') {
+        document.getElementById('rfParameters').style.display = 'flex';
+    } else if (modelType === 'ensemble') {
+        document.getElementById('cnnParameters').style.display = 'flex';
+        document.getElementById('rfParameters').style.display = 'flex';
+        document.getElementById('ensembleParameters').style.display = 'flex';
+    }
+    
+    // Highlight selected model card
+    document.querySelectorAll('.model-selection-card').forEach(card => {
+        card.classList.remove('border-primary');
+    });
+    
+    // Find the clicked button's parent card and highlight it
+    const selectedCard = document.querySelector(`button[onclick="selectModel('${modelType}')"]`).closest('.model-selection-card');
+    selectedCard.classList.add('border-primary');
+    
+    // Scroll to training parameters
+    document.getElementById('trainingParameters').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateDictionaryInfo(dictName) {
+    // This would usually fetch info from the server
+    // For now, we'll use the data in the select element
+    const option = document.querySelector(`#dictionarySelect option[value="${dictName}"]`);
+    if (option) {
+        const text = option.textContent;
+        const match = text.match(/\((\d+) classes, (\d+) samples\)/);
+        if (match) {
+            document.getElementById('classCount').textContent = match[1];
+            document.getElementById('sampleCount').textContent = match[2];
+        }
+        document.getElementById('createdBy').textContent = 'You';
+    }
+}
+
+function startTraining() {
+    if (!selectedDictionary || !selectedModel) {
+        alert('Please select both a dictionary and a model type.');
+        return;
+    }
+    
+    // Get form data
+    const form = document.getElementById('trainingForm');
+    if (!form) {
+        console.error("Training form element not found!");
+        alert('Error: Could not find training form element.');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    
+    // Add audio_dir
+    formData.append('audio_dir', `/dictionaries/${selectedDictionary}`);
+    
+    // Convert to an object for JSON
+    const jsonData = {};
+    formData.forEach((value, key) => {
+        // Convert numeric values
+        if (!isNaN(value) && value !== '') {
+            if (value.includes('.')) {
+                jsonData[key] = parseFloat(value);
+            } else {
+                jsonData[key] = parseInt(value);
+            }
+        } else if (value === 'true' || value === 'false') {
+            jsonData[key] = value === 'true';
+        } else if (value !== '') {
+            jsonData[key] = value;
+        }
+    });
+    
+    console.log("Sending training request with data:", jsonData);
+    
+    // Make API request
+    fetch('/api/ml/train', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Training started successfully");
+            // Show training status
+            const trainingStatus = document.getElementById('trainingStatus');
+            if (!trainingStatus) {
+                console.error("Training status element not found!");
+                alert('Error: Could not find training status element.');
+                return;
+            }
+            trainingStatus.style.display = 'block';
+            
+            const statusMessage = document.getElementById('statusMessage');
+            if (!statusMessage) {
+                console.error("Status message element not found!");
+                alert('Error: Could not find status message element.');
+                return;
+            }
+            statusMessage.textContent = 'Training started...';
+            
+            const trainingProgress = document.getElementById('trainingProgress');
+            if (!trainingProgress) {
+                console.error("Training progress element not found!");
+                alert('Error: Could not find training progress element.');
+                return;
+            }
+            trainingProgress.style.width = '5%';
+            
+            // Disable form elements
+            const dictionarySelect = document.getElementById('dictionarySelect');
+            if (dictionarySelect) {
+                dictionarySelect.disabled = true;
+            } else {
+                console.warn("Dictionary select element not found");
+            }
+            
+            document.querySelectorAll('.model-selection-card button').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            const startTrainingBtn = document.getElementById('startTrainingBtn');
+            if (startTrainingBtn) {
+                startTrainingBtn.disabled = true;
+            } else {
+                console.warn("Start training button not found");
+            }
+            
+            // Start polling for status
+            startStatusPolling();
+            
+            // Scroll to status
+            trainingStatus.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            console.error("Error starting training:", data.error);
+            alert('Error starting training: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error starting training:', error);
+        alert('Error starting training. See console for details.');
+    });
+}
+
+function startStatusPolling() {
+    // Clear any existing interval
+    if (trainingInterval) {
+        console.log("Clearing existing training interval");
+        clearInterval(trainingInterval);
+        trainingInterval = null;
+    }
+    
+    console.log("Starting status polling (every 2 seconds)");
+    
+    // Poll every 2 seconds
+    trainingInterval = setInterval(checkTrainingStatus, 2000);
+}
+
+function checkTrainingStatus() {
+    console.log("Checking training status...");
+    
+    fetch('/api/ml/train/status')
+    .then(response => response.json())
+    .then(data => {
+        console.log("Training status response:", data);
+        
+        if (data.success) {
+            if (data.is_training) {
+                // Show training status
+                const trainingStatus = document.getElementById('trainingStatus');
+                if (!trainingStatus) {
+                    console.error("Training status element not found during status check");
+                    return;
+                }
+                trainingStatus.style.display = 'block';
+                
+                // Update progress
+                fetch('/api/ml/train/stats')
+                .then(response => response.json())
+                .then(statsData => {
+                    console.log("Training stats response:", statsData);
+                    
+                    if (statsData.success && statsData.stats) {
+                        const stats = statsData.stats;
+                        
+                        // Update status message
+                        const statusMessage = document.getElementById('statusMessage');
+                        if (!statusMessage) {
+                            console.error("Status message element not found during stats update");
+                            return;
+                        }
+                        
+                        if (stats.model_type) {
+                            let statusMessageText = `Training ${stats.model_type.toUpperCase()} model`;
+                            
+                            // Safely check for history and epochs
+                            if (stats.history && typeof stats.history.epochs !== 'undefined') {
+                                const totalEpochs = stats.cnn_params && typeof stats.cnn_params.epochs !== 'undefined' 
+                                    ? stats.cnn_params.epochs 
+                                    : 50;
+                                statusMessageText += ` (Epoch ${stats.history.epochs}/${totalEpochs})`;
+                            }
+                            
+                            // Safely set the text content
+                            try {
+                                statusMessage.textContent = statusMessageText;
+                            } catch (e) {
+                                console.error("Error setting status message text:", e);
+                            }
+                            
+                            // Update progress bar
+                            const trainingProgress = document.getElementById('trainingProgress');
+                            if (!trainingProgress) {
+                                console.error("Training progress element not found during stats update");
+                                return;
+                            }
+                            
+                            let progress = 5; // Start at 5%
+                            if (stats.history && typeof stats.history.epochs !== 'undefined') {
+                                const totalEpochs = stats.cnn_params && typeof stats.cnn_params.epochs !== 'undefined'
+                                    ? stats.cnn_params.epochs 
+                                    : 50;
+                                progress = Math.min(95, Math.floor((stats.history.epochs / totalEpochs) * 100));
+                            }
+                            
+                            // Safely set the width
+                            try {
+                                trainingProgress.style.width = `${progress}%`;
+                            } catch (e) {
+                                console.error("Error setting progress bar width:", e);
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching training stats:', error);
+                });
+            } else {
+                console.log("Training completed");
+                
+                // Clear interval
+                if (trainingInterval) {
+                    clearInterval(trainingInterval);
+                    trainingInterval = null;
+                }
+                
+                // Update UI elements after training completion
+                try {
+                    // Update progress bar to 100%
+                    const trainingProgress = document.getElementById('trainingProgress');
+                    if (trainingProgress) {
+                        try {
+                            trainingProgress.style.width = '100%';
+                            trainingProgress.classList.remove('progress-bar-animated');
+                        } catch (e) {
+                            console.error("Error updating progress bar after completion:", e);
+                        }
+                    } else {
+                        console.error("Training progress element not found during completion");
+                    }
+                    
+                    // Update status message
+                    const statusMessage = document.getElementById('statusMessage');
+                    if (statusMessage) {
+                        try {
+                            statusMessage.textContent = 'Training complete!';
+                        } catch (e) {
+                            console.error("Error setting status message after completion:", e);
+                        }
+                    } else {
+                        console.error("Status message element not found during completion");
+                    }
+                    
+                    // Add a success message
+                    const logDiv = document.getElementById('trainingLog');
+                    if (logDiv) {
+                        try {
+                            logDiv.innerHTML = `
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle-fill me-2"></i>Training completed successfully! 
+                                    <a href="/predict" class="alert-link">Try making predictions with your model</a>
+                                </div>
+                                <button class="btn btn-primary mt-3" onclick="window.location.reload()">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Train Another Model
+                                </button>
+                            `;
+                        } catch (e) {
+                            console.error("Error updating training log after completion:", e);
+                        }
+                    } else {
+                        console.error("Training log element not found during completion");
+                    }
+                    
+                    // Re-enable form elements
+                    const dictionarySelect = document.getElementById('dictionarySelect');
+                    if (dictionarySelect) {
+                        try {
+                            dictionarySelect.disabled = false;
+                        } catch (e) {
+                            console.error("Error re-enabling dictionary select:", e);
+                        }
+                    }
+                    
+                    try {
+                        document.querySelectorAll('.model-selection-card button').forEach(btn => {
+                            btn.disabled = false;
+                        });
+                    } catch (e) {
+                        console.error("Error re-enabling model selection buttons:", e);
+                    }
+                    
+                    const startTrainingBtn = document.getElementById('startTrainingBtn');
+                    if (startTrainingBtn) {
+                        try {
+                            startTrainingBtn.disabled = false;
+                        } catch (e) {
+                            console.error("Error re-enabling start training button:", e);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error updating UI after training completion:", e);
+                }
+            }
+        } else {
+            console.error("Error in training status response:", data.error || "Unknown error");
+        }
+    })
+    .catch(error => {
+        console.error('Error checking training status:', error);
+    });
+}
+</script>
+{% endblock %} 

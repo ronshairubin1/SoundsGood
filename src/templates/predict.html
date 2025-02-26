@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}Sound Prediction - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.model-card {
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+.model-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.recording-controls {
+    text-align: center;
+    margin: 2rem 0;
+}
+.waveform-container {
+    height: 100px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+.audio-controls button {
+    margin: 0 0.5rem;
+}
+.prediction-result {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+.result-label {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.probability-bar {
+    height: 2rem;
+    margin-bottom: 1rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-soundwave me-2"></i>Sound Prediction
+        </h1>
+        <p class="text-muted">Classify sounds using your trained models</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cpu me-2"></i>Select a Model
+                </h5>
+                <p class="text-muted">Choose a trained model to use for sound classification</p>
+                
+                <select class="form-select mb-3" id="modelSelect">
+                    <option value="">-- Select a model --</option>
+                    <!-- Models will be loaded via JavaScript -->
+                </select>
+                
+                <div id="modelInfo" class="mt-3" style="display: none;">
+                    <h6>Model Information:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Type:</strong> <span id="modelType">-</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Classes:</strong> <span id="modelClasses">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-mic-fill me-2"></i>Audio Source
+                </h5>
+                <p class="text-muted">Record a sound or upload an audio file</p>
+                
+                <div class="d-flex justify-content-around">
+                    <button class="btn btn-primary btn-lg" id="recordButton">
+                        <i class="bi bi-mic-fill me-2"></i>Record Sound
+                    </button>
+                    
+                    <div class="vr mx-3"></div>
+                    
+                    <label for="audioFileInput" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-upload me-2"></i>Upload Audio
+                    </label>
+                    <input type="file" id="audioFileInput" accept="audio/*" class="d-none">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recording interface -->
+<div id="recordingInterface" class="card" style="display: none;">
+    <div class="card-body">
+        <h5 class="card-title">
+            <i class="bi bi-mic-fill me-2"></i>Recording Interface
+        </h5>
+        
+        <div class="recording-controls">
+            <div class="waveform-container" id="waveform">
+                <!-- Waveform will be rendered here -->
+            </div>
+            
+            <div class="audio-controls">
+                <button id="startRecording" class="btn btn-danger">
+                    <i class="bi bi-record-fill me-1"></i>Start Recording
+                </button>
+                <button id="stopRecording" class="btn btn-secondary" disabled>
+                    <i class="bi bi-stop-fill me-1"></i>Stop
+                </button>
+                <button id="playRecording" class="btn btn-primary" disabled>
+                    <i class="bi bi-play-fill me-1"></i>Play
+                </button>
+            </div>
+            
+            <div class="mt-3">
+                <span id="recordingStatus" class="text-muted">Ready to record</span>
+                <span id="recordingTime" class="badge bg-danger ms-2" style="display: none;">00:00</span>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center mt-3">
+            <button id="predictButton" class="btn btn-success btn-lg" disabled>
+                <i class="bi bi-soundwave me-1"></i>Classify Sound
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Prediction results -->
+<div id="predictionResult" class="prediction-result" style="display: none;">
+    <h3><i class="bi bi-check-circle-fill me-2"></i>Prediction Results</h3>
+    
+    <div class="result-label text-center">
+        <span id="predictedClass">Unknown</span>
+        <div class="fs-6 text-muted" id="confidenceValue">0% confidence</div>
+    </div>
+    
+    <div id="topPredictions">
+        <!-- Top predictions will be displayed here -->
+    </div>
+    
+    <div class="mt-4 text-center">
+        <button class="btn btn-primary" onclick="window.location.reload()">
+            <i class="bi bi-arrow-repeat me-1"></i>Try Another Sound
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Wavesurfer.js for audio visualization -->
+<script src="https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.js"></script>
+
+<script>
+let wavesurfer;
+let audioBlob;
+let mediaRecorder;
+let recordedChunks = [];
+let isRecording = false;
+let recordingInterval;
+let recordingSeconds = 0;
+let selectedModel = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize wavesurfer
+    wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'rgba(67, 97, 238, 0.3)',
+        progressColor: 'rgba(67, 97, 238, 0.8)',
+        cursorColor: '#4361ee',
+        barWidth: 2,
+        barRadius: 2,
+        cursorWidth: 1,
+        height: 80,
+        barGap: 1
+    });
+    
+    // Model selection
+    const modelSelect = document.getElementById('modelSelect');
+    modelSelect.addEventListener('change', function() {
+        selectedModel = this.value;
+        
+        if (selectedModel) {
+            // Show model info and enable recording interface
+            document.getElementById('modelInfo').style.display = 'block';
+            document.getElementById('recordingInterface').style.display = 'block';
+            
+            // Scroll to recording interface
+            document.getElementById('recordingInterface').scrollIntoView({ behavior: 'smooth' });
+            
+            // TODO: In a real implementation, fetch model info from the server
+            document.getElementById('modelType').textContent = selectedModel.includes('cnn') ? 'CNN' : 
+                                                             selectedModel.includes('rf') ? 'Random Forest' : 'Ensemble';
+            document.getElementById('modelClasses').textContent = '3+ sound classes';
+        } else {
+            document.getElementById('modelInfo').style.display = 'none';
+            document.getElementById('recordingInterface').style.display = 'none';
+        }
+    });
+    
+    // Load available models
+    loadAvailableModels();
+    
+    // Recording functionality
+    document.getElementById('recordButton').addEventListener('click', function() {
+        if (!selectedModel) {
+            alert('Please select a model first');
+            return;
+        }
+        
+        document.getElementById('recordingInterface').style.display = 'block';
+        document.getElementById('recordingInterface').scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    document.getElementById('startRecording').addEventListener('click', startRecording);
+    document.getElementById('stopRecording').addEventListener('click', stopRecording);
+    document.getElementById('playRecording').addEventListener('click', playRecording);
+    document.getElementById('predictButton').addEventListener('click', makePrediction);
+    
+    // File upload
+    document.getElementById('audioFileInput').addEventListener('change', handleFileUpload);
+});
+
+function loadAvailableModels() {
+    // This would fetch from the server in a real implementation
+    // For now, we'll add some placeholder models
+    const modelSelect = document.getElementById('modelSelect');
+    
+    // Clear existing options except the first one
+    while (modelSelect.options.length > 1) {
+        modelSelect.remove(1);
+    }
+    
+    // Add placeholder models
+    const placeholderModels = [
+        { name: 'common_sounds_cnn', displayName: 'Common Sounds (CNN)' },
+        { name: 'speech_samples_rf', displayName: 'Speech Samples (Random Forest)' },
+        { name: 'all_classes_ensemble', displayName: 'All Classes (Ensemble)' }
+    ];
+    
+    placeholderModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.name;
+        option.textContent = model.displayName;
+        modelSelect.appendChild(option);
+    });
+    
+    // In a real implementation, we would fetch models from the server:
+    /*
+    fetch('/api/ml/models')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add models by type
+            Object.entries(data.models).forEach(([type, models]) => {
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = `${model} (${type.toUpperCase()})`;
+                    modelSelect.appendChild(option);
+                });
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading models:', error);
+    });
+    */
+}
+
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                // Create audio blob and set up wavesurfer
+                audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                wavesurfer.load(audioUrl);
+                
+                // Update UI
+                document.getElementById('playRecording').disabled = false;
+                document.getElementById('predictButton').disabled = false;
+                document.getElementById('recordingStatus').textContent = 'Recording ready';
+                document.getElementById('recordingTime').style.display = 'none';
+                
+                // Stop the recording timer
+                clearInterval(recordingInterval);
+                recordingSeconds = 0;
+            };
+            
+            // Start recording
+            recordedChunks = [];
+            mediaRecorder.start();
+            isRecording = true;
+            
+            // Update UI
+            document.getElementById('startRecording').disabled = true;
+            document.getElementById('stopRecording').disabled = false;
+            document.getElementById('recordingStatus').textContent = 'Recording...';
+            document.getElementById('recordingTime').style.display = 'inline';
+            
+            // Start recording timer
+            recordingInterval = setInterval(() => {
+                recordingSeconds++;
+                const minutes = Math.floor(recordingSeconds / 60);
+                const seconds = recordingSeconds % 60;
+                document.getElementById('recordingTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        })
+        .catch(err => {
+            console.error('Error accessing microphone:', err);
+            alert('Could not access the microphone. Please check your permissions.');
+        });
+}
+
+function stopRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        // Update UI
+        document.getElementById('startRecording').disabled = false;
+        document.getElementById('stopRecording').disabled = true;
+    }
+}
+
+function playRecording() {
+    wavesurfer.playPause();
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!selectedModel) {
+        alert('Please select a model first');
+        return;
+    }
+    
+    // Create a blob URL and load it into wavesurfer
+    const url = URL.createObjectURL(file);
+    wavesurfer.load(url);
+    
+    // Store the file as audioBlob for prediction
+    audioBlob = file;
+    
+    // Show recording interface and update UI
+    document.getElementById('recordingInterface').style.display = 'block';
+    document.getElementById('playRecording').disabled = false;
+    document.getElementById('predictButton').disabled = false;
+    document.getElementById('recordingStatus').textContent = 'Audio file loaded';
+    
+    // Scroll to recording interface
+    document.getElementById('recordingInterface').scrollIntoView({ behavior: 'smooth' });
+}
+
+function makePrediction() {
+    if (!audioBlob || !selectedModel) {
+        alert('Please record audio or upload a file, and select a model');
+        return;
+    }
+    
+    // Disable predict button to prevent multiple submissions
+    document.getElementById('predictButton').disabled = true;
+    document.getElementById('predictButton').innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Analyzing...';
+    
+    // In a real implementation, we would send the audio to the server
+    // For now, we'll simulate a prediction result
+    setTimeout(() => {
+        showPredictionResults({
+            success: true,
+            predicted_class: 'Cat',
+            probability: 0.87,
+            top_predictions: [
+                { sound: 'Cat', probability: 0.87 },
+                { sound: 'Dog', probability: 0.08 },
+                { sound: 'Bird', probability: 0.05 }
+            ]
+        });
+    }, 2000);
+    
+    /*
+    // Create form data
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+    formData.append('model_type', selectedModel.includes('cnn') ? 'cnn' : 
+                              selectedModel.includes('rf') ? 'rf' : 'ensemble');
+    formData.append('model_name', selectedModel);
+    formData.append('top_n', 3);
+    
+    // Send to server
+    fetch('/api/ml/predict', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        showPredictionResults(data);
+    })
+    .catch(error => {
+        console.error('Error making prediction:', error);
+        alert('Error making prediction. See console for details.');
+        
+        // Re-enable predict button
+        document.getElementById('predictButton').disabled = false;
+        document.getElementById('predictButton').innerHTML = '<i class="bi bi-soundwave me-1"></i>Classify Sound';
+    });
+    */
+}
+
+function showPredictionResults(result) {
+    if (result.success) {
+        // Update the main prediction
+        document.getElementById('predictedClass').textContent = result.predicted_class;
+        
+        // Format the confidence percentage
+        const confidence = Math.round(result.probability * 100);
+        document.getElementById('confidenceValue').textContent = `${confidence}% confidence`;
+        
+        // Display top predictions
+        const topPredictionsDiv = document.getElementById('topPredictions');
+        topPredictionsDiv.innerHTML = '';
+        
+        result.top_predictions.forEach(pred => {
+            const probability = Math.round(pred.probability * 100);
+            const barColor = pred.sound === result.predicted_class ? 'bg-success' : 'bg-primary';
+            
+            topPredictionsDiv.innerHTML += `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>${pred.sound}</span>
+                        <span>${probability}%</span>
+                    </div>
+                    <div class="progress probability-bar">
+                        <div class="progress-bar ${barColor}" style="width: ${probability}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Show the results
+        document.getElementById('predictionResult').style.display = 'block';
+        document.getElementById('predictionResult').scrollIntoView({ behavior: 'smooth' });
+    } else {
+        alert('Error making prediction: ' + result.error);
+        
+        // Re-enable predict button
+        document.getElementById('predictButton').disabled = false;
+        document.getElementById('predictButton').innerHTML = '<i class="bi bi-soundwave me-1"></i>Classify Sound';
+    }
+}
+</script>
+{% endblock %} 
