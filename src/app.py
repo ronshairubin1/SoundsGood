@@ -15,6 +15,7 @@ from config import Config  # Use the real config.py
 
 # Import our new ML blueprint
 from routes.ml_routes import ml_bp
+from src.api.dictionary_api import dictionary_bp
 
 # --------------------------------------------------------------------
 # Set up Flask
@@ -30,6 +31,9 @@ CORS(app, supports_credentials=True)
 
 # Register the ML blueprint at /ml
 app.register_blueprint(ml_bp, url_prefix='/ml')
+
+# Register the dictionary blueprint
+app.register_blueprint(dictionary_bp)
 
 # --------------------------------------------------------------------
 # Logging
@@ -131,3 +135,21 @@ def unauthorized_error(e):
 @app.errorhandler(404)
 def not_found_error(e):
     return render_template('404.html'), 404
+
+@app.route('/dictionaries/manage')
+def manage_dictionaries():
+    """Render the dictionary management page."""
+    # In a real app, we'd fetch dictionaries from the service
+    return render_template('manage_dictionaries.html', dictionaries=[])
+
+@app.route('/dictionaries/<dict_id>/view')
+def view_dictionary(dict_id):
+    """Render the dictionary view page."""
+    # In a real app, we'd fetch the dictionary from the service
+    return render_template('dictionary_view.html', dictionary={})
+
+@app.route('/dictionaries/<dict_id>/edit')
+def edit_dictionary(dict_id):
+    """Render the dictionary edit page."""
+    # In a real app, we'd fetch the dictionary from the service
+    return render_template('dictionary_edit.html', dictionary={})

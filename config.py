@@ -12,10 +12,18 @@ class Config:
     TEMP_DIR = os.path.join(BASE_DIR, 'temp')
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     DICTIONARIES_DIR = os.path.join(BASE_DIR, 'dictionaries')
+    
+    # New sound directories structure
+    SOUNDS_DATA_DIR = os.path.join(DATA_DIR, 'sounds')
+    TRAINING_SOUNDS_DIR = os.path.join(SOUNDS_DATA_DIR, 'training_sounds')
+    TEMP_SOUNDS_DIR = os.path.join(SOUNDS_DATA_DIR, 'temp_sounds')
+    
+    # Legacy sound directory - will be deprecated
     SOUNDS_DIR = os.path.join(BASE_DIR, 'sounds')
     
     # Ensure all directories exist
-    for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, SOUNDS_DIR]:
+    for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, 
+                     SOUNDS_DATA_DIR, TRAINING_SOUNDS_DIR, TEMP_SOUNDS_DIR]:
         os.makedirs(directory, exist_ok=True)
     
     # Audio processing settings
@@ -68,6 +76,10 @@ class Config:
             cls.TEMP_DIR,
             cls.DATA_DIR,
             cls.DICTIONARIES_DIR,
+            cls.SOUNDS_DATA_DIR,
+            cls.TRAINING_SOUNDS_DIR,
+            cls.TEMP_SOUNDS_DIR,
+            # Keep legacy directory for backward compatibility
             cls.SOUNDS_DIR
         ]
         

@@ -7,6 +7,10 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from flask_cors import CORS
+import time
+import re
+import threading
+import traceback
 
 from config import Config
 
@@ -34,7 +38,8 @@ CORS(app, supports_credentials=True)
 
 # Ensure required directories exist
 os.makedirs(Config.TEMP_DIR, exist_ok=True)
-os.makedirs(Config.SOUNDS_DIR, exist_ok=True)
+os.makedirs(Config.SOUNDS_DIR, exist_ok=True)  # Keep for legacy compatibility
+os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)  # New sound directory structure
 
 # Register blueprints - NOTE: we're not using the old ml_bp anymore
 app.register_blueprint(dictionary_bp)
@@ -67,12 +72,22 @@ def init_app_directories():
     """
     Initialize required application directories
     """
-    # Create the sounds directory if it doesn't exist
+    # Create the sounds directory if it doesn't exist (legacy directory)
     if not os.path.exists(Config.SOUNDS_DIR):
         os.makedirs(Config.SOUNDS_DIR, exist_ok=True)
-        app.logger.info(f"Created sounds directory: {Config.SOUNDS_DIR}")
+        app.logger.info(f"Created legacy sounds directory: {Config.SOUNDS_DIR}")
     
-    # Create the temp directory if it doesn't exist
+    # Create the new training sounds directory
+    if not os.path.exists(Config.TRAINING_SOUNDS_DIR):
+        os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
+        app.logger.info(f"Created training sounds directory: {Config.TRAINING_SOUNDS_DIR}")
+    
+    # Create the temp sounds directory
+    if not os.path.exists(Config.TEMP_SOUNDS_DIR):
+        os.makedirs(Config.TEMP_SOUNDS_DIR, exist_ok=True)
+        app.logger.info(f"Created temp sounds directory: {Config.TEMP_SOUNDS_DIR}")
+    
+    # Create the temp directory if it doesn't exist (for other temporary files)
     if not os.path.exists(Config.TEMP_DIR):
         os.makedirs(Config.TEMP_DIR, exist_ok=True)
         app.logger.info(f"Created temp directory: {Config.TEMP_DIR}")
@@ -320,8 +335,8 @@ def manage_sounds():
     if 'username' not in session:
         return redirect(url_for('login'))
     
-    # Get all sound classes from the sounds directory
-    sounds_dir = Config.SOUNDS_DIR
+    # Get all sound classes from the training sounds directory
+    sounds_dir = Config.TRAINING_SOUNDS_DIR
     sound_classes = []
     
     if os.path.exists(sounds_dir):
@@ -348,8 +363,8 @@ def record_sounds():
     if 'username' not in session:
         return redirect(url_for('login'))
     
-    # Get all sound classes from the sounds directory for the dropdown
-    sounds_dir = Config.SOUNDS_DIR
+    # Get all sound classes from the training sounds directory for the dropdown
+    sounds_dir = Config.TRAINING_SOUNDS_DIR
     sound_classes = []
     
     if os.path.exists(sounds_dir):
@@ -380,7 +395,7 @@ def view_sound_class(class_name):
         return redirect(url_for('login'))
     
     # Get samples for the class
-    class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
     
     if not os.path.exists(class_path):
         flash(f'Sound class "{class_name}" not found', 'danger')
@@ -410,7 +425,7 @@ def view_sound_class(class_name):
 @app.route('/api/sounds/classes', methods=['GET'])
 def api_get_sound_classes():
     """Get all sound classes."""
-    sounds_dir = Config.SOUNDS_DIR
+    sounds_dir = Config.TRAINING_SOUNDS_DIR
     sound_classes = []
     
     if os.path.exists(sounds_dir):
@@ -446,7 +461,7 @@ def api_create_sound_class():
     safe_class_name = class_name.replace(' ', '_').lower()
     
     # Create class directory in sounds folder
-    class_path = os.path.join(Config.SOUNDS_DIR, safe_class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
     
     if os.path.exists(class_path):
         return jsonify({
@@ -474,7 +489,7 @@ def api_create_sound_class():
 @app.route('/api/sounds/classes/<class_name>', methods=['DELETE'])
 def api_delete_sound_class(class_name):
     """Delete a sound class and all its recordings."""
-    class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
     
     if not os.path.exists(class_path):
         return jsonify({
@@ -518,7 +533,7 @@ def api_delete_sound_class(class_name):
 @app.route('/api/sounds/classes/<class_name>/samples', methods=['GET'])
 def api_get_class_samples(class_name):
     """Get all samples for a sound class."""
-    class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
     
     if not os.path.exists(class_path):
         return jsonify({
@@ -554,7 +569,7 @@ def api_delete_sample(class_name, sample_name):
         if 'username' not in session:
             return jsonify({'success': False, 'message': 'Authentication required'}), 401
             
-        sample_path = os.path.join(Config.SOUNDS_DIR, class_name, sample_name)
+        sample_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name, sample_name)
         
         if not os.path.exists(sample_path):
             return jsonify({'success': False, 'message': 'Sample not found'}), 404
@@ -665,7 +680,7 @@ def api_verify_sample():
         
         if keep:
             # Create the class directory if it doesn't exist
-            class_dir = os.path.join(Config.SOUNDS_DIR, class_name)
+            class_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
             os.makedirs(class_dir, exist_ok=True)
             
             # Generate a unique filename
@@ -793,155 +808,142 @@ def api_ml_record():
 # Routes for verifying and processing sound chunks
 @app.route('/verify/<timestamp>')
 def verify_chunks(timestamp):
-    """
-    Route to verify chunks from a recording
-    """
-    # Check if user is logged in
+    """Verify sound chunks in a session."""
     if 'username' not in session:
-        flash('Please log in to verify recordings', 'warning')
         return redirect(url_for('login'))
     
-    # Get all chunks for this timestamp
-    chunks_dir = os.path.join(Config.TEMP_DIR, timestamp)
-    if not os.path.isdir(chunks_dir):
-        flash('No chunks found for verification', 'warning')
-        return redirect(url_for('sounds_record'))
+    chunks_dir = os.path.join(Config.TEMP_SOUNDS_DIR, timestamp)
     
-    # Get all WAV files in the directory
-    chunks = []
+    if not os.path.exists(chunks_dir):
+        flash("No chunks found for verification", "error")
+        return redirect(url_for('record_sounds'))
+    
+    # Get all WAV files in the chunks directory
+    chunks = [f for f in os.listdir(chunks_dir) if f.lower().endswith('.wav')]
+    
+    # Try to determine class name from filenames
     class_name = None
+    for filename in chunks:
+        # Look for pattern: class_name_*.wav
+        match = re.match(r'([a-zA-Z]+)_.*\.wav', filename)
+        if match:
+            potential_class_name = match.group(1)
+            if class_name is None:
+                class_name = potential_class_name
+            elif class_name != potential_class_name:
+                # If we find different class names, log a warning
+                logging.warning(f"Multiple class names detected in chunks: {class_name} and {potential_class_name}")
     
-    for filename in os.listdir(chunks_dir):
-        if filename.endswith('.wav'):
-            # Extract class name from filename
-            # The filename pattern should be class_name_*.wav
-            if '_' in filename:
-                # Use the first part as the class name
-                file_class_name = filename.split('_')[0]
-                if class_name is None:
-                    class_name = file_class_name
-                elif class_name != file_class_name:
-                    app.logger.warning(f"Multiple class names detected in chunks: {class_name}, {file_class_name}")
-            
-            chunks.append({
-                'id': os.path.join(timestamp, filename),
-                'url': url_for('serve_temp_file', filename=os.path.join(timestamp, filename))
-            })
-    
-    if not chunks:
-        flash('No sound samples were detected in your recording', 'warning')
-        return redirect(url_for('sounds_record'))
-    
-    # If we couldn't determine the class name from filenames, use a default
+    # If no class name was determined, use a default
     if class_name is None:
         class_name = "Unknown"
-        app.logger.warning(f"Could not determine class name from filenames in {chunks_dir}")
     
-    # Render the verification template with the chunks
-    return render_template('verify.html', chunks=chunks, class_name=class_name)
+    # Construct URLs for the chunks
+    chunk_data = []
+    for chunk in chunks:
+        chunk_data.append({
+            'id': f"{timestamp}/{chunk}",
+            'url': url_for('serve_temp_file', timestamp=timestamp, filename=chunk)
+        })
+    
+    return render_template('verify.html', chunks=chunk_data, class_name=class_name)
 
-@app.route('/process_verification', methods=['POST'])
+@app.route('/verify/process', methods=['POST'])
 def process_verification():
-    """
-    Process the user's decision for a sound chunk.
-    If kept, move to the class directory. If discarded, delete.
-    """
+    """Process a verified sound chunk."""
     if 'username' not in session:
-        return redirect(url_for('login'))
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
     
-    chunk_id = request.form.get('chunk_id')
-    is_good = request.form.get('is_good') == 'true'
-    
-    if not chunk_id:
-        flash('No chunk ID specified', 'danger')
-        return redirect(url_for('sounds_record'))
-    
-    # chunk_id is in format: timestamp/class_name_original_chunk_X.wav
-    # or timestamp/original_chunk_X.wav (where we need to extract class_name from elsewhere)
-    
-    try:
-        # Split by directory separator first
-        parts = chunk_id.split('/')
+    if request.method == 'POST':
+        chunk_id = request.form.get('chunk_id')
+        is_good = request.form.get('is_good') == 'true'
+        
+        if not chunk_id:
+            logging.error("No chunk_id provided for verification")
+            return jsonify({'success': False, 'message': 'No chunk ID provided'}), 400
+        
+        # Split the chunk_id to get the timestamp part (directory) and filename
+        parts = chunk_id.split(os.path.sep)
         if len(parts) != 2:
-            raise ValueError(f"Invalid chunk ID format: {chunk_id}")
+            logging.error(f"Invalid chunk_id format: {chunk_id}")
+            return jsonify({'success': False, 'message': 'Invalid chunk ID format'}), 400
             
         timestamp = parts[0]
         filename = parts[1]
         
         # Extract class name from filename
-        # Pattern is either class_name_*.wav or chunk_class_name*.wav
-        if '_' in filename:
-            class_name = filename.split('_')[0]  # First part before underscore is the class name
-        else:
-            # If no underscore in filename, use the class name from the template
-            class_name = request.form.get('class_name')
+        class_name = request.form.get('class_name')
+        
+        if not class_name:
+            # Try to extract class name from filename pattern: [class_name]_[original_filename]_chunk_[index].wav
+            filename_parts = filename.split('_')
+            if len(filename_parts) > 1:
+                class_name = filename_parts[0]  # First part is the class name
+            
+            # If we still don't have a class name, use "Unknown"
             if not class_name:
-                raise ValueError("Could not determine class name from filename")
+                class_name = "Unknown"
         
-        app.logger.info(f"Processing verification for chunk: {chunk_id}, class: {class_name}, keep: {is_good}")
+        # Path to the chunk file
+        chunks_dir = os.path.join(Config.TEMP_SOUNDS_DIR, timestamp)
+        chunk_path = os.path.join(chunks_dir, filename)
         
-        # Get the full path to the chunk file
-        chunk_path = os.path.join(Config.TEMP_DIR, chunk_id)
-        
-        if not os.path.exists(chunk_path):
-            app.logger.error(f"Chunk file does not exist: {chunk_path}")
-            return jsonify({'success': False, 'error': 'Chunk file not found'})
-        
-        if is_good:
-            # User wants to keep this sample - move it to the appropriate class directory
-            class_dir = os.path.join(Config.SOUNDS_DIR, class_name)
-            os.makedirs(class_dir, exist_ok=True)
-            
-            # Generate a unique filename
-            username = session.get('username', 'anonymous')
-            timestamp_now = datetime.now().strftime('%Y%m%d%H%M%S')
-            new_filename = f"{class_name}_{username}_{timestamp_now}_{uuid.uuid4().hex[:6]}.wav"
-            
-            # Move the file to the class directory
-            new_path = os.path.join(class_dir, new_filename)
-            shutil.copy2(chunk_path, new_path)
-            app.logger.info(f"Saved approved chunk from {chunk_path} to {new_path}")
-        
-        # Always remove the chunk from the temp directory after processing
         try:
-            os.remove(chunk_path)
-            app.logger.info(f"Removed chunk file: {chunk_path}")
+            if not os.path.exists(chunk_path):
+                logging.error(f"Chunk file not found: {chunk_path}")
+                return jsonify({'success': False, 'message': 'Chunk file not found'}), 404
+            
+            if is_good:
+                # User wants to keep this sample - move it to the appropriate class directory
+                class_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
+                os.makedirs(class_dir, exist_ok=True)
+                
+                # Generate a unique filename using username and timestamp
+                username = session.get('username', 'unknown')
+                unique_id = str(int(time.time()))
+                
+                new_filename = f"{class_name}_{username}_{unique_id}.wav"
+                target_path = os.path.join(class_dir, new_filename)
+                
+                # Copy the file to the class directory
+                shutil.copy(chunk_path, target_path)
+                logging.info(f"Saved verified sound sample: {target_path}")
+                
+                # Remove the temporary chunk file
+                os.remove(chunk_path)
+                
+                return jsonify({'success': True, 'message': 'Sound sample saved', 'filename': new_filename})
+            else:
+                # User doesn't want to keep this recording
+                # Remove the temporary chunk file
+                os.remove(chunk_path)
+                return jsonify({'success': True, 'message': 'Sound sample discarded'})
+                
         except Exception as e:
-            app.logger.error(f"Error removing chunk file: {str(e)}")
-        
-        return jsonify({'success': True})
-    except Exception as e:
-        app.logger.error(f"Error processing verification: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)})
+            logging.error(f"Error processing verification: {str(e)}")
+            return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 # Route to serve temporary files
-@app.route('/temp/<path:filename>')
-def serve_temp_file(filename):
-    """
-    Route to serve temporary audio files (used for verification)
-    """
-    try:
-        # Make sure the file actually exists in the temp directory
-        full_path = os.path.join(Config.TEMP_DIR, filename)
-        if not os.path.isfile(full_path):
-            app.logger.error(f"Temp file not found: {full_path}")
-            return "File not found", 404
-            
-        return send_from_directory(Config.TEMP_DIR, filename)
-    except Exception as e:
-        app.logger.error(f"Error serving temp file: {str(e)}")
-        return str(e), 500
+@app.route('/temp/<timestamp>/<filename>')
+def serve_temp_file(timestamp, filename):
+    """Serve a temporary file."""
+    directory = os.path.join(Config.TEMP_SOUNDS_DIR, timestamp)
+    
+    if not os.path.exists(os.path.join(directory, filename)):
+        return "File not found", 404
+    
+    return send_from_directory(directory, filename)
 
 # Add a route to serve sound files directly
 @app.route('/sounds/<class_name>/<sample_name>')
 def serve_sound_file(class_name, sample_name):
     """Serve a sound file."""
-    file_path = os.path.join(Config.SOUNDS_DIR, class_name, sample_name)
+    file_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name, sample_name)
     
     if not os.path.exists(file_path):
         return "File not found", 404
     
-    return send_from_directory(Config.SOUNDS_DIR, os.path.join(class_name, sample_name))
+    return send_from_directory(Config.TRAINING_SOUNDS_DIR, os.path.join(class_name, sample_name))
 
 # --------------------------------------------------------------------
 # Before request: check login
@@ -981,3 +983,122 @@ def server_error(e):
 # --------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(debug=Config.DEBUG, host='0.0.0.0', port=5001)
+
+# ML API update to use new training sounds directory
+@app.route('/api/ml/train', methods=['POST'])
+def api_train_model():
+    """Train a machine learning model on sound samples."""
+    if 'username' not in session:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+    
+    try:
+        # Get parameters from request
+        model_type = request.form.get('model_type', 'ensemble')
+        class_names = request.form.getlist('classes[]')
+        model_name = request.form.get('model_name', f"{model_type}_{datetime.now().strftime('%Y%m%d%H%M%S')}")
+        
+        if not class_names:
+            # If no classes specified, use all available classes
+            class_dirs = [d for d in os.listdir(Config.TRAINING_SOUNDS_DIR) 
+                         if os.path.isdir(os.path.join(Config.TRAINING_SOUNDS_DIR, d))]
+            class_names = class_dirs
+        
+        if not class_names:
+            return jsonify({'success': False, 'message': 'No sound classes available for training'}), 400
+        
+        # Start training in a background thread
+        app.logger.info(f"Starting training for model {model_name} with classes: {class_names}")
+        
+        thread = threading.Thread(
+            target=train_model_task, 
+            args=(model_type, model_name, class_names, Config.TRAINING_SOUNDS_DIR)
+        )
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Training started',
+            'model_name': model_name,
+            'classes': class_names
+        })
+        
+    except Exception as e:
+        app.logger.error(f"Error starting training: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+
+# Update the train_model_task to explicitly use the training sounds directory
+def train_model_task(model_type, model_name, class_names, training_sounds_dir):
+    """Background task for model training."""
+    try:
+        app.logger.info(f"Training task started for {model_type} model: {model_name}")
+        
+        # Initialize appropriate model type
+        if model_type == 'cnn':
+            from src.core.models.cnn import CNNModel
+            model = CNNModel()
+        elif model_type == 'rf':
+            from src.core.models.rf import RandomForestModel
+            model = RandomForestModel()
+        else:  # Default to ensemble
+            from src.core.models.ensemble import EnsembleModel
+            model = EnsembleModel()
+        
+        # Set up paths and data collection
+        X = []
+        y = []
+        
+        # Initialize audio processor for feature extraction
+        from src.core.audio.processor import AudioProcessor
+        processor = AudioProcessor()
+        
+        # Collect data from each class
+        for class_name in class_names:
+            class_dir = os.path.join(training_sounds_dir, class_name)
+            if not os.path.isdir(class_dir):
+                app.logger.warning(f"Class directory not found: {class_dir}")
+                continue
+                
+            # Get all wav files in the class directory
+            wav_files = [f for f in os.listdir(class_dir) if f.endswith('.wav')]
+            app.logger.info(f"Found {len(wav_files)} samples for class {class_name}")
+            
+            for wav_file in wav_files:
+                try:
+                    file_path = os.path.join(class_dir, wav_file)
+                    
+                    # Extract features based on model type
+                    if model_type == 'cnn':
+                        # For CNN, we need mel spectrograms
+                        audio, sr = processor.load_audio(file_path)
+                        features = processor.extract_mel_spectrogram(audio)
+                        X.append(features)
+                        y.append(class_name)
+                    else:
+                        # For RF or ensemble RF component, we need statistical features
+                        audio, sr = processor.load_audio(file_path)
+                        features = processor.extract_features(audio)
+                        X.append(features)
+                        y.append(class_name)
+                        
+                except Exception as e:
+                    app.logger.error(f"Error processing {wav_file}: {str(e)}")
+        
+        if len(X) == 0:
+            app.logger.error("No valid samples found for training")
+            return
+            
+        # Train the model
+        app.logger.info(f"Training {model_type} model with {len(X)} samples")
+        model.train(X, y)
+        
+        # Save the model
+        model_path = Config.get_model_path(model_name, model_type)
+        model.save(model_path)
+        
+        app.logger.info(f"Model {model_name} trained and saved to {model_path}")
+        
+    except Exception as e:
+        app.logger.error(f"Error in training task: {str(e)}")
+        traceback.print_exc()

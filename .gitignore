@@ -1,6 +1,93 @@
+# Temporary files
 temp/
-dictionaries/
-data/
+
+# Old sounds directory (deprecated)
+sounds/
+
+# We want to keep the training sound files
+# Make sure these are NOT ignored
+!data/sounds/training_sounds/**/*.wav
+!data/sounds/training_sounds/**/
+
+# Temporary sound files
+data/sounds/temp_sounds/
+
+# User data except training sounds
+data/*
+!data/sounds/
+data/sounds/*
+!data/sounds/training_sounds/
+
+# Testing files
 test_imports.py
+
+# Legacy files that were moved
 migrate_sounds*.py
 app.py
+legacy/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Log files
+*.log
+
+# Python environment management
+.python-version
+Miniconda3-*.sh
+
+# ML models and checkpoints: do not ignore
+!models/*.joblib
+!models/*.pkl
+!models/*.h5
+!src/checkpoints/
+
+# Dictionary data: do not ignore
+!dictionaries/
+
+# SoundClassifiersv08.code-workspace
+*.code-workspace
+src/checkpoints/
+src/static/goodsounds/

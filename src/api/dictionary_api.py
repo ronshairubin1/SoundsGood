@@ -220,7 +220,7 @@ def add_sample(dict_name, class_name):
         create_class = request.form.get('create_class') == 'true'
         
         # If class doesn't exist and create_class flag is true, create it
-        sounds_dir = Config.SOUNDS_DIR
+        sounds_dir = Config.TRAINING_SOUNDS_DIR
         class_path = os.path.join(sounds_dir, class_name)
         
         if create_class and not os.path.exists(class_path):
@@ -476,4 +476,34 @@ def update_dictionary(dict_name):
         return jsonify({
             'success': False,
             'error': f"Server error: {str(e)}"
+        }), 500
+
+@dictionary_bp.route('/sounds/classes', methods=['GET'])
+def get_sound_classes():
+    """Get all available sound classes."""
+    try:
+        sound_classes = []
+        
+        # Check if the training sounds directory exists
+        if os.path.exists(Config.TRAINING_SOUNDS_DIR):
+            # Get all subdirectories in the sounds directory
+            for item in os.listdir(Config.TRAINING_SOUNDS_DIR):
+                item_path = os.path.join(Config.TRAINING_SOUNDS_DIR, item)
+                if os.path.isdir(item_path):
+                    # Count WAV files in the directory
+                    wav_files = [f for f in os.listdir(item_path) if f.lower().endswith('.wav')]
+                    sound_classes.append({
+                        "name": item,
+                        "sample_count": len(wav_files)
+                    })
+        
+        return jsonify({
+            'success': True,
+            'classes': sound_classes
+        })
+    except Exception as e:
+        logging.error(f"Error getting sound classes: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
         }), 500

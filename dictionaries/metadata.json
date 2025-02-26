@@ -1,0 +1,76 @@
+{
+  "dictionaries": {
+    "eh_oh": {
+      "name": "Eh Oh",
+      "description": "",
+      "created_at": "2025-02-25T16:42:16.053786",
+      "updated_at": "2025-02-25T16:42:16.053786",
+      "created_by": null,
+      "classes": [],
+      "sample_count": 0,
+      "path": "/Users/ronshairubin/Desktop/SoundsEasy/SoundClassifiers/SoundClassifier_v09/dictionaries/eh_oh"
+    },
+    "all_classes": {
+      "name": "All Classes",
+      "description": "Contains all available sound classes",
+      "created_at": "2025-02-25T17:55:02.067326",
+      "updated_at": "2025-02-25T18:00:14.839688",
+      "created_by": null,
+      "classes": [
+        "eh",
+        "meh",
+        "ah",
+        "loo",
+        "ee",
+        "bah",
+        "lah",
+        "moo",
+        "boh",
+        "ooah",
+        "beh",
+        "loh",
+        "oo",
+        "oh",
+        "leh",
+        "bee",
+        "boo",
+        "lee",
+        "moh",
+        "mee",
+        "mah"
+      ],
+      "sample_count": 0,
+      "path": "/Users/ronshairubin/Desktop/SoundsEasy/SoundClassifiers/SoundClassifier_v09/dictionaries/all_classes"
+    },
+    "three_words": {
+      "name": "Three Words",
+      "description": "Dictionary with three sound classes",
+      "created_at": "2025-02-25T17:55:02.068581",
+      "updated_at": "2025-02-25T18:00:14.840292",
+      "created_by": null,
+      "classes": [
+        "eh",
+        "meh",
+        "ah",
+        "moh",
+        "bee",
+        "oh"
+      ],
+      "sample_count": 60,
+      "path": "/Users/ronshairubin/Desktop/SoundsEasy/SoundClassifiers/SoundClassifier_v09/dictionaries/three_words"
+    },
+    "test2": {
+      "name": "Test2",
+      "description": "",
+      "created_at": "2025-02-25T23:03:58.926600",
+      "updated_at": "2025-02-25T23:08:08.579869",
+      "created_by": "f4e452e3ab30eb02",
+      "classes": [
+        "eh",
+        "oh"
+      ],
+      "sample_count": 0,
+      "path": "/Users/ronshairubin/Desktop/SoundsEasy/SoundClassifiers/SoundClassifier_v09/dictionaries/test2"
+    }
+  }
+}

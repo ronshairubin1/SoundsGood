@@ -309,7 +309,7 @@ class DictionaryService:
                                           and f.lower().endswith(('.wav', '.mp3', '.ogg'))])
                     
                     # Also check samples in the central sounds dir
-                    central_class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+                    central_class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
                     central_sample_count = 0
                     
                     if os.path.exists(central_class_path) and os.path.isdir(central_class_path):
@@ -355,60 +355,58 @@ class DictionaryService:
     
     def sync_dictionary_samples(self, dict_name):
         """
-        Sync a dictionary's sample counts with the actual files on disk.
-        This ensures the sample_count value in metadata matches reality.
+        Sync the sample count for a dictionary by counting samples on disk.
         
         Args:
             dict_name (str): Dictionary name
-        
+            
         Returns:
-            bool: True if successful, False otherwise
+            dict: Updated dictionary information
         """
-        logging.debug(f"Syncing sample counts for dictionary: {dict_name}")
         safe_dict_name = dict_name.replace(' ', '_').lower()
         
         # Check if dictionary exists
-        dict_info = self.metadata["dictionaries"].get(safe_dict_name)
-        if not dict_info:
-            logging.error(f"Dictionary '{dict_name}' not found")
-            return False
+        if safe_dict_name not in self.metadata["dictionaries"]:
+            return {
+                "success": False,
+                "error": f"Dictionary '{dict_name}' does not exist"
+            }
         
-        # Calculate total sample count based on files in each class directory
+        # Get dictionary info
+        dict_info = self.metadata["dictionaries"][safe_dict_name]
+        
+        # Count samples for each class
         total_samples = 0
+        class_counts = {}
         
-        if 'classes' in dict_info and dict_info['classes']:
-            for class_name in dict_info['classes']:
-                # Check samples in the dictionaries dir
-                class_path = os.path.join(self.dictionaries_dir, safe_dict_name, class_name)
-                sample_count = 0
-                
-                if os.path.exists(class_path) and os.path.isdir(class_path):
-                    sample_count = len([f for f in os.listdir(class_path) 
-                                      if os.path.isfile(os.path.join(class_path, f)) 
-                                      and f.lower().endswith(('.wav', '.mp3', '.ogg'))])
-                    
-                # Also check samples in the central sounds dir
-                central_class_path = os.path.join(Config.SOUNDS_DIR, class_name)
-                central_sample_count = 0
-                
-                if os.path.exists(central_class_path) and os.path.isdir(central_class_path):
-                    central_sample_count = len([f for f in os.listdir(central_class_path) 
-                                             if os.path.isfile(os.path.join(central_class_path, f)) 
-                                             and f.lower().endswith(('.wav', '.mp3', '.ogg'))])
-                
-                # Use the maximum count (could be in either location)
-                effective_sample_count = max(sample_count, central_sample_count)
-                total_samples += effective_sample_count
-                
-                logging.debug(f"Class '{class_name}' has {effective_sample_count} samples")
+        for class_name in dict_info.get("classes", []):
+            # Get sample count from central sounds directory
+            central_class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
+            if os.path.exists(central_class_path):
+                samples = [f for f in os.listdir(central_class_path) if f.lower().endswith('.wav')]
+                class_counts[class_name] = len(samples)
+                total_samples += len(samples)
         
-        # Update the metadata
-        dict_info['sample_count'] = total_samples
-        dict_info['updated_at'] = datetime.now().isoformat()
-        logging.debug(f"Updated sample count for dictionary '{dict_name}' to {total_samples}")
+        # Update metadata
+        dict_info["sample_count"] = total_samples
+        dict_info["class_counts"] = class_counts
+        dict_info["updated_at"] = datetime.now().isoformat()
         
-        # Save the updated metadata
-        return self._save_metadata()
+        # Save metadata
+        if self._save_metadata():
+            return {
+                "success": True,
+                "dictionary": {
+                    "name": dict_info["name"],
+                    "sample_count": total_samples,
+                    "class_counts": class_counts
+                }
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Failed to save metadata"
+            }
     
     def add_class(self, dict_name, class_name):
         """
@@ -546,9 +544,9 @@ class DictionaryService:
             sample_name += '.wav'
         
         # Make sure both the central sounds directory and dictionary-specific class directory exist
-        # 1. Central sounds directory
-        os.makedirs(Config.SOUNDS_DIR, exist_ok=True)
-        central_class_path = os.path.join(Config.SOUNDS_DIR, safe_class_name)
+        # 1. Central sounds directory (using TRAINING_SOUNDS_DIR instead of SOUNDS_DIR)
+        os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
+        central_class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
         os.makedirs(central_class_path, exist_ok=True)
         
         # 2. Dictionary-specific class directory
@@ -698,7 +696,7 @@ class DictionaryService:
         
         # Get sample count for this class
         sample_count_reduction = 0
-        class_path = os.path.join(Config.SOUNDS_DIR, safe_class_name)
+        class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
         if os.path.exists(class_path):
             sample_files = [f for f in os.listdir(class_path) if f.lower().endswith('.wav')]
             sample_count_reduction = len(sample_files)
@@ -752,7 +750,7 @@ class DictionaryService:
             }
         
         # Get samples from the central sounds directory
-        class_path = os.path.join(Config.SOUNDS_DIR, safe_class_name)
+        class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
         if not os.path.exists(class_path):
             return {
                 "success": True,
@@ -774,3 +772,30 @@ class DictionaryService:
             "success": True,
             "samples": samples
         }
+
+    def get_sound_classes(self):
+        """
+        Get all available sound classes from the training sounds directory.
+        
+        Returns:
+            list: List of sound class names
+        """
+        sound_classes = []
+        
+        try:
+            # Check if the training sounds directory exists
+            if os.path.exists(Config.TRAINING_SOUNDS_DIR):
+                # Get all subdirectories in the sounds directory
+                for item in os.listdir(Config.TRAINING_SOUNDS_DIR):
+                    item_path = os.path.join(Config.TRAINING_SOUNDS_DIR, item)
+                    if os.path.isdir(item_path):
+                        # Count WAV files in the directory
+                        wav_files = [f for f in os.listdir(item_path) if f.lower().endswith('.wav')]
+                        sound_classes.append({
+                            "name": item,
+                            "sample_count": len(wav_files)
+                        })
+        except Exception as e:
+            logging.error(f"Error getting sound classes: {e}")
+        
+        return sound_classes
