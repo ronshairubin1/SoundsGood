@@ -204,14 +204,14 @@ def train_model():
 
             callback = tf.keras.callbacks.EarlyStopping(
                 monitor='val_accuracy',
-                patience=5,
-                min_delta=0.01,
+                patience=10,
+                min_delta=0.001,
                 restore_best_weights=True
             )
             reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_accuracy',
                 factor=0.2,
-                patience=3,
+                patience=5,
                 min_lr=1e-5
             )
 
@@ -404,6 +404,21 @@ def build_training_stats_and_history(
 @ml_bp.route('/predict_hub')
 def predict_hub():
     return render_template('predict_hub.html')
+
+@ml_bp.route('/predict')
+def predict():
+    """
+    Main prediction page using the new real-time predictor interface.
+    """
+    if 'username' not in session:
+        session['username'] = 'guest'
+    
+    active_dict = Config.get_dictionary()
+    if not active_dict or 'sounds' not in active_dict:
+        flash("No active dictionary found. Please create or select a dictionary first.")
+        return redirect(url_for('ml.manage_dictionaries'))
+    
+    return render_template('predict.html', active_dict=active_dict)
 
 @ml_bp.route('/predict_cnn', methods=['GET', 'POST'])
 def predict_cnn():
@@ -1342,4 +1357,111 @@ def model_summary():
   
     # We do not remove old code above, just replace with this new rendering
     return render_template('model_summary_hub.html')
+
+@ml_bp.route('/api/models')
+def get_available_models():
+    """
+    Get a list of available trained models for the current dictionary.
+    Returns:
+    {
+        "models": [
+            {"id": "cnn_model", "name": "CNN Model", "type": "cnn"},
+            {"id": "rf_model", "name": "Random Forest", "type": "rf"}
+        ],
+        "dictionary_name": "Current Dictionary"
+    }
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+    
+    try:
+        # Get current dictionary
+        active_dict = Config.get_dictionary()
+        dict_name = active_dict.get('name', 'Unknown')
+        
+        # Check models directory for available models
+        models_dir = 'models'
+        available_models = []
+        
+        if os.path.exists(models_dir):
+            # Look for CNN models (*.h5 files)
+            cnn_files = [f for f in os.listdir(models_dir) if f.endswith('.h5')]
+            for file in cnn_files:
+                if dict_name.replace(' ', '_') in file:
+                    model_id = file.replace('.h5', '')
+                    available_models.append({
+                        'id': model_id,
+                        'name': f"{dict_name} CNN Model",
+                        'type': 'cnn'
+                    })
+            
+            # Look for RF models (*.joblib files)
+            rf_files = [f for f in os.listdir(models_dir) if f.endswith('.joblib')]
+            for file in rf_files:
+                if dict_name.replace(' ', '_') in file:
+                    model_id = file.replace('.joblib', '')
+                    available_models.append({
+                        'id': model_id,
+                        'name': f"{dict_name} RF Model",
+                        'type': 'rf'
+                    })
+            
+            # Look for ensemble models (*.pkl files)
+            ensemble_files = [f for f in os.listdir(models_dir) if f.endswith('.pkl')]
+            for file in ensemble_files:
+                if dict_name.replace(' ', '_') in file:
+                    model_id = file.replace('.pkl', '')
+                    available_models.append({
+                        'id': model_id,
+                        'name': f"{dict_name} Ensemble Model",
+                        'type': 'ensemble'
+                    })
+        
+        # If no models found, add fallbacks
+        if not available_models:
+            available_models = [
+                {
+                    'id': f"{dict_name.replace(' ', '_')}_model",
+                    'name': f"{dict_name} Default Model",
+                    'type': 'cnn'
+                }
+            ]
+        
+        return jsonify({
+            'models': available_models,
+            'dictionary_name': dict_name
+        })
+    except Exception as e:
+        logging.error(f"Error getting available models: {e}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@ml_bp.route('/api/dictionary/sounds')
+def get_dictionary_sounds():
+    """
+    Get a list of available sound classes for the current dictionary.
+    Returns:
+    {
+        "sounds": ["cat", "dog", "bird"]
+    }
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+    
+    try:
+        # Get current dictionary
+        active_dict = Config.get_dictionary()
+        sounds = active_dict.get('sounds', [])
+        
+        return jsonify({
+            'sounds': sounds
+        })
+    except Exception as e:
+        logging.error(f"Error getting dictionary sounds: {e}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 

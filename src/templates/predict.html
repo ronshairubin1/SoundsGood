@@ -1,0 +1,1432 @@
+{% extends "base.html" %}
+
+{% block title %}Real-Time Sound Predictor - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.model-card {
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+.model-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.recording-controls {
+    text-align: center;
+    margin: 2rem 0;
+}
+.waveform-container {
+    height: 100px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+.prediction-result {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+.result-label {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.probability-bar {
+    height: 2rem;
+    margin-bottom: 1rem;
+}
+.sounds-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+.sound-badge {
+    padding: 0.4rem 0.8rem;
+    background-color: #f1f3f5;
+    border-radius: 50px;
+    font-size: 0.9rem;
+}
+.listening-active {
+    animation: pulse 1.5s infinite;
+}
+.feedback-form {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+.feedback-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin: 1rem 0;
+}
+.feedback-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.statistics-container {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+.confusion-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+.confusion-matrix th, .confusion-matrix td {
+    padding: 0.6rem;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+.confusion-matrix th {
+    background-color: #e9ecef;
+}
+.confusion-matrix td.correct {
+    background-color: #d1e7dd;
+}
+.confusion-matrix td.incorrect {
+    background-color: #f8d7da;
+}
+.predict-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.prediction-history {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+.prediction-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.prediction-item .sound {
+    font-weight: bold;
+}
+.prediction-item .confidence {
+    color: #6c757d;
+}
+.prediction-item .feedback {
+    display: flex;
+    gap: 0.5rem;
+}
+.model-item {
+    border-left: 4px solid #4361ee;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.model-item:hover {
+    background-color: #e9ecef;
+    transform: translateX(5px);
+}
+.model-item.active {
+    background-color: #e9ecef;
+    border-left-color: #198754;
+}
+.learning-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 50px;
+    margin-left: 0.5rem;
+}
+.learning-type-cnn {
+    background-color: #cfe2ff;
+    color: #0d6efd;
+}
+.learning-type-rf {
+    background-color: #d1e7dd;
+    color: #198754;
+}
+.learning-type-ensemble {
+    background-color: #f8d7da;
+    color: #dc3545;
+}
+.learning-type-unknown {
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="predict-container">
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+                <i class="bi bi-ear-fill me-2"></i>Real-Time Sound Predictor
+        </h1>
+            <p class="text-muted">Test your trained models with real-time sound classification</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+            <div class="card model-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                        <i class="bi bi-file-earmark-binary me-2"></i>Select a Prediction Model
+                </h5>
+                    <p class="text-muted">Choose a trained model for sound prediction</p>
+                    
+                    <div id="modelsList" class="mb-3">
+                        <!-- Models will be loaded here dynamically -->
+                        <div class="text-center py-3 text-muted" id="modelsLoadingMessage">
+                            <i class="bi bi-hourglass-split me-2"></i>Loading available models...
+                        </div>
+                    </div>
+                
+                <div id="modelInfo" class="mt-3" style="display: none;">
+                    <h6>Model Information:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                                <p><strong>Learning Type:</strong> <span id="modelType">-</span></p>
+                        </div>
+                        <div class="col-md-6">
+                                <p><strong>Dictionary:</strong> <span id="dictionaryName">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+            <div class="card model-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                        <i class="bi bi-mic-fill me-2"></i>Available Sound Classes
+                </h5>
+                    <p class="text-muted">These are the sound classes that can be recognized</p>
+                    
+                    <div class="sounds-list" id="soundsList">
+                        <!-- Sound classes will be loaded here -->
+                        {% if active_dict and active_dict.sounds %}
+                            {% for sound in active_dict.sounds %}
+                                <span class="sound-badge">{{ sound }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div id="listenControls" class="text-center mt-3" style="display: none;">
+                        <button class="btn btn-primary btn-lg" id="listenButton">
+                            <i class="bi bi-mic-fill me-2"></i>Listen
+                        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Real-Time Prediction Interface -->
+    <div id="predictorInterface" class="card" style="display: none;">
+    <div class="card-body">
+        <h5 class="card-title">
+                <i class="bi bi-soundwave me-2"></i>Real-Time Predictor
+        </h5>
+        
+        <div class="recording-controls">
+            <div class="waveform-container" id="waveform">
+                    <!-- Waveform visualization will be shown here -->
+            </div>
+            
+                <div id="listeningIndicator" class="mt-3 mb-3" style="display: none;">
+                    <span class="badge bg-danger listening-active">Listening...</span>
+                    <p class="text-muted mt-2">Speak one of the available sound classes</p>
+                </div>
+            </div>
+        </div>
+            </div>
+            
+    <!-- Latest Prediction -->
+    <div id="latestPrediction" class="prediction-result" style="display: none;">
+        <h5><i class="bi bi-soundwave me-2"></i>Latest Prediction</h5>
+        
+        <div class="result-label text-center">
+            <span id="predictedClass">Unknown</span>
+            <div class="fs-6 text-muted" id="confidenceValue">0% confidence</div>
+            </div>
+        
+        <div class="feedback-form">
+            <h6>Was this prediction correct?</h6>
+            <p class="text-muted">Please select what you actually said:</p>
+            
+            <div class="feedback-options" id="feedbackOptions">
+                <!-- Feedback options will be loaded here -->
+                {% if active_dict and active_dict.sounds %}
+                    {% for sound in active_dict.sounds %}
+                        <div class="feedback-option">
+                            <input type="radio" name="feedbackSound" id="sound_{{ sound }}" value="{{ sound }}" class="form-check-input">
+                            <label for="sound_{{ sound }}" class="form-check-label">{{ sound }}</label>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+        </div>
+        
+            <div class="text-center mt-3">
+                <button class="btn btn-primary" id="submitFeedbackBtn" disabled>
+                    <i class="bi bi-check2-circle me-1"></i>Submit Feedback
+            </button>
+        </div>
+    </div>
+</div>
+
+    <!-- Prediction History -->
+    <div id="predictionHistory" class="mt-4" style="display: none;">
+        <h5><i class="bi bi-clock-history me-2"></i>Prediction History</h5>
+        <div class="prediction-history" id="predictionsList">
+            <!-- Prediction history will be added here -->
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div id="statistics" class="statistics-container mt-4">
+        <h5><i class="bi bi-bar-chart-fill me-2"></i>Prediction Statistics</h5>
+        
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>Total Predictions</h6>
+                        <h3 id="totalPredictions">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>Average Confidence</h6>
+                        <h3 id="avgConfidence">0%</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>Overall Accuracy</h6>
+                        <h3 id="overallAccuracy">0%</h3>
+                    </div>
+                </div>
+            </div>
+    </div>
+    
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h6>Class Accuracy</h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Sound Class</th>
+                            <th>Total</th>
+                            <th>Correct</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classAccuracyTable">
+                        <!-- Class accuracy will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+    </div>
+    
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h6>Confusion Matrix</h6>
+                <div class="table-responsive">
+                    <table class="confusion-matrix" id="confusionMatrix">
+                        <!-- Confusion matrix will be loaded here -->
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary" id="saveAnalysisBtn">
+                <i class="bi bi-save me-1"></i>Save Analysis
+        </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Wavesurfer.js for audio visualization -->
+<script src="https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.js"></script>
+
+<script>
+let wavesurfer;
+let isListening = false;
+let selectedModel = '';
+let selectedModelType = '';
+let soundClasses = [];
+let currentPrediction = null;
+let eventSource = null;
+let activeSound = null;
+let availableModels = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize wavesurfer
+    wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'rgba(67, 97, 238, 0.3)',
+        progressColor: 'rgba(67, 97, 238, 0.8)',
+        cursorColor: '#4361ee',
+        barWidth: 2,
+        barRadius: 2,
+        cursorWidth: 1,
+        height: 80,
+        barGap: 1
+    });
+    
+    // Load available models
+    loadAvailableModels();
+    
+    // Setup listen button
+    const listenButton = document.getElementById('listenButton');
+    listenButton.addEventListener('click', function() {
+        if (!isListening) {
+            startListening();
+        } else {
+            stopListening();
+        }
+    });
+    
+    // Setup feedback submission
+    document.getElementById('submitFeedbackBtn').addEventListener('click', submitFeedback);
+    
+    // Setup save analysis button
+    document.getElementById('saveAnalysisBtn').addEventListener('click', saveAnalysis);
+    
+    // Setup feedback radio buttons
+    document.querySelectorAll('input[name="feedbackSound"]').forEach(input => {
+        input.addEventListener('change', function() {
+            document.getElementById('submitFeedbackBtn').disabled = false;
+            activeSound = this.value;
+        });
+    });
+});
+
+function loadAvailableModels() {
+    const modelsList = document.getElementById('modelsList');
+    
+    console.log('📋 DEBUG: Starting to load available models...');
+    
+    fetch('/api/ml/models')
+        .then(response => {
+            console.log(`📋 DEBUG: Received response with status: ${response.status} ${response.statusText}`);
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("📋 DEBUG: Models API response:", data); // Full response debug
+            
+            // DETAILED CLIENT DEBUG - Log exactly what the API returned
+            console.log("📋 DETAILED CLIENT DEBUG - COMPLETE API RESPONSE:");
+            console.log("📋 Success:", data.success);
+            
+            if (data.models) {
+                if (Array.isArray(data.models)) {
+                    console.log("📋 Models is an array with", data.models.length, "items");
+                } else {
+                    console.log("📋 Models is an object with these keys:", Object.keys(data.models));
+                    
+                    // Log each model type
+                    Object.keys(data.models).forEach(type => {
+                        const typeModels = data.models[type];
+                        console.log(`📋 ${type} models (${typeModels.length}):`);
+                        
+                        // Log first model details for each type
+                        if (typeModels.length > 0) {
+                            console.log(`📋 First ${type} model:`, JSON.stringify(typeModels[0], null, 2));
+                        }
+                    });
+                }
+            } else {
+                console.log("📋 No models found in API response");
+            }
+            
+            // Hide loading message
+            document.getElementById('modelsLoadingMessage').style.display = 'none';
+            
+            // Normalize the data structure based on the API response format
+            let models = [];
+            
+            // Handle both flat array and nested structure formats
+            if (data.success) {
+                // Check if models is an array or an object with type keys
+                if (Array.isArray(data.models)) {
+                    console.log(`📋 DEBUG: Found models in flat array format`);
+                    models = data.models;
+                } else if (data.models && typeof data.models === 'object') {
+                    console.log(`📋 DEBUG: Found models in nested format by type`);
+                    // Extract models from each type (cnn, rf, ensemble)
+                    Object.keys(data.models).forEach(type => {
+                        const typeModels = data.models[type];
+                        console.log(`📋 DEBUG: Found ${typeModels.length} ${type} models`);
+                        if (Array.isArray(typeModels) && typeModels.length > 0) {
+                            // Debug the first model in each type
+                            console.log(`📋 DEBUG: First ${type} model details:`, JSON.stringify(typeModels[0], null, 2));
+                            
+                            // Make sure we copy each model correctly with all properties
+                            typeModels.forEach(typeModel => {
+                                // Check if the model is a string (just the ID) or a complete object
+                                if (typeof typeModel === 'string' || typeModel instanceof String) {
+                                    console.log(`📋 DEBUG: Converting string model ID to object: ${typeModel}`);
+                                    // Parse the model ID to extract components (expected format: Dictionary_Type_Timestamp)
+                                    const parts = typeModel.split('_');
+                                    if (parts.length >= 3) {
+                                        const dictionary = parts[0];
+                                        const modelType = parts[1];
+                                        const timestamp = parts[2];
+                                        // Create a complete model object from the ID string
+                                        models.push({
+                                            id: typeModel,
+                                            name: typeModel,
+                                            type: type, // Use the type from the parent array (cnn, rf, ensemble)
+                                            dictionary: dictionary,
+                                            path: '', // No path available
+                                            sounds: [], // No sounds available
+                                            timestamp: timestamp
+                                        });
+                                    } else {
+                                        // Can't parse the model ID properly, create minimal object
+                                        models.push({
+                                            id: typeModel,
+                                            name: typeModel,
+                                            type: type,
+                                            dictionary: 'Unknown',
+                                            sounds: [],
+                                            timestamp: ''
+                                        });
+                                    }
+                                } else {
+                                    // It's already an object, add it to our models array
+                                    models.push({
+                                        id: typeModel.id,
+                                        name: typeModel.name,
+                                        type: typeModel.type || type, // use the type from the object or the key
+                                        dictionary: typeModel.dictionary,
+                                        path: typeModel.path,
+                                        sounds: typeModel.sounds || [],
+                                        timestamp: typeModel.timestamp
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            
+            console.log(`📋 DEBUG: Normalized ${models.length} total models`);
+            
+            // Log the first normalized model to verify structure
+            if (models.length > 0) {
+                console.log(`📋 DEBUG: First normalized model:`, JSON.stringify(models[0], null, 2));
+            }
+            
+            if (models && models.length > 0) {
+                console.log(`📋 DEBUG: Found ${models.length} models to display`);
+                availableModels = models;
+                
+                // Detailed logging for each model
+                models.forEach((model, index) => {
+                    console.log(`📋 DEBUG: Model ${index + 1}:`, {
+                        id: model.id,
+                        name: model.name,
+                        type: model.type,
+                        dictionary: model.dictionary,
+                        sounds: Array.isArray(model.sounds) ? `${model.sounds.length} sounds` : 'No sounds array'
+                    });
+                });
+                
+                // Group models by dictionary
+                const modelsByDictionary = {};
+                models.forEach(model => {
+                    const dictName = model.dictionary || 'Unknown';
+                    if (!modelsByDictionary[dictName]) {
+                        modelsByDictionary[dictName] = [];
+                    }
+                    modelsByDictionary[dictName].push(model);
+                });
+                
+                console.log(`📋 DEBUG: Grouped models by ${Object.keys(modelsByDictionary).length} dictionaries`);
+                
+                // Create dictionary sections with models
+                Object.keys(modelsByDictionary).sort().forEach(dictionaryName => {
+                    console.log(`📋 DEBUG: Processing dictionary ${dictionaryName} with ${modelsByDictionary[dictionaryName].length} models`);
+                    
+                    // Create dictionary header
+                    const dictionaryHeader = document.createElement('div');
+                    dictionaryHeader.className = 'mb-2 mt-3';
+                    dictionaryHeader.innerHTML = `
+                        <h6 class="fw-bold">
+                            <i class="bi bi-book me-1"></i>Dictionary: ${dictionaryName}
+                        </h6>
+                    `;
+                    modelsList.appendChild(dictionaryHeader);
+                    
+                    // Add models for this dictionary
+                    modelsByDictionary[dictionaryName].forEach((model, index) => {
+                        console.log(`📋 DEBUG: Adding model ${model.name} to DOM`);
+                        
+                        const modelItem = document.createElement('div');
+                        modelItem.className = 'model-item';
+                        modelItem.dataset.modelId = model.id;
+                        modelItem.dataset.modelIndex = availableModels.indexOf(model);
+                        
+                        // Format the model name for display
+                        let displayName = model.name || 'Unnamed Model';
+                        
+                        try {
+                            // Extract dictionary name and model type with fallbacks
+                            const dictionary = model.dictionary || 'Unknown';
+                            const modelType = model.type || 'unknown';
+                            const timestamp = model.timestamp || '';
+                            
+                            console.log(`📋 DEBUG: Formatting model name - Dictionary: ${dictionary}, Type: ${modelType}, Timestamp: ${timestamp}`);
+                            
+                            // Format timestamp as YYYY-MM-DD HH:MM:SS if possible
+                            if (timestamp && timestamp.length >= 14) {
+                                const year = timestamp.substring(0, 4);
+                                const month = timestamp.substring(4, 6);
+                                const day = timestamp.substring(6, 8);
+                                const hour = timestamp.substring(8, 10);
+                                const minute = timestamp.substring(10, 12);
+                                const second = timestamp.substring(12, 14);
+                                
+                                displayName = `${dictionary} ${modelType.toUpperCase()} (${year}-${month}-${day} ${hour}:${minute}:${second})`;
+                            } else if (timestamp) {
+                                // If timestamp format is different but exists
+                                displayName = `${dictionary} ${modelType.toUpperCase()} (${timestamp})`;
+                            } else {
+                                // No timestamp
+                                displayName = `${dictionary} ${modelType.toUpperCase()} Model`;
+                            }
+                            
+                            console.log(`📋 DEBUG: Formatted name: ${displayName}`);
+                        } catch (e) {
+                            console.error('Error formatting model name:', e);
+                            // Fall back to original name or a default name
+                            displayName = model.name || model.id || 'Unknown Model';
+                        }
+                        
+                        // Get learning type (CNN, RF, ENSEMBLE) with fallbacks
+                        const learningType = model.type ? model.type.toUpperCase() : 'UNKNOWN';
+                        let learningTypeClass = 'learning-type-unknown';
+                        
+                        // Set the appropriate CSS class based on model type
+                        if (model.type) {
+                            if (model.type.toLowerCase() === 'cnn') {
+                                learningTypeClass = 'learning-type-cnn';
+                            } else if (model.type.toLowerCase() === 'rf') {
+                                learningTypeClass = 'learning-type-rf';
+                            } else if (['ens', 'ensemble'].includes(model.type.toLowerCase())) {
+                                learningTypeClass = 'learning-type-ensemble';
+                            }
+                        }
+                        
+                        modelItem.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${displayName}</strong>
+                                    <span class="learning-type-badge ${learningTypeClass}">${learningType}</span>
+                                </div>
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        `;
+                        
+                        modelItem.addEventListener('click', function() {
+                            // Remove active class from all model items
+                            document.querySelectorAll('.model-item').forEach(item => {
+                                item.classList.remove('active');
+                            });
+                            
+                            // Add active class to selected model item
+                            this.classList.add('active');
+                            
+                            // Set selected model
+                            const modelIndex = parseInt(this.dataset.modelIndex);
+                            selectModel(modelIndex);
+                        });
+                        
+                        modelsList.appendChild(modelItem);
+                    });
+                });
+            } else {
+                // Display error message with more details
+                console.error("📋 DEBUG: No models found in API response", {
+                    hasModelsArray: Array.isArray(data.models),
+                    modelsLength: data.models ? data.models.length : 0,
+                    fullResponse: data
+                });
+                
+                // Display message if no models are available
+                modelsList.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <h5>No trained models available in any dictionary.</h5>
+                        <p>Please make sure the models directory exists and contains properly structured model files.</p>
+                        <p>Expected format: <code>DictionaryName_modeltype_timestamp.h5</code> with a corresponding <code>_metadata.json</code> file.</p>
+                        <hr>
+                        <p>Technical details:</p>
+                        <ul>
+                            <li>Response status: ${data.success ? 'Success' : 'Error'}</li>
+                            <li>Models array: ${Array.isArray(data.models) ? `Present with ${data.models.length} items` : 'Not found or empty'}</li>
+                            <li>Error message: ${data.message || 'None provided'}</li>
+                        </ul>
+                    </div>
+                `;
+        }
+    })
+    .catch(error => {
+            console.error('📋 DEBUG: Error loading models:', error);
+            
+            // Display error message
+            document.getElementById('modelsLoadingMessage').style.display = 'none';
+            modelsList.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <h5>Error loading models</h5>
+                    <p>${error.message}</p>
+                    <p>Please check the browser console for more details (F12)</p>
+                    <hr>
+                    <p>Troubleshooting steps:</p>
+                    <ol>
+                        <li>Check server logs for errors</li>
+                        <li>Verify the models directory exists at the correct path</li>
+                        <li>Confirm model files follow the required naming convention</li>
+                        <li>Make sure metadata JSON files exist and contain class information</li>
+                    </ol>
+                </div>
+            `;
+        });
+}
+
+function selectModel(modelIndex) {
+    const model = availableModels[modelIndex];
+    
+    if (!model) {
+        console.error("No model found at index", modelIndex);
+        return;
+    }
+    
+    selectedModel = model.id || '';
+    selectedModelType = model.type || '';
+    
+    // Enhanced debugging for the selected model
+    console.log("Selected model detailed data:", JSON.stringify(model, null, 2));
+    
+    // Show model info and controls
+    document.getElementById('modelInfo').style.display = 'block';
+    document.getElementById('listenControls').style.display = 'block';
+    document.getElementById('predictorInterface').style.display = 'block';
+    
+    // Safely access model type with fallbacks
+    const modelType = model.type || 'unknown';
+    
+    // Set model type display with fallbacks
+    document.getElementById('modelType').textContent = 
+        modelType === 'cnn' ? 'Convolutional Neural Network (CNN)' : 
+        modelType === 'rf' ? 'Random Forest (RF)' : 
+        modelType === 'ensemble' ? 'Ensemble' : 
+        `Unknown Type (${modelType})`;
+    
+    // Set the dictionary name with fallback
+    const dictionaryName = model.dictionary || 'Unknown';
+    document.getElementById('dictionaryName').textContent = dictionaryName;
+    
+    // Show loading message while we get sound classes
+    const soundsList = document.getElementById('soundsList');
+    soundsList.innerHTML = `
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading sound classes...</p>
+        </div>
+    `;
+    
+    // First, check if the model.sounds already has valid sound classes
+    if (model.sounds && Array.isArray(model.sounds) && model.sounds.length > 0) {
+        console.log(`Using ${model.sounds.length} sounds from model data:`, model.sounds);
+        updateSoundClasses(model.sounds);
+        return; // Don't need to fetch if we already have them
+    }
+    
+    // Otherwise, load sound classes from dictionary endpoint
+    console.log(`Loading sound classes for dictionary: ${dictionaryName}`);
+    
+    // Try the dictionary-specific endpoint
+    fetch(`/api/ml/dictionary/${encodeURIComponent(dictionaryName)}/sounds`)
+        .then(response => {
+            console.log(`Sound classes API response status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error('Failed to load dictionary sounds');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Sound classes API response:', data);
+            
+            if (data.success && Array.isArray(data.sounds) && data.sounds.length > 0) {
+                console.log(`Found ${data.sounds.length} sound classes:`, data.sounds);
+                updateSoundClasses(data.sounds);
+            } else {
+                // As a last resort, try the generic sounds endpoint
+                console.log('No sounds in dictionary API, trying generic endpoint');
+                return fetch('/api/ml/dictionary/sounds')
+                    .then(response => response.json())
+                    .then(genericData => {
+                        if (genericData.success && Array.isArray(genericData.sounds) && genericData.sounds.length > 0) {
+                            console.log(`Found ${genericData.sounds.length} sounds from generic endpoint:`, genericData.sounds);
+                            updateSoundClasses(genericData.sounds);
+                        } else {
+                            // If still no sounds, use some defaults based on dictionary name
+                            if (dictionaryName.toLowerCase() === 'ehoh') {
+                                updateSoundClasses(['eh', 'oh']);
+                                console.log("Using default 'eh', 'oh' classes for EhOh dictionary");
+                            } else {
+                                // If still no sounds, show error
+                                showNoSoundsWarning();
+                            }
+                        }
+                    });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading sound classes:', error);
+            
+            // Try using a default
+            if (dictionaryName.toLowerCase() === 'ehoh') {
+                updateSoundClasses(['eh', 'oh']);
+                console.log("Using default 'eh', 'oh' classes for EhOh dictionary as fallback");
+            } else {
+                // Show error message
+                showNoSoundsWarning();
+            }
+        });
+    
+    // Update statistics if available
+    updateStatistics();
+}
+
+// Helper function to show no sounds warning
+function showNoSoundsWarning() {
+    const soundsList = document.getElementById('soundsList');
+    soundsList.innerHTML = `
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            No sound classes available for this model.
+        </div>
+    `;
+    
+    // Empty sound classes array
+    soundClasses = [];
+    
+    // Update feedback options
+    updateFeedbackOptions();
+}
+
+function updateSoundClasses(sounds) {
+    const soundsList = document.getElementById('soundsList');
+    soundsList.innerHTML = '';
+    
+    console.log('📋 DEBUG: Updating sound classes with:', sounds);
+    
+    if (sounds && Array.isArray(sounds) && sounds.length > 0) {
+        soundClasses = sounds;
+        
+        sounds.forEach(sound => {
+            const badge = document.createElement('span');
+            badge.className = 'sound-badge';
+            badge.textContent = sound;
+            soundsList.appendChild(badge);
+        });
+    } else {
+        // Display message if no sounds are available
+        soundsList.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No sound classes available for this model.
+            </div>
+        `;
+    }
+    
+    // Update feedback options
+    updateFeedbackOptions();
+}
+
+function loadSoundClassesForDictionary(dictionaryName) {
+    // If no dictionary name provided, use a fallback method
+    if (!dictionaryName) {
+        loadSoundClasses();
+        return;
+    }
+    
+    // Get sound classes for a specific dictionary
+    fetch(`/api/ml/dictionary/${encodeURIComponent(dictionaryName)}/sounds`)
+        .then(response => {
+            if (!response.ok) {
+                // Fall back to the generic endpoint if the specific one fails
+                return fetch('/api/ml/dictionary/sounds');
+            }
+            return response;
+        })
+        .then(response => response.json())
+        .then(data => {
+            const soundsList = document.getElementById('soundsList');
+            soundsList.innerHTML = '';
+            
+            // Handle different response formats
+            let sounds = [];
+            if (data.success && data.sounds) {
+                sounds = data.sounds;
+            } else if (data.sounds) {
+                sounds = data.sounds;
+            }
+            
+            if (sounds && sounds.length > 0) {
+                soundClasses = sounds;
+                
+                sounds.forEach(sound => {
+                    const badge = document.createElement('span');
+                    badge.className = 'sound-badge';
+                    badge.textContent = sound;
+                    soundsList.appendChild(badge);
+                });
+            } else {
+                // Display message if no sounds are available
+                soundsList.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No sound classes available for this dictionary.
+                    </div>
+                `;
+            }
+            
+            // Update feedback options
+            updateFeedbackOptions();
+        })
+        .catch(error => {
+            console.error(`Error loading sound classes for dictionary ${dictionaryName}:`, error);
+            
+            // Fall back to default sound classes
+            loadSoundClasses();
+        });
+}
+
+// Keep the original function as a fallback
+function loadSoundClasses() {
+    fetch('/api/ml/dictionary/sounds')
+        .then(response => response.json())
+        .then(data => {
+            const soundsList = document.getElementById('soundsList');
+            soundsList.innerHTML = '';
+            
+            // Handle different response formats
+            let sounds = [];
+            if (data.success && data.sounds) {
+                sounds = data.sounds;
+            } else if (data.sounds) {
+                sounds = data.sounds;
+            }
+            
+            if (sounds && sounds.length > 0) {
+                soundClasses = sounds;
+                
+                sounds.forEach(sound => {
+                    const badge = document.createElement('span');
+                    badge.className = 'sound-badge';
+                    badge.textContent = sound;
+                    soundsList.appendChild(badge);
+                });
+            } else {
+                // Display message if no sounds are available
+                soundsList.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No sound classes available for the active dictionary.
+                    </div>
+                `;
+            }
+            
+            // Update feedback options
+            updateFeedbackOptions();
+        })
+        .catch(error => {
+            console.error('Error loading sound classes:', error);
+            
+            // Keep the server-rendered sound classes
+            soundClasses = Array.from(document.querySelectorAll('.sound-badge')).map(badge => badge.textContent);
+            
+            // Update feedback options (in case they weren't rendered server-side)
+            if (soundClasses.length === 0) {
+                // Display message instead of using hardcoded classes
+                soundsList.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No sound classes available. Please select a model with valid metadata.
+                    </div>
+                `;
+                
+                // Use empty array instead of fake classes
+                soundClasses = [];
+            }
+            
+            // Update feedback options
+            updateFeedbackOptions();
+        });
+}
+
+function updateFeedbackOptions() {
+    const feedbackOptions = document.getElementById('feedbackOptions');
+    
+    // Only update if there are no options already (to avoid duplicates)
+    if (feedbackOptions.children.length === 0) {
+        feedbackOptions.innerHTML = '';
+        
+        soundClasses.forEach(sound => {
+            const option = document.createElement('div');
+            option.className = 'feedback-option';
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = 'feedbackSound';
+            input.id = `sound_${sound}`;
+            input.value = sound;
+            input.className = 'form-check-input';
+            input.addEventListener('change', function() {
+                document.getElementById('submitFeedbackBtn').disabled = false;
+                activeSound = sound;
+            });
+            
+            const label = document.createElement('label');
+            label.htmlFor = `sound_${sound}`;
+            label.className = 'form-check-label';
+            label.textContent = sound;
+            
+            option.appendChild(input);
+            option.appendChild(label);
+            feedbackOptions.appendChild(option);
+        });
+    }
+}
+
+function startListening() {
+    if (!selectedModel) {
+        alert('Please select a model first');
+        return;
+    }
+    
+    console.log('📋 DEBUG: Starting listening with model: ', selectedModel);
+    
+    // Update button to show "Stop"
+    const listenButton = document.getElementById('listenButton');
+    listenButton.innerHTML = '<i class="bi bi-stop-fill me-2"></i>Stop';
+    listenButton.classList.remove('btn-primary');
+    listenButton.classList.add('btn-danger');
+    
+    // Show listening indicator
+    document.getElementById('listeningIndicator').style.display = 'block';
+    
+    // Start listening API call with the full model ID
+    console.log('📋 DEBUG: Sending request to /api/start_listening with model_id:', selectedModel);
+    
+    // Make sure we're using the correct endpoint
+    const endpoint = '/api/start_listening';
+    
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model_id: selectedModel
+        })
+    })
+    .then(response => {
+        console.log(`📋 DEBUG: Start listening response status: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📋 DEBUG: Start listening response data:', data);
+        
+        if (data.status === 'success') {
+            console.log('📋 DEBUG: Real-time listening started:', data.message);
+            console.log('📋 DEBUG: Sound classes:', data.sound_classes);
+            isListening = true;
+            
+            // Update sound classes if provided in the response
+            if (data.sound_classes && Array.isArray(data.sound_classes)) {
+                updateSoundClasses(data.sound_classes);
+            }
+            
+            // Start SSE connection for predictions
+            startPredictionStream();
+            
+            // Show prediction history
+            document.getElementById('predictionHistory').style.display = 'block';
+        } else {
+            alert(`Error starting listening: ${data.message}`);
+            resetListeningUI();
+        }
+    })
+    .catch(error => {
+        console.error('📋 DEBUG: Error starting listening:', error);
+        alert('Error starting listening: ' + error.message);
+        resetListeningUI();
+    });
+}
+
+function stopListening() {
+    // Reset button to "Listen"
+    resetListeningUI();
+    
+    // Stop listening API call
+    fetch('/api/ml/stop_listening', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Real-time listening stopped');
+        
+        // Close SSE connection
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+    })
+    .catch(error => {
+        console.error('Error stopping listening:', error);
+    });
+}
+
+function resetListeningUI() {
+    isListening = false;
+    
+    const listenButton = document.getElementById('listenButton');
+    listenButton.innerHTML = '<i class="bi bi-mic-fill me-2"></i>Listen';
+    listenButton.classList.remove('btn-danger');
+    listenButton.classList.add('btn-primary');
+    
+    document.getElementById('listeningIndicator').style.display = 'none';
+}
+
+function startPredictionStream() {
+    if (eventSource) {
+        eventSource.close();
+    }
+    
+    console.log('📋 DEBUG: Starting prediction stream');
+    
+    // Make sure we're using the correct endpoint
+    const streamEndpoint = '/api/ml/prediction_stream';
+    
+    eventSource = new EventSource(streamEndpoint);
+    
+    eventSource.onmessage = function(event) {
+        console.log('📋 DEBUG: Received event from stream:', event.data);
+        
+        if (event.data === ": heartbeat") {
+            console.log('📋 DEBUG: Received heartbeat');
+        return;
+    }
+    
+        try {
+            const data = JSON.parse(event.data);
+            console.log('📋 DEBUG: Parsed event data:', data);
+            
+            if (data.prediction) {
+                // Update UI with prediction
+                updatePredictionUI(data.prediction);
+            }
+            
+            if (data.log) {
+                console.log('📋 DEBUG: Log message from server:', data.log);
+            }
+        } catch (e) {
+            console.error('📋 DEBUG: Error parsing event data:', e, event.data);
+        }
+    };
+    
+    eventSource.onerror = function(error) {
+        console.error('📋 DEBUG: EventSource error:', error);
+        
+        if (eventSource.readyState === EventSource.CLOSED) {
+            console.log('📋 DEBUG: EventSource connection closed');
+        } else {
+            console.error('📋 DEBUG: EventSource failed');
+        }
+        
+        eventSource.close();
+        resetListeningUI();
+    };
+    
+    console.log('📋 DEBUG: EventSource connection established');
+}
+
+function updatePredictionUI(prediction) {
+    // Store current prediction for feedback
+    currentPrediction = prediction;
+    
+    // Update latest prediction display
+    document.getElementById('latestPrediction').style.display = 'block';
+    document.getElementById('predictedClass').textContent = prediction.class;
+    document.getElementById('confidenceValue').textContent = `${(prediction.confidence * 100).toFixed(1)}% confidence`;
+    
+    // Reset feedback form
+    document.querySelectorAll('input[name="feedbackSound"]').forEach(input => {
+        input.checked = false;
+    });
+    document.getElementById('submitFeedbackBtn').disabled = true;
+    activeSound = null;
+    
+    // Add to prediction history
+    addToPredictionHistory(prediction);
+    
+    // Update statistics
+    updateStatistics();
+}
+
+function addToPredictionHistory(prediction) {
+    const predictionsList = document.getElementById('predictionsList');
+    
+    const item = document.createElement('div');
+    item.className = 'prediction-item';
+    
+    const infoDiv = document.createElement('div');
+    
+    const soundSpan = document.createElement('span');
+    soundSpan.className = 'sound';
+    soundSpan.textContent = prediction.class;
+    
+    const confidenceSpan = document.createElement('span');
+    confidenceSpan.className = 'confidence';
+    confidenceSpan.textContent = `${(prediction.confidence * 100).toFixed(1)}%`;
+    
+    infoDiv.appendChild(soundSpan);
+    infoDiv.appendChild(document.createTextNode(' - '));
+    infoDiv.appendChild(confidenceSpan);
+    
+    item.appendChild(infoDiv);
+    
+    // Add to the top of the list
+    if (predictionsList.firstChild) {
+        predictionsList.insertBefore(item, predictionsList.firstChild);
+    } else {
+        predictionsList.appendChild(item);
+    }
+    
+    // Limit history to 10 items
+    while (predictionsList.children.length > 10) {
+        predictionsList.removeChild(predictionsList.lastChild);
+    }
+}
+
+function submitFeedback() {
+    if (!currentPrediction || !activeSound) {
+        return;
+    }
+    
+    // Send feedback to API
+    fetch('/api/ml/record_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            predicted_sound: currentPrediction.class,
+            actual_sound: activeSound,
+            confidence: currentPrediction.confidence
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('Feedback recorded successfully');
+            
+            // Update the last prediction item in history with feedback
+            const predictionsList = document.getElementById('predictionsList');
+            if (predictionsList.firstChild) {
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'feedback';
+                
+                const actualLabel = document.createElement('span');
+                actualLabel.className = 'badge';
+                actualLabel.classList.add(currentPrediction.class === activeSound ? 'bg-success' : 'bg-danger');
+                actualLabel.textContent = `Actually: ${activeSound}`;
+                
+                feedbackDiv.appendChild(actualLabel);
+                predictionsList.firstChild.appendChild(feedbackDiv);
+            }
+            
+            // Update statistics
+            updateStatistics();
+        } else {
+            console.error('Error recording feedback:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting feedback:', error);
+    });
+}
+
+function updateStatistics() {
+    fetch('/api/ml/inference_statistics')
+        .then(response => response.json())
+        .then(data => {
+            // Update basic stats
+            document.getElementById('totalPredictions').textContent = data.total_predictions || 0;
+            document.getElementById('avgConfidence').textContent = `${((data.average_confidence || 0) * 100).toFixed(1)}%`;
+            
+            // Calculate overall accuracy
+            let correctTotal = 0;
+            let totalPredictions = 0;
+            
+            const classAccuracyTable = document.getElementById('classAccuracyTable');
+            classAccuracyTable.innerHTML = '';
+            
+            // Build class accuracy table
+            Object.entries(data.class_accuracy || {}).forEach(([className, stats]) => {
+                const row = document.createElement('tr');
+                
+                const nameCell = document.createElement('td');
+                nameCell.textContent = className;
+                
+                const totalCell = document.createElement('td');
+                totalCell.textContent = stats.total_samples;
+                
+                const correctCell = document.createElement('td');
+                correctCell.textContent = stats.correct_samples;
+                
+                const accuracyCell = document.createElement('td');
+                accuracyCell.textContent = `${(stats.accuracy * 100).toFixed(1)}%`;
+                
+                row.appendChild(nameCell);
+                row.appendChild(totalCell);
+                row.appendChild(correctCell);
+                row.appendChild(accuracyCell);
+                
+                classAccuracyTable.appendChild(row);
+                
+                correctTotal += stats.correct_samples;
+                totalPredictions += stats.total_samples;
+            });
+            
+            // Set overall accuracy
+            const overallAccuracy = totalPredictions > 0 ? (correctTotal / totalPredictions) : 0;
+            document.getElementById('overallAccuracy').textContent = `${(overallAccuracy * 100).toFixed(1)}%`;
+            
+            // Build confusion matrix
+            buildConfusionMatrix(data.confusion_matrix || {});
+        })
+        .catch(error => {
+            console.error('Error fetching statistics:', error);
+        });
+}
+
+function buildConfusionMatrix(confusionMatrix) {
+    const matrix = document.getElementById('confusionMatrix');
+    matrix.innerHTML = '';
+    
+    // Get unique class names from confusion matrix
+    const classNames = new Set();
+    Object.keys(confusionMatrix).forEach(actual => {
+        classNames.add(actual);
+        Object.keys(confusionMatrix[actual]).forEach(predicted => {
+            classNames.add(predicted);
+        });
+    });
+    
+    const sortedClassNames = Array.from(classNames).sort();
+    
+    if (sortedClassNames.length === 0) {
+        return;
+    }
+    
+    // Create header row
+    const headerRow = document.createElement('tr');
+    headerRow.appendChild(document.createElement('th')); // Empty corner cell
+    
+    sortedClassNames.forEach(className => {
+        const th = document.createElement('th');
+        th.textContent = className;
+        headerRow.appendChild(th);
+    });
+    
+    matrix.appendChild(headerRow);
+    
+    // Create data rows
+    sortedClassNames.forEach(actual => {
+        const row = document.createElement('tr');
+        
+        const actualHeader = document.createElement('th');
+        actualHeader.textContent = actual;
+        row.appendChild(actualHeader);
+        
+        sortedClassNames.forEach(predicted => {
+            const cell = document.createElement('td');
+            const count = confusionMatrix[actual] && confusionMatrix[actual][predicted] 
+                ? confusionMatrix[actual][predicted] : 0;
+            
+            cell.textContent = count;
+            
+            if (actual === predicted) {
+                cell.className = 'correct';
+            } else if (count > 0) {
+                cell.className = 'incorrect';
+            }
+            
+            row.appendChild(cell);
+        });
+        
+        matrix.appendChild(row);
+    });
+}
+
+function saveAnalysis() {
+    fetch('/api/ml/save_analysis', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Analysis data saved successfully');
+        } else {
+            alert(`Error saving analysis: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving analysis:', error);
+        alert('Error saving analysis. See console for details.');
+    });
+}
+</script>
+{% endblock %} 

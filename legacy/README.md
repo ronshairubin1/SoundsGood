@@ -40,21 +40,3 @@ Below is a mapping of legacy files to their new locations:
 
 ### Templates
 - Various ML-related templates → New templates with improved UI/UX 
-
-## Recently Added Legacy Files (Feb 26, 2024)
-
-### Application Files
-- `app.py` → Replaced by `main.py` as the main application entry point.
-  - Functionality has been consolidated in main.py with a cleaner architecture.
-
-### Migration Utilities
-- `migrate_sounds_focused.py` → Iteration on migration tools, now consolidated in `migrate_sounds.py`.
-  - Contains targeted functionality for sounds migration.
-- `migrate_sounds_improved.py` → Another iteration on migration tools, now consolidated in `migrate_sounds.py`.
-  - Contains improved algorithms for sounds migration.
-
-### Source Files
-- `src/main_app.py` → A simplified version of the main application file, now replaced by `main.py`.
-  - This was an early prototype with minimal functionality.
-- `src/test_mic.py` → Utility for testing microphone input.
-  - This functionality is now integrated into the recording workflow in `static/js/recorder.js` and the related endpoints in `main.py`. 

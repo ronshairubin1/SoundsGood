@@ -1,3 +1,9 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -15,35 +21,17 @@ lib64/
 parts/
 sdist/
 var/
+wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-**/venv/
-.venv/
-ENV/
+# Logs
+*.log
+logs/
+app_output.log
 
-# Audio files
-*.wav
-*.mp3
-*.ogg
-
-# Model files
-*.joblib
-
-# Environment
-.env
-.python-version
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
+# OS specific files
 .DS_Store
 .DS_Store?
 ._*
@@ -52,9 +40,27 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+
 # Project specific
-static/goodsounds/
-static/temp/
-checkpoints/
-app_output.log
+temp/
+dictionaries/
+data/
+test_imports.py
+migrate_sounds*.py
+app.py
+
+# Conda
 Miniconda3-latest-MacOSX-arm64.sh
+.python-version
+
+# Keep these directories but ignore large files within them
+# models/**/*.h5
+# models/**/*.joblib

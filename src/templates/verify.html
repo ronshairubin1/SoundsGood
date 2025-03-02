@@ -1,134 +1,258 @@
 {% extends "base.html" %}
 
+{% block title %}Verify Sound Samples{% endblock %}
+
 {% block content %}
-<div class="verify-container">
-    <h2><i class="fas fa-check-circle"></i> Verify Sound Chunks</h2>
-    <p class="instructions">
-        Listen to each chunk and verify if it's a good recording of the sound.
-        Click "Keep" for good recordings, "Delete" for bad ones.
-    </p>
-
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> {{ message }}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                Verify Sound Samples
+            </h2>
+            
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Step 2:</strong> Listen to each sound sample below and decide if it's a good example of the <strong>{{ class_name }}</strong> sound. 
+                Keep good samples for training and discard any that don't represent the sound well.
+            </div>
+            
+            {% if chunks and chunks|length > 0 %}
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-soundwave me-2"></i>
+                            Sound Samples for <strong>{{ class_name }}</strong>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ chunks|length }} samples found</span>
+                                    <div>
+                                        <button id="keepAllBtn" class="btn btn-success">
+                                            <i class="bi bi-check-all me-1"></i> Keep All
+                                        </button>
+                                        <button id="discardAllBtn" class="btn btn-danger ms-2">
+                                            <i class="bi bi-trash me-1"></i> Discard All
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sound-chunks-container">
+                            {% for chunk in chunks %}
+                            <div class="sound-chunk-item mb-3 p-3 border rounded" data-chunk-id="{{ chunk.id }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Sample #{{ loop.index }}</strong>
+                                        <audio controls src="{{ chunk.url }}" class="ms-3" style="height: 30px;"></audio>
+                                    </div>
+                                    <div class="chunk-actions">
+                                        <button class="btn btn-sm btn-success keep-chunk-btn" data-chunk-id="{{ chunk.id }}">
+                                            <i class="bi bi-check-circle me-1"></i> Keep
+                                        </button>
+                                        <button class="btn btn-sm btn-danger discard-chunk-btn ms-2" data-chunk-id="{{ chunk.id }}">
+                                            <i class="bi bi-trash me-1"></i> Discard
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <button id="backToRecordBtn" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Recording
+                            </button>
+                            <button id="finishVerificationBtn" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Finish Verification
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    {% if chunks %}
-    <div class="chunks-list">
-        {% for chunk in chunks %}
-        <div class="chunk-item">
-            <div class="chunk-info">
-                <span class="sound-name">{{ chunk.split('_')[0] }}</span>
-                <span class="chunk-count">({{ loop.index }}/{{ chunks|length }})</span>
-            </div>
-            
-            <audio controls src="{{ url_for('static', filename='temp/' + chunk) }}" class="chunk-audio"></audio>
-            
-            <div class="chunk-actions">
-                <form method="POST" action="{{ url_for('ml.process_verification') }}" class="d-inline">
-                    <input type="hidden" name="chunk_file" value="{{ chunk }}">
-                    <button type="submit" name="is_good" value="true" class="btn btn-success">
-                        <i class="fas fa-check"></i> Keep
-                    </button>
-                    <button type="submit" name="is_good" value="false" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </form>
-            </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    No sound samples were detected in your recording. Please try recording again with clearer sounds separated by silence.
+                    <div class="mt-3">
+                        <a href="{{ url_for('record_sounds') }}" class="btn btn-primary">
+                            <i class="bi bi-mic-fill me-1"></i> Back to Recording
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
-        {% endfor %}
     </div>
-   
-    <div class="mt-4">
-        <a href="{{ url_for('ml.list_recordings') }}" class="btn btn-primary">
-            <i class="fas fa-list"></i> View All Recordings
-        </a>
-    </div>
-    {% else %}
-    <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> No chunks to verify.
-        <a href="{{ url_for('ml.list_recordings') }}" class="btn btn-link">View your recordings</a>
-    </div>
-    {% endif %}
 </div>
+{% endblock %}
 
-<style>
-.verify-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.instructions {
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 2rem;
-    color: #666;
-}
-
-.chunks-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.chunk-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #f8f9fa;
-}
-
-.chunk-info {
-    min-width: 100px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.sound-name {
-    font-weight: 500;
-    color: #007bff;
-    font-size: 1.2em;
-    text-transform: uppercase;
-}
-
-.chunk-count {
-    color: #666;
-    font-size: 0.9em;
-}
-
-.chunk-audio {
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.chunk-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-}
-
-.btn i {
-    font-size: 0.9em;
-}
-</style>
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Keep track of processed chunks
+        const processedChunks = {};
+        const chunkItems = document.querySelectorAll('.sound-chunk-item');
+        let processedCount = 0;
+        
+        // Handle keep chunk action
+        document.querySelectorAll('.keep-chunk-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const chunkId = this.getAttribute('data-chunk-id');
+                processChunk(chunkId, true);
+            });
+        });
+        
+        // Handle discard chunk action
+        document.querySelectorAll('.discard-chunk-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const chunkId = this.getAttribute('data-chunk-id');
+                processChunk(chunkId, false);
+            });
+        });
+        
+        // Handle keep all button
+        document.getElementById('keepAllBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to keep all samples?')) {
+                document.querySelectorAll('.sound-chunk-item').forEach(item => {
+                    const chunkId = item.getAttribute('data-chunk-id');
+                    if (!processedChunks[chunkId]) {
+                        processChunk(chunkId, true);
+                    }
+                });
+            }
+        });
+        
+        // Handle discard all button
+        document.getElementById('discardAllBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to discard all samples?')) {
+                document.querySelectorAll('.sound-chunk-item').forEach(item => {
+                    const chunkId = item.getAttribute('data-chunk-id');
+                    if (!processedChunks[chunkId]) {
+                        processChunk(chunkId, false);
+                    }
+                });
+            }
+        });
+        
+        // Handle back to recording button
+        document.getElementById('backToRecordBtn').addEventListener('click', function() {
+            window.location.href = "{{ url_for('record_sounds') }}";
+        });
+        
+        // Handle finish verification button
+        document.getElementById('finishVerificationBtn').addEventListener('click', function() {
+            if (processedCount < chunkItems.length) {
+                const remaining = chunkItems.length - processedCount;
+                if (!confirm(`You still have ${remaining} unprocessed samples. They will be discarded. Continue anyway?`)) {
+                    return;
+                }
+                
+                // Process remaining chunks as discarded
+                document.querySelectorAll('.sound-chunk-item').forEach(item => {
+                    const chunkId = item.getAttribute('data-chunk-id');
+                    if (!processedChunks[chunkId]) {
+                        processChunk(chunkId, false, false); // Silent discard
+                    }
+                });
+            }
+            
+            // Redirect to recording page
+            window.location.href = "{{ url_for('record_sounds') }}";
+        });
+        
+        // Process a chunk (keep or discard)
+        function processChunk(chunkId, keep, showFeedback = true) {
+            // Skip if already processed
+            if (processedChunks[chunkId]) return;
+            
+            // Mark as processed
+            processedChunks[chunkId] = true;
+            processedCount++;
+            
+            // Update UI
+            const chunkItem = document.querySelector(`.sound-chunk-item[data-chunk-id="${chunkId}"]`);
+            if (chunkItem) {
+                if (keep) {
+                    chunkItem.classList.add('bg-success-subtle');
+                    chunkItem.querySelector('.chunk-actions').innerHTML = '<span class="badge bg-success">Kept for Training</span>';
+                } else {
+                    chunkItem.classList.add('bg-danger-subtle');
+                    chunkItem.querySelector('.chunk-actions').innerHTML = '<span class="badge bg-danger">Discarded</span>';
+                }
+            }
+            
+            // Send to server
+            fetch('/api/sounds/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    filename: chunkId, 
+                    keep: keep 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (showFeedback) {
+                        showToast(keep ? 'Sample saved for training!' : 'Sample discarded.', keep ? 'success' : 'info');
+                    }
+                } else {
+                    showToast('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing chunk:', error);
+                showToast('Error processing sample', 'danger');
+            });
+            
+            // Enable finish button if all processed
+            if (processedCount >= chunkItems.length) {
+                document.getElementById('finishVerificationBtn').classList.add('btn-success');
+                document.getElementById('finishVerificationBtn').classList.remove('btn-primary');
+            }
+        }
+        
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+        
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '11';
+            document.body.appendChild(container);
+            return container;
+        }
+    });
+</script>
 {% endblock %} 

@@ -11,6 +11,11 @@ from scipy.io import wavfile
 from flask import current_app
 import os
 from src.ml.model_paths import get_cnn_model_path
+import pyaudio
+from threading import Thread, Lock
+import tempfile
+import wave
+from .sound_processor import SoundProcessor
 
 # Import shared constants and the SoundProcessor from audio_processing
 from .constants import SAMPLE_RATE, AUDIO_DURATION, AUDIO_LENGTH, TEST_DURATION, TEST_FS, INT16_MAX
@@ -24,286 +29,297 @@ print(sd.query_devices())
 
 class SoundDetector:
     """
-    Continuously listens to the microphone for short bursts of sound.
-    Accumulates audio in a queue; once enough audio is detected,
-    runs inference with the loaded CNN model.
+    Sound detector that listens for sounds and makes predictions using CNN models.
+    This class manages audio input, processing, and prediction.
     """
-    def __init__(self, model, class_names):
+    
+    def __init__(self, model, sound_classes, input_shape=None, preprocessing_params=None):
+        """
+        Initialize the sound detector.
+        
+        Args:
+            model: CNN model to use for prediction
+            sound_classes (list): List of sound class names
+            input_shape (tuple): Shape expected by the model (height, width, channels)
+            preprocessing_params (dict): Parameters for audio preprocessing
+        """
         self.model = model
-        self.class_names = class_names
-        self.audio_queue = []
-        self.is_recording = False
-        self.predictions = []
-        self.callback = None
+        self.sound_classes = sound_classes
+        self.input_shape = input_shape
+        
+        # Default preprocessing parameters
+        self.preprocessing_params = preprocessing_params or {
+            "sample_rate": 22050,
+            "n_mels": 128,
+            "n_fft": 2048,
+            "hop_length": 512,
+            "sound_threshold": 0.01,
+            "min_silence_duration": 0.5,
+            "trim_silence": True,
+            "normalize_audio": True
+        }
+        
+        logging.info(f"Initializing SoundDetector with parameters: {self.preprocessing_params}")
+        
+        # Get parameters from preprocessing_params
+        self.sample_rate = self.preprocessing_params.get("sample_rate", 22050)
+        self.sound_threshold = self.preprocessing_params.get("sound_threshold", 0.01)
+        self.min_silence_duration = self.preprocessing_params.get("min_silence_duration", 0.5)
+        self.trim_silence = self.preprocessing_params.get("trim_silence", True)
+        self.normalize_audio = self.preprocessing_params.get("normalize_audio", True)
+        self.n_mels = self.preprocessing_params.get("n_mels", 128)
+        self.n_fft = self.preprocessing_params.get("n_fft", 2048)
+        self.hop_length = self.preprocessing_params.get("hop_length", 512)
+        
+        # Initialize sound processor
+        self.sound_processor = SoundProcessor(
+            sample_rate=self.sample_rate,
+            sound_threshold=self.sound_threshold,
+            min_silence_duration=self.min_silence_duration,
+            trim_silence=self.trim_silence,
+            normalize_audio=self.normalize_audio,
+            n_mels=self.n_mels,
+            n_fft=self.n_fft,
+            hop_length=self.hop_length
+        )
+        
+        # PyAudio setup
+        self.audio = pyaudio.PyAudio()
         self.stream = None
-        self.thread = None
-        self.buffer = bytearray()
-        self.sample_width = 2  # 16-bit audio
-        self.frame_duration_ms = 30   # Reduced for finer granularity
-        self.frame_size = int(SAMPLE_RATE * self.frame_duration_ms / 1000)
-        self.frame_duration = self.frame_duration_ms / 1000.0
-        self.speech_buffer = bytearray()
-        self.speech_detected = False
-        self.silence_duration = 0
-        self.silence_threshold_ms = 500  # For better word detection
-        self.auto_stop = False
-        self.is_speech_active = False
-        self.speech_duration = 0
-        self.min_sound_duration = 0.3  # Minimum duration for a complete sound
-
-        # SoundProcessor with adjusted threshold
-        self.sound_processor = SoundProcessor(sample_rate=SAMPLE_RATE)
-        self.sound_processor.sound_threshold = 0.08  # Slightly lower threshold
-
-        self.audio_queue_lock = threading.Lock()
-
-        logging.info(f"SoundDetector initialized with classes: {class_names}")
-        devices = sd.query_devices()
-        logging.info("Available audio devices:")
-        for i, device in enumerate(devices):
-            logging.info(f"[{i}] {device['name']} (inputs: {device['max_input_channels']})")
-
-        # Confidence threshold for final predictions
-        self.confidence_threshold = 0.40
-        self.amplitude_threshold = 0.08
-        self.min_prediction_threshold = 0.3
-
-        # Circular buffer for a small "pre-buffer"
-        self.pre_buffer_duration_ms = 100
-        self.pre_buffer_size = int(SAMPLE_RATE * self.pre_buffer_duration_ms / 1000)
-        self.circular_buffer = np.zeros(self.pre_buffer_size, dtype=np.float32)
-        self.buffer_index = 0
-
-        self._stop_event = threading.Event()
-
-    def process_audio(self):
-        """
-        Called typically after enough audio is accumulated in the queue.
-        Concatenates all frames, extracts features, predicts with the model.
-        """
-        try:
-            with self.audio_queue_lock:
-                if not self.audio_queue:
-                    logging.info("No audio data in queue to process")
-                    return
-                logging.info(f"Processing audio queue of size: {len(self.audio_queue)}")
-                audio_data = np.concatenate(self.audio_queue)
-                self.audio_queue.clear()
-
-            logging.info(f"Concatenated audio shape: {audio_data.shape}")
-
-            # Normalize to -1..1 if needed
-            if np.abs(audio_data).max() > 1.0:
-                audio_data = audio_data / np.abs(audio_data).max()
-
-            # Extract features
-            features = self.extract_features(audio_data)
-            if features is None:
-                logging.info("No features extracted (features=None).")
-                return
-
-            logging.info(f"Extracted features shape: {features.shape}")
-
-            # Model prediction
-            features = np.expand_dims(features, axis=0)
-            predictions = self.model.predict(features, verbose=0)
-            logging.info(f"Raw predictions: {predictions[0]}")
-
-            top_idx = np.argmax(predictions[0])
-            top_label = self.class_names[top_idx]
-            top_conf = float(predictions[0][top_idx])
-
-            if top_conf > self.confidence_threshold:
-                logging.info(f"Prediction above threshold: {top_label} (conf: {top_conf:.4f})")
-                self.predictions.append((top_label, top_conf))
-
-                if self.callback:
-                    self.callback({
-                        "class": top_label,
-                        "confidence": top_conf
-                    })
-
-            else:
-                logging.info(f"Confidence {top_conf:.4f} < threshold {self.confidence_threshold}")
-                # ============ ADDED BELOW ============ 
-                # Even if confidence is low, let the callback happen,
-                # so the user can see/confirm/correct the guess.
-                if self.callback:
-                    self.callback({
-                        "class": top_label,
-                        "confidence": top_conf,
-                        "low_confidence": True
-                    })
-                # ============ END NEW CODE ============
-
-        except Exception as e:
-            logging.error(f"Error in process_audio: {e}", exc_info=True)
-
-    def extract_features(self, audio):
-        # Logging the input shape
-        logging.info(f"Extracting features from audio shape: {audio.shape}")
+        self.is_listening = False
         
-        # Match the feature extraction exactly as done during training
-        n_mfcc = 13  # Instead of the current value
-        n_fft = 512  # Make sure this matches training
-        hop_length = 256  # Make sure this matches training
+        # Buffer for audio data
+        self.buffer = []
+        self.buffer_size = int(self.sample_rate * 5)  # 5 seconds buffer
+        self.buffer_lock = Lock()
         
-        # Extract MFCCs with matching parameters
-        mfccs = librosa.feature.mfcc(y=audio, sr=self.sample_rate, n_mfcc=n_mfcc, n_fft=n_fft, hop_length=hop_length)
+        # Sound detection state
+        self.is_sound_detected = False
+        self.sound_start_time = 0
+        self.predictions = []
         
-        # Ensure we get the expected shape (13, 32)
-        if mfccs.shape[1] < 32:
-            # Pad if too short
-            mfccs = np.pad(mfccs, ((0, 0), (0, 32 - mfccs.shape[1])), mode='constant')
-        elif mfccs.shape[1] > 32:
-            # Truncate if too long
-            mfccs = mfccs[:, :32]
+        logging.info(f"SoundDetector initialized with {len(sound_classes)} classes")
+    
+    def start_listening(self):
+        """Start audio stream and listen for sounds."""
+        if self.is_listening:
+            logging.warning("Already listening")
+            return
         
-        # Add channel dimension for CNN
-        mfccs = mfccs.reshape(mfccs.shape[0], mfccs.shape[1], 1)
+        self.is_listening = True
+        self.buffer = []
         
-        logging.info(f"Feature shape: {mfccs.shape}")
-        return mfccs
-
-    def audio_callback(self, indata, frames, time_info, status):
-        """
-        Sounddevice callback. Called with new chunks of mic data.
-        """
-        try:
-            if status:
-                logging.warning(f"Audio callback status: {status}")
-
-            audio_data = indata.flatten().astype(np.float32)
-            if np.abs(audio_data).max() > 1.0:
-                audio_data = audio_data / np.abs(audio_data).max()
-
-            # Sound detection
-            has_sound, _ = self.sound_processor.detect_sound(audio_data)
-
-            # Update circular buffer
-            start_idx = self.buffer_index
-            end_idx = start_idx + len(audio_data)
-            if end_idx > self.pre_buffer_size:
-                first_part = self.pre_buffer_size - start_idx
-                self.circular_buffer[start_idx:] = audio_data[:first_part]
-                self.circular_buffer[:end_idx - self.pre_buffer_size] = audio_data[first_part:]
-            else:
-                self.circular_buffer[start_idx:end_idx] = audio_data
-            self.buffer_index = (self.buffer_index + len(audio_data)) % self.pre_buffer_size
-
-            # If there's sound
-            if has_sound:
-                if not self.is_speech_active:
-                    logging.info("Sound detected!")
-                    self.is_speech_active = True
-                    self.speech_duration = 0
-
-                    # Include the pre-buffer data for context
-                    with self.audio_queue_lock:
-                        pre_buffer = np.concatenate([
-                            self.circular_buffer[self.buffer_index:],
-                            self.circular_buffer[:self.buffer_index]
-                        ])
-                        self.audio_queue.append(pre_buffer)
-
-                with self.audio_queue_lock:
-                    self.audio_queue.append(audio_data)
-
-                self.speech_duration += len(audio_data) / SAMPLE_RATE
-
-                # If we've collected enough audio, process
-                if self.speech_duration >= AUDIO_DURATION:
-                    self.process_audio()
-                    self.is_speech_active = False
-
-            else:
-                # If we were capturing speech but now silent, finalize
-                if self.is_speech_active:
-                    with self.audio_queue_lock:
-                        self.audio_queue.append(audio_data)
-                    self.process_audio()
-                    self.is_speech_active = False
-                    logging.info("Sound ended")
-
-        except Exception as e:
-            logging.error(f"Error in audio_callback: {str(e)}", exc_info=True)
-
-    def start_listening(self, callback=None, auto_stop=False):
-        """
-        Start capturing audio from microphone in real-time,
-        applying audio_callback, and processing when enough data is found.
-        """
-        if self.is_recording:
-            return False
-
-        try:
-            self.is_recording = True
-            self.callback = callback
-            self.auto_stop = auto_stop
-            self.predictions = []
-
-            # Clear flags
-            self.buffer = bytearray()
-            self.speech_buffer = bytearray()
-            self.speech_detected = False
-            self.silence_duration = 0
-            self.speech_duration = 0
-
-            logging.info("Starting audio stream with:")
-            logging.info(f"Sample rate: {SAMPLE_RATE}")
-            logging.info(f"Frame duration: {self.frame_duration_ms} ms")
-            logging.info(f"Frame size: {self.frame_size} samples")
-
-            # Open stream
-            self.stream = sd.InputStream(
-                channels=1,
-                dtype=np.float32,
-                samplerate=SAMPLE_RATE,
-                blocksize=self.frame_size,
-                callback=self.audio_callback
-            )
-
-            # Start a thread that can occasionally run process_audio
-            # (Though we also trigger it in audio_callback.)
-            self.thread = threading.Thread(target=self.process_audio, daemon=True)
-            self.thread.start()
-
-            self.stream.start()
-            return True
-
-        except Exception as e:
-            logging.error(f"Error starting listener: {e}", exc_info=True)
-            self.is_recording = False
-            return False
-
+        # Open audio stream
+        self.stream = self.audio.open(
+            format=pyaudio.paFloat32,
+            channels=1,
+            rate=self.sample_rate,
+            input=True,
+            frames_per_buffer=1024,
+            stream_callback=self.audio_callback
+        )
+        
+        logging.info(f"Started listening with sample rate {self.sample_rate}")
+    
     def stop_listening(self):
+        """Stop audio stream."""
+        if not self.is_listening:
+            logging.warning("Not listening")
+            return
+        
+        self.is_listening = False
+        
+        if self.stream:
+            self.stream.stop_stream()
+            self.stream.close()
+            self.stream = None
+        
+        with self.buffer_lock:
+            self.buffer = []
+        
+        logging.info("Stopped listening")
+    
+    def audio_callback(self, in_data, frame_count, time_info, status):
         """
-        Stop the stream, clear buffers, finalize.
+        Process incoming audio data.
+        
+        Args:
+            in_data: Audio data from PyAudio
+            frame_count: Number of frames
+            time_info: Time information
+            status: Status flag
+        
+        Returns:
+            tuple: (None, paContinue)
+        """
+        if not self.is_listening:
+            return None, pyaudio.paComplete
+        
+        # Convert bytes to numpy array
+        audio_data = np.frombuffer(in_data, dtype=np.float32)
+        
+        # Check if sound is detected
+        is_sound = self.sound_processor.is_sound(audio_data)
+        
+        # Add data to buffer
+        with self.buffer_lock:
+            self.buffer.extend(audio_data)
+            
+            # Keep buffer size limited
+            if len(self.buffer) > self.buffer_size:
+                self.buffer = self.buffer[-self.buffer_size:]
+        
+        # Handle sound detection
+        if is_sound and not self.is_sound_detected:
+            # Sound just started
+            self.is_sound_detected = True
+            self.sound_start_time = time.time()
+            logging.info("Sound detected")
+        
+        elif not is_sound and self.is_sound_detected:
+            # Sound just ended
+            self.is_sound_detected = False
+            sound_duration = time.time() - self.sound_start_time
+            
+            if sound_duration >= 0.2:  # Ignore very short sounds
+                logging.info(f"Sound ended after {sound_duration:.2f} seconds")
+                
+                # Process the detected sound in a separate thread
+                audio_to_process = np.array(self.buffer[-int(self.sample_rate * (sound_duration + 0.5)):])
+                Thread(target=self.process_audio, args=(audio_to_process,)).start()
+        
+        return None, pyaudio.paContinue
+    
+    def reshape_features(self, features):
+        """
+        Reshape features to match the expected input shape of the model.
+        
+        Args:
+            features: Features to reshape
+            
+        Returns:
+            reshaped_features: Reshaped features
+        """
+        if self.input_shape:
+            # Handle reshaping based on input_shape
+            if len(features.shape) == 2:  # (height, width)
+                if len(self.input_shape) == 3:  # (height, width, channels)
+                    # Add channel dimension
+                    features = np.expand_dims(features, axis=-1)
+            
+            # Add batch dimension if not present
+            if len(features.shape) == len(self.input_shape):
+                features = np.expand_dims(features, axis=0)
+            
+            # Check if shapes are compatible
+            for i in range(len(self.input_shape)):
+                if self.input_shape[i] is not None and features.shape[i+1] != self.input_shape[i]:
+                    logging.warning(f"Feature shape mismatch: got {features.shape}, expected ({None}, {self.input_shape})")
+                    # Try to resize
+                    if i == 0:  # Height
+                        features = np.resize(features, (features.shape[0], self.input_shape[0], features.shape[2], features.shape[3]))
+                    elif i == 1:  # Width
+                        features = np.resize(features, (features.shape[0], features.shape[1], self.input_shape[1], features.shape[3]))
+                    elif i == 2:  # Channels
+                        features = np.resize(features, (features.shape[0], features.shape[1], features.shape[2], self.input_shape[2]))
+        
+        return features
+    
+    def process_audio(self, audio_data):
+        """
+        Process audio data and make predictions.
+        
+        Args:
+            audio_data: Audio data to process
+            
+        Returns:
+            dict: Prediction results
         """
         try:
-            self.is_recording = False
-
-            with self.audio_queue_lock:
-                self.audio_queue.clear()
-
-            if self.stream:
-                self.stream.stop()
-                self.stream.close()
-                self.stream = None
-
-            if self.thread:
-                if threading.current_thread() != self.thread:
-                    self.thread.join()
-                self.thread = None
-
-            logging.info("Stopped listening successfully.")
-            self.speech_buffer.clear()
-            return {"status": "success", "message": "Stopped listening successfully"}
-
+            # Process audio data
+            logging.info(f"Processing audio data of shape {audio_data.shape}")
+            
+            # Create a temporary WAV file for feature extraction
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+                temp_path = temp_file.name
+                
+                # Save audio data to WAV file
+                with wave.open(temp_path, 'wb') as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(4)  # 32-bit float
+                    wf.setframerate(self.sample_rate)
+                    wf.writeframes(audio_data.tobytes())
+            
+            try:
+                # Extract features using sound processor
+                features = self.sound_processor.extract_features(temp_path)
+                
+                if features is None:
+                    logging.error("Failed to extract features")
+                    return {'class': 'error', 'confidence': 0}
+                
+                # Reshape features to match model input shape
+                features = self.reshape_features(features)
+                
+                # Make prediction
+                predictions = self.model.predict(features, verbose=0)
+                
+                # Get top prediction
+                top_idx = np.argmax(predictions[0])
+                top_class = self.sound_classes[top_idx]
+                top_confidence = float(predictions[0][top_idx])
+                
+                # Create prediction result
+                result = {
+                    'class': top_class,
+                    'confidence': top_confidence,
+                    'probabilities': {
+                        self.sound_classes[i]: float(p) 
+                        for i, p in enumerate(predictions[0])
+                    }
+                }
+                
+                # Add to predictions list
+                self.predictions.append(result)
+                if len(self.predictions) > 5:
+                    self.predictions = self.predictions[-5:]
+                
+                logging.info(f"Prediction: {top_class} with confidence {top_confidence:.4f}")
+                
+                return result
+            
+            finally:
+                # Clean up temp file
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+        
         except Exception as e:
-            msg = f"Error stopping listener: {e}"
-            logging.error(msg, exc_info=True)
-            return {"status": "error", "message": msg}
+            logging.error(f"Error processing audio: {e}", exc_info=True)
+            return {'class': 'error', 'confidence': 0}
+    
+    def get_latest_prediction(self):
+        """
+        Get the latest prediction.
+        
+        Returns:
+            dict: Latest prediction or None
+        """
+        if not self.predictions:
+            return None
+        return self.predictions[-1]
+    
+    def get_current_state(self):
+        """
+        Get the current state of the detector.
+        
+        Returns:
+            dict: Current state information
+        """
+        return {
+            'is_listening': self.is_listening,
+            'is_sound_detected': self.is_sound_detected,
+            'latest_prediction': self.get_latest_prediction()
+        }
 
 
 def record_audio(duration=AUDIO_DURATION):

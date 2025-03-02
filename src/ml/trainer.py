@@ -263,8 +263,8 @@ class Trainer:
         
         checkpoint_path = os.path.join(self.model_dir, 'cnn_checkpoint.h5')
         callbacks = [
-            EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True),
-            ReduceLROnPlateau(monitor='val_accuracy', factor=0.2, patience=3, min_lr=1e-5),
+            EarlyStopping(monitor='val_accuracy', patience=10, min_delta=0.001, restore_best_weights=True),
+            ReduceLROnPlateau(monitor='val_accuracy', factor=0.2, patience=5, min_lr=1e-5),
             ModelCheckpoint(checkpoint_path, monitor='val_accuracy', save_best_only=True, mode='max', verbose=1)
         ]
         

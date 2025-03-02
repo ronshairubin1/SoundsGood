@@ -322,8 +322,9 @@ if __name__ == "__main__":
 
     # Example training
     early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',
-        patience=5,
+        monitor='val_accuracy',
+        patience=10,
+        min_delta=0.001,
         restore_best_weights=True
     )
 

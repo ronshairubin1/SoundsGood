@@ -1,0 +1,602 @@
+{% extends "base.html" %}
+
+{% block title %}{{ class_name }} - Sound Class View{% endblock %}
+
+{% block custom_styles %}
+.sound-card {
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+.sound-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+.waveform-container {
+    height: 80px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+.class-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.recording-controls {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.audio-controls button {
+    margin-right: 0.5rem;
+}
+.no-samples {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+.sample-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title mb-0">
+            <i class="bi bi-music-note-beamed me-2"></i>{{ class_name }}
+        </h1>
+        <p class="text-muted">Sound Class Recordings</p>
+    </div>
+    <div>
+        <a href="/sounds/manage" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i>Back to Sound Classes
+        </a>
+        <button class="btn btn-outline-primary" onclick="openRecordModal()">
+            <i class="bi bi-mic-fill me-1"></i>Record New Sample
+        </button>
+        <button class="btn btn-outline-danger" onclick="confirmDeleteClass('{{ class_name }}')">
+            <i class="bi bi-trash me-1"></i>Delete Class
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Class Information</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <strong>Name:</strong> {{ class_name }}
+                </div>
+                <div class="mb-3">
+                    <strong>Total Samples:</strong> {{ samples|length }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <strong>Used in Dictionaries:</strong>
+                    <span id="dictionaryList">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-3 mt-5">Sound Samples</h2>
+
+{% if samples %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for sample in samples %}
+        <div class="col sample-item">
+            <div class="card sound-card h-100">
+                <div class="card-body position-relative">
+                    <div class="sample-actions dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item text-danger" href="#" 
+                                   onclick="confirmDeleteSample('{{ class_name }}', '{{ sample.name }}')">
+                                <i class="bi bi-trash me-2"></i>Delete Recording
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <h5 class="card-title text-truncate">{{ sample.name }}</h5>
+                    <p class="card-text text-muted small">{{ (sample.size / 1024)|round(1) }} KB</p>
+                    
+                    <div class="d-grid mt-3">
+                        <button class="btn btn-primary play-sample" data-path="{{ sample.path }}">
+                            <i class="bi bi-play-fill me-1"></i>Play Recording
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="no-samples">
+        <i class="bi bi-music-note-beamed display-4 d-block mb-3 text-muted"></i>
+        <h5>No samples yet</h5>
+        <p class="text-muted">Record or upload audio samples for this class</p>
+        <button class="btn btn-primary mt-3" onclick="openRecordModal()">
+            <i class="bi bi-mic-fill me-2"></i>Record Sample
+        </button>
+    </div>
+{% endif %}
+
+<!-- Record Audio Modal -->
+<div class="modal fade" id="recordAudioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Audio Sample</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label for="recordingSampleName" class="form-label">Sample Name (Optional)</label>
+                    <input type="text" class="form-control" id="recordingSampleName" 
+                           placeholder="Leave blank for automatic naming">
+                </div>
+                
+                <div class="recording-controls">
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="audio-controls">
+                            <button id="startRecording" class="btn btn-danger">
+                                <i class="bi bi-record-fill me-1"></i>Start Recording
+                            </button>
+                            <button id="stopRecording" class="btn btn-secondary" disabled>
+                                <i class="bi bi-stop-fill me-1"></i>Stop
+                            </button>
+                            <button id="playRecording" class="btn btn-primary" disabled>
+                                <i class="bi bi-play-fill me-1"></i>Play
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="waveform-container" id="waveform">
+                        <!-- Waveform will be rendered here -->
+                    </div>
+                    
+                    <div class="text-center">
+                        <span id="recordingStatus" class="text-muted">Ready to record</span>
+                        <span id="recordingTime" class="badge bg-danger ms-2" style="display: none;">00:00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="saveRecordingBtn" disabled>
+                    <i class="bi bi-save me-1"></i>Save Recording
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Sample Confirmation Modal -->
+<div class="modal fade" id="deleteSampleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to delete the recording "<span id="deleteTargetSample"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteSampleBtn">Delete Recording</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Class Confirmation Modal -->
+<div class="modal fade" id="deleteClassModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to delete the entire sound class "<span id="deleteTargetClass"></span>" and all its recordings?</p>
+                <p>This will permanently delete all recordings in this class and remove it from any dictionaries that reference it.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteClassBtn">Delete Class</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Wavesurfer.js for audio visualization -->
+<script src="https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.js"></script>
+
+<script>
+let wavesurfer;
+let audioBlob;
+let mediaRecorder;
+let recordedChunks = [];
+let isRecording = false;
+let recordingInterval;
+let recordingSeconds = 0;
+let currentAudio = null;
+
+// Initialize wavesurfer and other functionality
+document.addEventListener('DOMContentLoaded', function() {
+    wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'rgba(67, 97, 238, 0.3)',
+        progressColor: 'rgba(67, 97, 238, 0.8)',
+        cursorColor: '#4361ee',
+        barWidth: 2,
+        barRadius: 2,
+        cursorWidth: 1,
+        height: 80,
+        barGap: 1
+    });
+    
+    // Add play functionality to sample buttons
+    document.querySelectorAll('.play-sample').forEach(button => {
+        button.addEventListener('click', function() {
+            const audioPath = this.getAttribute('data-path');
+            
+            // Stop any currently playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                
+                // Reset all play buttons
+                document.querySelectorAll('.play-sample').forEach(btn => {
+                    btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Play Recording';
+                });
+            }
+            
+            // Play this audio
+            const audio = new Audio(audioPath);
+            currentAudio = audio;
+            
+            // Update button text
+            this.innerHTML = '<i class="bi bi-pause-fill me-1"></i>Pause';
+            
+            // Set up event listeners
+            audio.addEventListener('ended', () => {
+                this.innerHTML = '<i class="bi bi-play-fill me-1"></i>Play Recording';
+                currentAudio = null;
+            });
+            
+            audio.addEventListener('pause', () => {
+                this.innerHTML = '<i class="bi bi-play-fill me-1"></i>Play Recording';
+            });
+            
+            audio.addEventListener('play', () => {
+                this.innerHTML = '<i class="bi bi-pause-fill me-1"></i>Pause';
+            });
+            
+            // Toggle play/pause on button click
+            audio.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+            });
+            
+            audio.play();
+        });
+    });
+    
+    // Load dictionaries that reference this class
+    loadReferencingDictionaries('{{ class_name }}');
+});
+
+// Load dictionaries that reference this class
+function loadReferencingDictionaries(className) {
+    fetch('/api/dictionary/list')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const referencingDicts = data.dictionaries.filter(dict => 
+                    dict.classes && dict.classes.includes(className)
+                );
+                
+                const dictList = document.getElementById('dictionaryList');
+                
+                if (referencingDicts.length === 0) {
+                    dictList.textContent = 'Not used in any dictionaries';
+                } else {
+                    dictList.innerHTML = '';
+                    referencingDicts.forEach(dict => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-primary me-1 mb-1';
+                        badge.textContent = dict.name;
+                        dictList.appendChild(badge);
+                    });
+                }
+            } else {
+                document.getElementById('dictionaryList').textContent = 'Error loading dictionaries';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching dictionaries:', error);
+            document.getElementById('dictionaryList').textContent = 'Error loading dictionaries';
+        });
+}
+
+// Open recording modal
+function openRecordModal() {
+    new bootstrap.Modal(document.getElementById('recordAudioModal')).show();
+}
+
+// Recording functionality
+document.getElementById('startRecording').addEventListener('click', function() {
+    // Start recording
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                // Create audio blob and set up wavesurfer
+                audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                wavesurfer.load(audioUrl);
+                
+                // Update UI
+                document.getElementById('playRecording').disabled = false;
+                document.getElementById('saveRecordingBtn').disabled = false;
+                document.getElementById('recordingStatus').textContent = 'Recording ready';
+                document.getElementById('recordingTime').style.display = 'none';
+                
+                // Stop the recording timer
+                clearInterval(recordingInterval);
+                recordingSeconds = 0;
+            };
+            
+            // Start recording
+            recordedChunks = [];
+            mediaRecorder.start();
+            isRecording = true;
+            
+            // Update UI
+            document.getElementById('startRecording').disabled = true;
+            document.getElementById('stopRecording').disabled = false;
+            document.getElementById('recordingStatus').textContent = 'Recording...';
+            document.getElementById('recordingTime').style.display = 'inline';
+            
+            // Start recording timer
+            recordingInterval = setInterval(() => {
+                recordingSeconds++;
+                const minutes = Math.floor(recordingSeconds / 60);
+                const seconds = recordingSeconds % 60;
+                document.getElementById('recordingTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        })
+        .catch(err => {
+            console.error('Error accessing microphone:', err);
+            alert('Could not access the microphone. Please check your permissions.');
+        });
+});
+
+document.getElementById('stopRecording').addEventListener('click', function() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        // Update UI
+        document.getElementById('startRecording').disabled = false;
+        document.getElementById('stopRecording').disabled = true;
+    }
+});
+
+document.getElementById('playRecording').addEventListener('click', function() {
+    wavesurfer.playPause();
+});
+
+// Save recording
+document.getElementById('saveRecordingBtn').addEventListener('click', function() {
+    const className = '{{ class_name }}';
+    const sampleName = document.getElementById('recordingSampleName').value || 
+                      `recording_${new Date().toISOString().replace(/[:.-]/g, '_')}.wav`;
+    
+    if (!audioBlob) {
+        alert('No recording to save');
+        return;
+    }
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', audioBlob, sampleName);
+    formData.append('sample_name', sampleName);
+    
+    // Send to server
+    $.ajax({
+        url: `/api/dictionary/${className}/${className}/add_sample`,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.success) {
+                // Close modal
+                $('#recordAudioModal').modal('hide');
+                
+                // Reset recording state
+                audioBlob = null;
+                document.getElementById('playRecording').disabled = true;
+                document.getElementById('saveRecordingBtn').disabled = true;
+                document.getElementById('recordingStatus').textContent = 'Ready to record';
+                
+                // Show success message
+                alert('Recording saved successfully! The page will now refresh.');
+                window.location.reload();
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function() {
+            alert('Failed to save recording');
+        }
+    });
+});
+
+// Delete sample confirmation
+function confirmDeleteSample(className, sampleName) {
+    document.getElementById('deleteTargetSample').textContent = sampleName;
+    $('#confirmDeleteSampleBtn').data('className', className);
+    $('#confirmDeleteSampleBtn').data('sampleName', sampleName);
+    new bootstrap.Modal(document.getElementById('deleteSampleModal')).show();
+}
+
+document.getElementById('confirmDeleteSampleBtn').addEventListener('click', function() {
+    const className = $(this).data('className');
+    const sampleName = $(this).data('sampleName');
+    
+    if (!className || !sampleName) {
+        console.error('Missing class name or sample name for deletion');
+        return;
+    }
+    
+    // Disable the button to prevent multiple submissions
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Deleting...';
+    
+    $.ajax({
+        url: `/api/sounds/classes/${className}/samples/${sampleName}`,
+        type: 'DELETE',
+        success: function(response) {
+            console.log("Delete sample response:", response);
+            if (response.success) {
+                alert('Recording deleted successfully! The page will now refresh.');
+                window.location.reload();
+            } else {
+                alert('Error: ' + response.error);
+                // Re-enable the button
+                const btn = document.getElementById('confirmDeleteSampleBtn');
+                btn.disabled = false;
+                btn.innerHTML = 'Delete Recording';
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Delete sample error:", textStatus, errorThrown);
+            console.error("Response text:", jqXHR.responseText);
+            alert('Failed to delete recording: ' + errorThrown);
+            // Re-enable the button
+            const btn = document.getElementById('confirmDeleteSampleBtn');
+            btn.disabled = false;
+            btn.innerHTML = 'Delete Recording';
+        }
+    });
+});
+
+// Delete class confirmation
+function confirmDeleteClass(className) {
+    document.getElementById('deleteTargetClass').textContent = className;
+    $('#confirmDeleteClassBtn').data('className', className);
+    new bootstrap.Modal(document.getElementById('deleteClassModal')).show();
+}
+
+document.getElementById('confirmDeleteClassBtn').addEventListener('click', function() {
+    const className = $(this).data('className');
+    
+    if (!className) {
+        console.error('No class selected for deletion');
+        return;
+    }
+    
+    // Disable the button to prevent multiple submissions
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Deleting...';
+    
+    $.ajax({
+        url: `/api/sounds/classes/${className}`,
+        type: 'DELETE',
+        success: function(response) {
+            console.log("Delete class response:", response);
+            if (response.success) {
+                alert('Class and all its recordings deleted successfully!');
+                window.location.href = '/sounds/manage';
+            } else {
+                alert('Error: ' + response.error);
+                // Re-enable the button
+                const btn = document.getElementById('confirmDeleteClassBtn');
+                btn.disabled = false;
+                btn.innerHTML = 'Delete Class';
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Delete class error:", textStatus, errorThrown);
+            console.error("Response text:", jqXHR.responseText);
+            alert('Failed to delete class: ' + errorThrown);
+            // Re-enable the button
+            const btn = document.getElementById('confirmDeleteClassBtn');
+            btn.disabled = false;
+            btn.innerHTML = 'Delete Class';
+        }
+    });
+});
+
+// Reset recording modal when hidden
+$('#recordAudioModal').on('hidden.bs.modal', function () {
+    // Stop recording if in progress
+    if (isRecording && mediaRecorder) {
+        mediaRecorder.stop();
+        isRecording = false;
+    }
+    
+    // Reset UI
+    document.getElementById('startRecording').disabled = false;
+    document.getElementById('stopRecording').disabled = true;
+    document.getElementById('playRecording').disabled = true;
+    document.getElementById('saveRecordingBtn').disabled = true;
+    document.getElementById('recordingStatus').textContent = 'Ready to record';
+    document.getElementById('recordingTime').style.display = 'none';
+    document.getElementById('recordingSampleName').value = '';
+    
+    // Reset wavesurfer
+    wavesurfer.empty();
+    
+    // Clear recording data
+    audioBlob = null;
+    recordedChunks = [];
+    
+    // Stop timer
+    clearInterval(recordingInterval);
+    recordingSeconds = 0;
+});
+</script>
+{% endblock %} 
