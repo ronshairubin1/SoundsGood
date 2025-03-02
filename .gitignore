@@ -49,14 +49,6 @@ Thumbs.db
 .pydevproject
 .settings/
 
-# Project specific
-temp/
-dictionaries/
-data/
-test_imports.py
-migrate_sounds*.py
-app.py
-
 # Conda
 Miniconda3-latest-MacOSX-arm64.sh
 .python-version

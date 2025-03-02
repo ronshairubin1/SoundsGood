@@ -1,0 +1,17 @@
+{
+  "dictionaries": {
+    "ehoh": {
+      "name": "EhOh",
+      "description": "",
+      "created_at": "2025-02-26T13:50:50.954996",
+      "updated_at": "2025-03-02T07:44:13.737437",
+      "created_by": "f4e452e3ab30eb02",
+      "classes": [
+        "eh",
+        "oh"
+      ],
+      "sample_count": 0,
+      "path": "/Users/ronshairubin/Desktop/SoundsEasy/SoundClassifiers/SoundClassifier_v09/dictionaries/ehoh"
+    }
+  }
+}
