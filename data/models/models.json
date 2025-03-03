@@ -1,0 +1,242 @@
+{
+    "models": {
+        "cnn": {
+            "EhOh_cnn_20250301113350": {
+                "id": "EhOh_cnn_20250301113350",
+                "name": "EhOh CNN Model (20250301113350)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T11:33:50.690442",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301113350.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301114545": {
+                "id": "EhOh_cnn_20250301114545",
+                "name": "EhOh CNN Model (20250301114545)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T11:45:45.924091",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301114545.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301074758": {
+                "id": "EhOh_cnn_20250301074758",
+                "name": "EhOh CNN Model (20250301074758)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T07:47:58.706395",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301074758.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301120247": {
+                "id": "EhOh_cnn_20250301120247",
+                "name": "EhOh CNN Model (20250301120247)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T12:02:47.521464",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301120247.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301115230": {
+                "id": "EhOh_cnn_20250301115230",
+                "name": "EhOh CNN Model (20250301115230)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T11:52:30.659286",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301115230.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301004848": {
+                "id": "EhOh_cnn_20250301004848",
+                "name": "EhOh CNN Model (20250301004848)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T00:48:48.614829",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301004848.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250228211857": {
+                "id": "EhOh_cnn_20250228211857",
+                "name": "EhOh CNN Model (20250228211857)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-02-28T21:18:57.343703",
+                "file_path": "data/models/cnn/EhOh_cnn_20250228211857.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301003509": {
+                "id": "EhOh_cnn_20250301003509",
+                "name": "EhOh CNN Model (20250301003509)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T00:35:09.863438",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301003509.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301112014": {
+                "id": "EhOh_cnn_20250301112014",
+                "name": "EhOh CNN Model (20250301112014)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T11:20:14.455278",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301112014.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301120736": {
+                "id": "EhOh_cnn_20250301120736",
+                "name": "EhOh CNN Model (20250301120736)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T12:07:36.595480",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301120736.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250228211108": {
+                "id": "EhOh_cnn_20250228211108",
+                "name": "EhOh CNN Model (20250228211108)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-02-28T21:11:08.995953",
+                "file_path": "data/models/cnn/EhOh_cnn_20250228211108.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            },
+            "EhOh_cnn_20250301095720": {
+                "id": "EhOh_cnn_20250301095720",
+                "name": "EhOh CNN Model (20250301095720)",
+                "type": "cnn",
+                "dictionary": "EhOh",
+                "created_at": "2025-03-01T09:57:20.967291",
+                "file_path": "data/models/cnn/EhOh_cnn_20250301095720.h5",
+                "size_bytes": 7518656,
+                "class_names": [
+                    "eh",
+                    "oh"
+                ],
+                "input_shape": [
+                    19,
+                    64,
+                    1
+                ],
+                "num_classes": 2
+            }
+        },
+        "rf": {},
+        "ensemble": {}
+    },
+    "counts": {
+        "cnn": 12,
+        "rf": 0,
+        "ensemble": 0,
+        "total": 12
+    }
+}
