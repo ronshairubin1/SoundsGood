@@ -179,6 +179,19 @@ The application uses the following directory structure for sound files:
 
 **Note:** As of version 0.9, we no longer use the root-level `/temp` directory for processing sound files. All audio processing is done directly from the `/data/sounds/raw_sounds/{class}/` directory, and chunked files are stored directly in `/data/sounds/temp_sounds/{class}/`.
 
+## Sound Directory Consolidation
+
+In version 0.9, all sound files were consolidated into a single directory to avoid duplication:
+
+Previous locations:
+1. `sounds/` in the root directory
+2. `data/sounds/training_sounds/`
+3. `src/static/goodsounds/`
+
+Now, all sound files are stored in `data/sounds/training_sounds/`. The `Config.SOUNDS_DIR` variable has been completely removed, and all code now directly references `Config.TRAINING_SOUNDS_DIR`. The old locations have been moved to the legacy directory for historical reference.
+
+**Note**: The migration scripts used for this consolidation have been moved to the `legacy/migrate/` directory as they are no longer needed for day-to-day operations.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
