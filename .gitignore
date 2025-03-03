@@ -53,6 +53,7 @@ Thumbs.db
 Miniconda3-latest-MacOSX-arm64.sh
 .python-version
 
-# Keep these directories but ignore large files within them
-# models/**/*.h5
-# models/**/*.joblib
+# Legacy files
+legacy/
+*.code-workspace
+
