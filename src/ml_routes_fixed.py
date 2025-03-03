@@ -16,8 +16,15 @@ import tempfile
 from threading import Thread, Lock
 import logging
 
+# Configure logging
+logger = logging.getLogger('ml_routes_fixed')
+logger.info("=" * 50)
+logger.info("Initializing ML Routes Fixed module")
+logger.info("Imported core models and Flask components")
+
 # Create a blueprint for ML routes
 ml_blueprint = Blueprint('ml', __name__)
+logger.info("Created ml_blueprint")
 
 # Global variables
 detector = None
@@ -25,6 +32,7 @@ current_model_path = None
 current_model_type = None
 current_model_dict = None
 latest_prediction = None
+logger.info("Initialized global variables for ML detection")
 
 # Define a SoundProcessor class for audio preprocessing
 class SoundProcessor:
@@ -36,6 +44,7 @@ class SoundProcessor:
         self.n_mels = n_mels
         self.n_fft = n_fft
         self.hop_length = hop_length
+        logger.debug(f"SoundProcessor initialized with sample_rate={sample_rate}, sound_threshold={sound_threshold}")
     
     def is_sound(self, audio_data):
         """Determine if audio contains sound above threshold."""

@@ -9,21 +9,21 @@ class Config:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
     MODELS_DIR = os.path.join(BASE_DIR, 'models')
-    # TEMP_DIR is only kept for backwards compatibility, should not be used for audio files
     TEMP_DIR = os.path.join(BASE_DIR, 'temp')
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     DICTIONARIES_DIR = os.path.join(BASE_DIR, 'dictionaries')
-    SOUNDS_DIR = os.path.join(BASE_DIR, 'sounds')
-    # Add GOOD_SOUNDS_DIR as an alias to SOUNDS_DIR for compatibility
-    GOOD_SOUNDS_DIR = SOUNDS_DIR
     
     # Define specific sound directories within data/sounds
     RAW_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'raw_sounds')
-    TEMP_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'temp_sounds')
+    PENDING_VERIFICATION_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'pending_verification_live_recording_sounds')
+    UPLOADED_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'uploaded_sounds')
+    TEST_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'test_sounds')
     TRAINING_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'training_sounds')
     
     # Ensure all directories exist
-    for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, SOUNDS_DIR]:
+    for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, 
+                      TRAINING_SOUNDS_DIR, RAW_SOUNDS_DIR, PENDING_VERIFICATION_SOUNDS_DIR,
+                      UPLOADED_SOUNDS_DIR, TEST_SOUNDS_DIR]:
         os.makedirs(directory, exist_ok=True)
     
     # Audio processing settings
@@ -85,10 +85,11 @@ class Config:
             cls.TEMP_DIR,
             cls.DATA_DIR,
             cls.DICTIONARIES_DIR,
-            cls.SOUNDS_DIR,
+            cls.TRAINING_SOUNDS_DIR,
             cls.RAW_SOUNDS_DIR,
-            cls.TEMP_SOUNDS_DIR,
-            cls.TRAINING_SOUNDS_DIR
+            cls.PENDING_VERIFICATION_SOUNDS_DIR,
+            cls.UPLOADED_SOUNDS_DIR,
+            cls.TEST_SOUNDS_DIR
         ]
         
         for directory in directories:

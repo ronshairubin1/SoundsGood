@@ -3,25 +3,70 @@ import json
 import uuid
 import shutil
 import logging
+import inspect
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
+
+# Configure logging
+logging.basicConfig(
+    filename='app_execution.log',
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger('main')
+logger.info("=" * 50)
+logger.info("Starting Sound Classifier app with new architecture...")
 
 from config import Config
+logger.info(f"Loaded Config from config.py")
 
 # Import our new API instead of the old routes
-from src.api.ml_api import MlApi
-from src.api.dictionary_api import dictionary_bp
-from src.api.user_api import user_bp
-from src.api.dashboard_api import dashboard_bp
+try:
+    from src.api.ml_api import MlApi
+    logger.info("Imported MlApi from src.api.ml_api")
+except ImportError as e:
+    logger.error(f"Failed to import MlApi: {e}")
+
+try:
+    from src.api.dictionary_api import dictionary_bp
+    logger.info("Imported dictionary_bp from src.api.dictionary_api")
+except ImportError as e:
+    logger.error(f"Failed to import dictionary_bp: {e}")
+
+try:
+    from src.api.user_api import user_bp
+    logger.info("Imported user_bp from src.api.user_api")
+except ImportError as e:
+    logger.error(f"Failed to import user_bp: {e}")
+
+try:
+    from src.api.dashboard_api import dashboard_bp
+    logger.info("Imported dashboard_bp from src.api.dashboard_api")
+except ImportError as e:
+    logger.error(f"Failed to import dashboard_bp: {e}")
 
 # Import the ml_blueprint from our fixed file
-from src.ml_routes_fixed import ml_blueprint
+try:
+    from src.ml_routes_fixed import ml_blueprint
+    logger.info("Imported ml_blueprint from src.ml_routes_fixed")
+except ImportError as e:
+    logger.error(f"Failed to import ml_blueprint: {e}")
 
 # Import services
-from src.services.dictionary_service import DictionaryService
-from src.services.user_service import UserService
+try:
+    from src.services.dictionary_service import DictionaryService
+    logger.info("Imported DictionaryService from src.services.dictionary_service")
+except ImportError as e:
+    logger.error(f"Failed to import DictionaryService: {e}")
+
+try:
+    from src.services.user_service import UserService
+    logger.info("Imported UserService from src.services.user_service")
+except ImportError as e:
+    logger.error(f"Failed to import UserService: {e}")
 
 # --------------------------------------------------------------------
 # Set up Flask
@@ -32,22 +77,33 @@ app = Flask(
     static_folder=os.path.join(Config.BASE_DIR, 'static'),
     template_folder=os.path.join(Config.BASE_DIR, 'src', 'templates')
 )
+logger.debug(f"Template folder: {os.path.join(Config.BASE_DIR, 'src', 'templates')}")
+logger.debug(f"Static folder: {os.path.join(Config.BASE_DIR, 'static')}")
+
 app.secret_key = Config.SECRET_KEY
 CORS(app, supports_credentials=True)
 
 # Ensure required directories exist
 os.makedirs(Config.TEMP_DIR, exist_ok=True)
-os.makedirs(Config.SOUNDS_DIR, exist_ok=True)
+logger.debug(f"Ensured TEMP_DIR exists: {Config.TEMP_DIR}")
+os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
+logger.debug(f"Ensured TRAINING_SOUNDS_DIR exists: {Config.TRAINING_SOUNDS_DIR}")
 
 # Register blueprints - NOTE: we're not using the old ml_bp anymore
 app.register_blueprint(dictionary_bp)
+logger.info("Registered dictionary_bp blueprint")
 app.register_blueprint(user_bp)
-app.register_blueprint(dashboard_bp)
+logger.info("Registered user_bp blueprint")
+app.register_blueprint(dashboard_bp) 
+logger.info("Registered dashboard_bp blueprint")
 app.register_blueprint(ml_blueprint)  # Register the ml_blueprint
+logger.info("Registered ml_blueprint blueprint")
 
 # Initialize services
 dictionary_service = DictionaryService()
+logger.info("Initialized DictionaryService")
 user_service = UserService()
+logger.info("Initialized UserService")
 
 # Initialize the ML API with our Flask app
 ml_api = MlApi(app, model_dir=Config.MODELS_DIR)
@@ -72,9 +128,9 @@ def init_app_directories():
     Initialize required application directories
     """
     # Create the sounds directory if it doesn't exist
-    if not os.path.exists(Config.SOUNDS_DIR):
-        os.makedirs(Config.SOUNDS_DIR, exist_ok=True)
-        app.logger.info(f"Created sounds directory: {Config.SOUNDS_DIR}")
+    if not os.path.exists(Config.TRAINING_SOUNDS_DIR):
+        os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
+        app.logger.info(f"Created sounds directory: {Config.TRAINING_SOUNDS_DIR}")
     
     # Create the temp directory if it doesn't exist
     if not os.path.exists(Config.TEMP_DIR):
@@ -109,20 +165,36 @@ def index():
         stats['dictionaries'] = len(dictionaries) if dictionaries else 0
         
         # Count classes across all dictionaries
-        all_classes = []
-        total_recordings = 0
+        all_classes = set()  # Use a set to avoid duplicates
+        
         for dict_info in dictionaries or []:
-            if 'classes' in dict_info:
-                all_classes.extend(dict_info['classes'])
-            if 'sample_count' in dict_info:
-                total_recordings += dict_info['sample_count']
+            # Check for classes field first, then sounds field as fallback
+            class_list = []
+            if 'classes' in dict_info and dict_info['classes']:
+                class_list = dict_info['classes']
+            elif 'sounds' in dict_info and dict_info['sounds']:
+                class_list = dict_info['sounds']
+            
+            # Add all classes to our set
+            all_classes.update(class_list)
         
         stats['classes'] = len(all_classes)
+        
+        # Count actual wav files in the sounds directory
+        total_recordings = 0
+        for class_name in all_classes:
+            class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
+            if os.path.exists(class_path) and os.path.isdir(class_path):
+                recordings = [f for f in os.listdir(class_path) if f.endswith('.wav') or f.endswith('.mp3')]
+                total_recordings += len(recordings)
+                
         stats['recordings'] = total_recordings
+        
+        app.logger.info(f"Dashboard stats: {stats}")
         
         # Count models (by checking files in models directory)
         model_files = [f for f in os.listdir(Config.MODELS_DIR) 
-                      if f.endswith('.h5') or f.endswith('.joblib')]
+                     if f.endswith('.h5') or f.endswith('.joblib')]
         stats['models'] = len(model_files)
     except Exception as e:
         app.logger.error(f"Error getting dashboard stats: {e}")
@@ -213,36 +285,42 @@ def register():
 # --------------------------------------------------------------------
 # Dictionary Management Routes
 # --------------------------------------------------------------------
-@app.route('/dictionaries/manage')
-def manage_dictionaries():
+@app.route('/dictionaries')
+def list_dictionaries():
+    """Render the dictionary management page."""
+    app.logger.info("=== MANAGE DICTIONARIES PAGE REQUESTED ===")
+    
+    if 'username' not in session:
+        app.logger.warning("No username in session, redirecting to login")
+        return redirect(url_for('login'))
+    
+    # Get dictionaries
+    app.logger.info(f"Fetching dictionaries for user: {session.get('user_id')}")
+    
+    # Explicitly reload the dictionary service
+    app.logger.info("Force reloading dictionary service data")
+    dictionary_service._load_dictionaries()
+    
+    dictionaries = dictionary_service.get_dictionaries(session.get('user_id'))
+    app.logger.info(f"Found {len(dictionaries)} dictionaries: {[d.get('name') for d in dictionaries]}")
+    
+    return render_template('dictionaries.html', dictionaries=dictionaries)
+
+@app.route('/dictionaries/<dict_name>')
+def manage_dictionary(dict_name):
     """Render the dictionary management page."""
     if 'username' not in session:
         return redirect(url_for('login'))
     
-    # Get dictionaries
-    dictionaries = dictionary_service.get_dictionaries(session.get('user_id'))
+    # Force reload of dictionaries to ensure we have the latest data
+    dictionary_service._load_dictionaries()
     
-    return render_template('manage_dictionaries.html', dictionaries=dictionaries)
-
-@app.route('/dictionaries/<dict_name>/view')
-def view_dictionary(dict_name):
-    """Render the dictionary view page."""
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
-    # Get dictionary - force reload metadata first
-    app.logger.debug(f"Viewing dictionary: {dict_name}")
-    
-    # Force reload of metadata to ensure we have the latest data
-    dictionary_service._load_metadata()
-    
-    # Get the dictionary with fresh data
+    # Get dictionary
     dictionary = dictionary_service.get_dictionary(dict_name)
-    app.logger.debug(f"Dictionary data: {dictionary}")
     
     if not dictionary:
         flash(f'Dictionary "{dict_name}" not found', 'danger')
-        return redirect(url_for('manage_dictionaries'))
+        return redirect(url_for('list_dictionaries'))
     
     # Log classes for debugging
     if dictionary.get('classes'):
@@ -250,25 +328,7 @@ def view_dictionary(dict_name):
     else:
         app.logger.debug("Dictionary has no classes defined")
     
-    return render_template('dictionary_view.html', dictionary=dictionary)
-
-@app.route('/dictionaries/<dict_name>/edit')
-def edit_dictionary(dict_name):
-    """Render the dictionary edit page."""
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
-    # Force reload of metadata to ensure we have the latest data
-    dictionary_service._load_metadata()
-    
-    # Get dictionary
-    dictionary = dictionary_service.get_dictionary(dict_name)
-    
-    if not dictionary:
-        flash(f'Dictionary "{dict_name}" not found', 'danger')
-        return redirect(url_for('manage_dictionaries'))
-    
-    return render_template('dictionary_edit.html', dictionary=dictionary)
+    return render_template('dictionary_manager.html', dictionary=dictionary)
 
 @app.route('/dictionaries/<dict_name>/export')
 def export_dictionary(dict_name):
@@ -281,7 +341,7 @@ def export_dictionary(dict_name):
     
     if not dictionary:
         flash(f'Dictionary "{dict_name}" not found', 'danger')
-        return redirect(url_for('manage_dictionaries'))
+        return redirect(url_for('list_dictionaries'))
     
     # Create a response with the dictionary data
     response = jsonify(dictionary)
@@ -325,17 +385,17 @@ def manage_sounds():
         return redirect(url_for('login'))
     
     # Get all sound classes from the sounds directory
-    sounds_dir = Config.SOUNDS_DIR
+    training_sounds_dir = Config.TRAINING_SOUNDS_DIR
     sound_classes = []
     
-    if os.path.exists(sounds_dir):
+    if os.path.exists(training_sounds_dir):
         # Get directories representing sound classes
-        class_dirs = [d for d in os.listdir(sounds_dir) 
-                     if os.path.isdir(os.path.join(sounds_dir, d))]
+        class_dirs = [d for d in os.listdir(training_sounds_dir) 
+                     if os.path.isdir(os.path.join(training_sounds_dir, d))]
         
         # Get sample counts for each class
         for class_name in class_dirs:
-            class_path = os.path.join(sounds_dir, class_name)
+            class_path = os.path.join(training_sounds_dir, class_name)
             samples = [f for f in os.listdir(class_path) if f.lower().endswith('.wav')]
             
             sound_classes.append({
@@ -353,17 +413,17 @@ def record_sounds():
         return redirect(url_for('login'))
     
     # Get all sound classes from the sounds directory for the dropdown
-    sounds_dir = Config.SOUNDS_DIR
+    training_sounds_dir = Config.TRAINING_SOUNDS_DIR
     sound_classes = []
     
-    if os.path.exists(sounds_dir):
+    if os.path.exists(training_sounds_dir):
         # Get directories representing sound classes
-        class_dirs = [d for d in os.listdir(sounds_dir) 
-                     if os.path.isdir(os.path.join(sounds_dir, d))]
+        class_dirs = [d for d in os.listdir(training_sounds_dir) 
+                     if os.path.isdir(os.path.join(training_sounds_dir, d))]
         
         # Get sample counts for each class
         for class_name in class_dirs:
-            class_path = os.path.join(sounds_dir, class_name)
+            class_path = os.path.join(training_sounds_dir, class_name)
             samples = [f for f in os.listdir(class_path) if f.lower().endswith('.wav')]
             
             sound_classes.append({
@@ -384,7 +444,7 @@ def view_sound_class(class_name):
         return redirect(url_for('login'))
     
     # Get samples for the class
-    class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
     
     if not os.path.exists(class_path):
         flash(f'Sound class "{class_name}" not found', 'danger')
@@ -413,26 +473,27 @@ def view_sound_class(class_name):
 # --------------------------------------------------------------------
 @app.route('/api/sounds/classes', methods=['GET'])
 def api_get_sound_classes():
-    """Get all sound classes."""
-    sounds_dir = Config.SOUNDS_DIR
-    sound_classes = []
+    """API endpoint for getting sound classes."""
+    training_sounds_dir = Config.TRAINING_SOUNDS_DIR
     
-    if os.path.exists(sounds_dir):
-        class_dirs = [d for d in os.listdir(sounds_dir) 
-                     if os.path.isdir(os.path.join(sounds_dir, d))]
+    result = []
+    if os.path.exists(training_sounds_dir):
+        app.logger.debug(f"Reading sound classes from {training_sounds_dir}")
+        class_dirs = [d for d in os.listdir(training_sounds_dir)
+                      if os.path.isdir(os.path.join(training_sounds_dir, d))]
         
-        for class_name in class_dirs:
-            class_path = os.path.join(sounds_dir, class_name)
+        for class_name in sorted(class_dirs):
+            class_path = os.path.join(training_sounds_dir, class_name)
             samples = [f for f in os.listdir(class_path) if f.lower().endswith('.wav')]
             
-            sound_classes.append({
+            result.append({
                 'name': class_name,
                 'sample_count': len(samples)
             })
     
     return jsonify({
         'success': True,
-        'classes': sound_classes
+        'classes': result
     })
 
 @app.route('/api/sounds/classes', methods=['POST'])
@@ -449,8 +510,8 @@ def api_create_sound_class():
     class_name = data['class_name']
     safe_class_name = class_name.replace(' ', '_').lower()
     
-    # Create class directory in sounds folder
-    class_path = os.path.join(Config.SOUNDS_DIR, safe_class_name)
+    # Create class directory in training sounds directory
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
     
     if os.path.exists(class_path):
         return jsonify({
@@ -459,7 +520,25 @@ def api_create_sound_class():
         }), 400
     
     try:
+        # Create directory in main sounds folder
         os.makedirs(class_path, exist_ok=True)
+        app.logger.info(f"Created class directory in TRAINING_SOUNDS_DIR: {class_path}")
+        
+        # Create directories in data/sounds subdirectories
+        # 1. Raw sounds directory
+        raw_class_path = os.path.join(Config.RAW_SOUNDS_DIR, safe_class_name)
+        os.makedirs(raw_class_path, exist_ok=True)
+        app.logger.info(f"Created class directory in RAW_SOUNDS_DIR: {raw_class_path}")
+        
+        # 2. Temp sounds directory
+        temp_class_path = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, safe_class_name)
+        os.makedirs(temp_class_path, exist_ok=True)
+        app.logger.info(f"Created class directory in pending verification sounds dir: {temp_class_path}")
+        
+        # 3. Training sounds directory
+        training_class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
+        os.makedirs(training_class_path, exist_ok=True)
+        app.logger.info(f"Created class directory in TRAINING_SOUNDS_DIR: {training_class_path}")
         
         return jsonify({
             'success': True,
@@ -478,7 +557,7 @@ def api_create_sound_class():
 @app.route('/api/sounds/classes/<class_name>', methods=['DELETE'])
 def api_delete_sound_class(class_name):
     """Delete a sound class and all its recordings."""
-    class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
     
     if not os.path.exists(class_path):
         return jsonify({
@@ -522,7 +601,7 @@ def api_delete_sound_class(class_name):
 @app.route('/api/sounds/classes/<class_name>/samples', methods=['GET'])
 def api_get_class_samples(class_name):
     """Get all samples for a sound class."""
-    class_path = os.path.join(Config.SOUNDS_DIR, class_name)
+    class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
     
     if not os.path.exists(class_path):
         return jsonify({
@@ -558,7 +637,7 @@ def api_delete_sample(class_name, sample_name):
         if 'username' not in session:
             return jsonify({'success': False, 'message': 'Authentication required'}), 401
             
-        sample_path = os.path.join(Config.SOUNDS_DIR, class_name, sample_name)
+        sample_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name, sample_name)
         
         if not os.path.exists(sample_path):
             return jsonify({'success': False, 'message': 'Sample not found'}), 404
@@ -594,11 +673,11 @@ def api_pending_recordings(class_name):
         # Check if there are any pending recordings in the temp_sounds directory
         recordings = []
         
-        # Check the temp_sounds directory for this class
-        temp_sounds_dir = os.path.join(Config.TEMP_SOUNDS_DIR, class_name)
-        if os.path.exists(temp_sounds_dir):
-            app.logger.debug(f"Searching for pending recordings in {temp_sounds_dir}")
-            for filename in os.listdir(temp_sounds_dir):
+        # Search for pending verification recordings
+        pending_sounds_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name)
+        if os.path.exists(pending_sounds_dir):
+            app.logger.debug(f"Searching for pending recordings in {pending_sounds_dir}")
+            for filename in os.listdir(pending_sounds_dir):
                 if filename.endswith('.wav'):
                     # Format file path for the API response
                     file_path = f"{class_name}/{filename}"
@@ -643,8 +722,8 @@ def api_verify_sample():
         class_name = parts[0]
         filename_only = parts[1]
         
-        # Get the path to the file in temp_sounds directory
-        source_path = os.path.join(Config.TEMP_SOUNDS_DIR, class_name, filename_only)
+        # Move from the pending verification sounds directory to the training sounds directory
+        source_path = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name, filename_only)
         
         if not os.path.exists(source_path):
             return jsonify({'success': False, 'error': f'File not found: {source_path}'})
@@ -654,27 +733,20 @@ def api_verify_sample():
             training_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
             os.makedirs(training_dir, exist_ok=True)
             
-            # Also create the class directory in SOUNDS_DIR for compatibility
-            class_dir = os.path.join(Config.SOUNDS_DIR, class_name)
-            os.makedirs(class_dir, exist_ok=True)
-            
             # Generate a unique filename
-            target_filename = f"{class_name}_{uuid.uuid4().hex[:8]}.wav"
+            username = session.get('username', 'anonymous')
+            timestamp_now = datetime.now().strftime('%Y%m%d%H%M%S')
+            new_filename = f"{class_name}_{username}_{timestamp_now}_{uuid.uuid4().hex[:6]}.wav"
             
-            # Save to both locations for compatibility
-            training_path = os.path.join(training_dir, target_filename)
-            sounds_path = os.path.join(class_dir, target_filename)
-            
-            # Copy the file to both locations
+            # Save to training sounds directory only (no need for redundant checks)
+            training_path = os.path.join(training_dir, new_filename)
             shutil.copy2(source_path, training_path)
-            shutil.copy2(source_path, sounds_path)
-            
-            app.logger.info(f"Saved sound sample to {training_path} and {sounds_path}")
+            app.logger.info(f"Saved approved chunk to {training_path}")
         
         # Delete the temporary file
         try:
             os.remove(source_path)
-            app.logger.info(f"Removed source file from temp_sounds: {source_path}")
+            app.logger.info(f"Removed source file from pending verification sounds: {source_path}")
         except Exception as del_err:
             app.logger.warning(f"Could not remove source file: {del_err}")
         
@@ -722,7 +794,7 @@ def api_ml_record():
         
         # Create directories for raw and temp sounds
         raw_sounds_dir = os.path.join(Config.RAW_SOUNDS_DIR, sound_class)
-        temp_sounds_dir = os.path.join(Config.TEMP_SOUNDS_DIR, sound_class)
+        temp_sounds_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, sound_class)
         os.makedirs(raw_sounds_dir, exist_ok=True)
         os.makedirs(temp_sounds_dir, exist_ok=True)
         
@@ -837,7 +909,7 @@ def verify_chunks(timestamp):
         return redirect(url_for('record_sounds'))
     
     # Check for chunks in the temp_sounds directory for this class
-    temp_sounds_dir = os.path.join(Config.TEMP_SOUNDS_DIR, class_name)
+    temp_sounds_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name)
     
     if not os.path.isdir(temp_sounds_dir):
         flash('No chunks found for verification', 'warning')
@@ -872,13 +944,13 @@ def serve_temp_sound_file(class_name, filename):
     Route to serve temporary sound files from temp_sounds directory
     """
     try:
-        file_path = os.path.join(Config.TEMP_SOUNDS_DIR, class_name, filename)
+        file_path = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name, filename)
         
         if not os.path.isfile(file_path):
             app.logger.error(f"Temp sound file not found: {file_path}")
             return "File not found", 404
             
-        directory = os.path.join(Config.TEMP_SOUNDS_DIR, class_name)
+        directory = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name)
         return send_from_directory(directory, filename)
     except Exception as e:
         app.logger.error(f"Error serving temp sound file: {str(e)}")
@@ -887,39 +959,33 @@ def serve_temp_sound_file(class_name, filename):
 @app.route('/process_verification', methods=['POST'])
 def process_verification():
     """
-    Process the user's decision for a sound chunk.
-    If kept, move to the class directory. If discarded, delete.
+    Process the verification of a sound chunk.
+    
+    This endpoint is called when the user decides whether to keep or discard
+    a sound chunk. If kept, the chunk is moved to the appropriate class directory.
+    If discarded, the chunk is simply removed.
     """
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
-    chunk_id = request.form.get('chunk_id')
-    is_good = request.form.get('is_good') == 'true'
-    class_name = request.form.get('class_name')
-    
-    if not chunk_id or not class_name:
-        flash('Missing required information for verification', 'danger')
-        return redirect(url_for('sounds_record'))
-    
-    # chunk_id format is now class_name/filename.wav
-    filename = chunk_id.split('/', 1)[1] if '/' in chunk_id else chunk_id
-    
     try:
-        app.logger.info(f"Processing verification for chunk: {chunk_id}, class: {class_name}, keep: {is_good}")
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'})
         
-        # Get the full path to the chunk file
-        chunk_path = os.path.join(Config.TEMP_SOUNDS_DIR, class_name, filename)
+        chunk_id = data.get('chunkId')
+        class_name = data.get('className')
+        is_good = data.get('isGood', False)
+        
+        if not chunk_id or not class_name:
+            return jsonify({'success': False, 'error': 'Missing required parameters'})
+        
+        # Find the chunk file
+        chunk_path = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name, chunk_id)
         
         if not os.path.exists(chunk_path):
-            app.logger.error(f"Chunk file does not exist: {chunk_path}")
-            return jsonify({'success': False, 'error': 'Chunk file not found'})
+            return jsonify({'success': False, 'error': f'Chunk file not found: {chunk_path}'})
         
         if is_good:
             # User wants to keep this sample - move it to the appropriate class directory
-            class_dir = os.path.join(Config.SOUNDS_DIR, class_name)
-            os.makedirs(class_dir, exist_ok=True)
-            
-            # Also ensure training sounds directory exists
+            # Create the training sounds directory if it doesn't exist
             training_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
             os.makedirs(training_dir, exist_ok=True)
             
@@ -928,13 +994,10 @@ def process_verification():
             timestamp_now = datetime.now().strftime('%Y%m%d%H%M%S')
             new_filename = f"{class_name}_{username}_{timestamp_now}_{uuid.uuid4().hex[:6]}.wav"
             
-            # Copy the file to both locations
-            sounds_path = os.path.join(class_dir, new_filename)
+            # Save to training sounds directory only (no need for redundant checks)
             training_path = os.path.join(training_dir, new_filename)
-            
-            shutil.copy2(chunk_path, sounds_path)
             shutil.copy2(chunk_path, training_path)
-            app.logger.info(f"Saved approved chunk to {sounds_path} and {training_path}")
+            app.logger.info(f"Saved approved chunk to {training_path}")
         
         # Always remove the chunk from the temp directory after processing
         try:
@@ -970,12 +1033,12 @@ def serve_temp_file(filename):
 @app.route('/sounds/<class_name>/<sample_name>')
 def serve_sound_file(class_name, sample_name):
     """Serve a sound file."""
-    file_path = os.path.join(Config.SOUNDS_DIR, class_name, sample_name)
+    file_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name, sample_name)
     
     if not os.path.exists(file_path):
         return "File not found", 404
     
-    return send_from_directory(Config.SOUNDS_DIR, os.path.join(class_name, sample_name))
+    return send_from_directory(Config.TRAINING_SOUNDS_DIR, os.path.join(class_name, sample_name))
 
 # --------------------------------------------------------------------
 # Before request: check login

@@ -9,6 +9,7 @@ import logging
 import time
 import threading
 from datetime import datetime
+import uuid
 
 # Flask imports
 from flask import (
@@ -147,7 +148,8 @@ def get_sound_list():
     return active_dict['sounds']
 
 def get_goodsounds_dir_path():
-    return Config.GOOD_SOUNDS_DIR
+    """Return the path to the good sounds directory."""
+    return Config.TRAINING_SOUNDS_DIR
     
 @ml_bp.route('/train_model', methods=['GET', 'POST'])
 def train_model():
@@ -416,7 +418,7 @@ def predict():
     active_dict = Config.get_dictionary()
     if not active_dict or 'sounds' not in active_dict:
         flash("No active dictionary found. Please create or select a dictionary first.")
-        return redirect(url_for('ml.manage_dictionaries'))
+        return redirect(url_for('ml.list_dictionaries'))
     
     return render_template('predict.html', active_dict=active_dict)
 
@@ -486,7 +488,9 @@ def predict_rf():
     if not uploaded_file:
         return jsonify({"error": "No audio file"}), 400
 
-    temp_path = os.path.join(Config.TEMP_DIR, 'temp_for_rf.wav')
+    # Create a unique filename for the uploaded file
+    filename = f"rf_predict_{uuid.uuid4().hex[:8]}.wav"
+    temp_path = os.path.join(Config.UPLOADED_SOUNDS_DIR, filename)
     uploaded_file.save(temp_path)
 
     try:
@@ -566,7 +570,9 @@ def predict_ensemble():
     if not file:
         return jsonify({"error":"No audio file"}), 400
     
-    temp_path = os.path.join(Config.TEMP_DIR, 'temp_ensemble.wav')
+    # Create a unique filename for the uploaded file
+    filename = f"ensemble_predict_{uuid.uuid4().hex[:8]}.wav"
+    temp_path = os.path.join(Config.UPLOADED_SOUNDS_DIR, filename)
     file.save(temp_path)
     
     # For CNN: process with SoundProcessor
@@ -611,12 +617,14 @@ def predict_sound_endpoint():
     model = models.load_model(model_path)
     class_names = active_dict['sounds']
 
-    temp_path = os.path.join(Config.TEMP_DIR, 'predict_temp.wav')
+    # Create a unique filename for the uploaded file
+    filename = f"predict_temp_{uuid.uuid4().hex[:8]}.wav"
+    temp_path = os.path.join(Config.UPLOADED_SOUNDS_DIR, filename)
     with open(temp_path, 'wb') as f:
         f.write(audio_file.read())
 
     pred_class, confidence = predict_sound(model, temp_path, class_names, use_microphone=False)
-    os.remove(temp_path)
+    os.remove(temp_path)  # Clean up temporary file after prediction
 
     # Return top-1 for now
     return jsonify({
@@ -1044,10 +1052,10 @@ def process_verification():
     timestamp = parts[-2]
 
     if is_good:
-        # Move chunk to goodsounds
+        # Move chunk to the sounds directory
         sound = parts[0]
         username = session['username']
-        sound_dir = os.path.join(Config.GOOD_SOUNDS_DIR, sound)
+        sound_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, sound)
         os.makedirs(sound_dir, exist_ok=True)
 
         # Count how many are in that folder for that user
@@ -1067,32 +1075,21 @@ def process_verification():
     return redirect(url_for('ml.verify_chunks', timestamp=timestamp))
 
 @ml_bp.route('/manage_dictionaries')
-def manage_dictionaries():
-    if not session.get('is_admin'):
-        return redirect(url_for('index'))
-
+def list_dictionaries():
+    """Render the dictionary listing page."""
+    logging.info("=== DICTIONARIES PAGE REQUESTED ===")
+    
+    # Get dictionaries
     dictionaries = Config.get_dictionaries()
     active_dictionary = Config.get_dictionary()
-
-    # Build stats
+    
+    # Get sound stats
     sound_stats = {}
     if active_dictionary and 'sounds' in active_dictionary:
         for sound in active_dictionary['sounds']:
-            sound_stats[sound] = {
-                'system_total': 0,
-                'user_total': 0
-            }
-            # Count system recordings
-            sound_dir = os.path.join(Config.GOOD_SOUNDS_DIR, sound)
-            if os.path.exists(sound_dir):
-                system_files = [
-                    f for f in os.listdir(sound_dir)
-                    if f.endswith('.wav') or f.endswith('.mp3')
-                ]
-                sound_stats[sound]['system_total'] = len(system_files)
-            # user_total is not heavily used; left for completeness
-
-    return render_template('manage_dictionaries.html',
+            sound_stats[sound] = {}
+    
+    return render_template('dictionaries.html',
                            dictionaries=dictionaries,
                            active_dictionary=active_dictionary,
                            sound_stats=sound_stats)
@@ -1106,7 +1103,7 @@ def save_dictionary():
     sounds_str = request.form.get('sounds')
     if not name or not sounds_str:
         flash("Please provide dictionary name and sounds")
-        return redirect(url_for('ml.manage_dictionaries'))
+        return redirect(url_for('ml.list_dictionaries'))
 
     sounds = [s.strip() for s in sounds_str.split(',') if s.strip()]
     new_dict = {"name": name, "sounds": sounds}
@@ -1124,7 +1121,7 @@ def save_dictionary():
     Config.save_dictionaries(dictionaries)
     Config.set_active_dictionary(new_dict)
     flash("Dictionary saved and activated.")
-    return redirect(url_for('ml.manage_dictionaries'))
+    return redirect(url_for('ml.list_dictionaries'))
 
 @ml_bp.route('/make_active', methods=['POST'])
 def make_active():
@@ -1134,7 +1131,7 @@ def make_active():
     name = request.form.get('name')
     if not name:
         flash('Dictionary name is required')
-        return redirect(url_for('ml.manage_dictionaries'))
+        return redirect(url_for('ml.list_dictionaries'))
 
     dictionaries = Config.get_dictionaries()
     selected_dict = None
@@ -1144,15 +1141,15 @@ def make_active():
             break
     if not selected_dict:
         flash('Dictionary not found')
-        return redirect(url_for('ml.manage_dictionaries'))
+        return redirect(url_for('ml.list_dictionaries'))
 
     Config.get_dictionary(selected_dict)
     # Create directories for each sound
     for sound in selected_dict['sounds']:
-        os.makedirs(os.path.join(Config.GOOD_SOUNDS_DIR, sound), exist_ok=True)
+        os.makedirs(os.path.join(Config.TRAINING_SOUNDS_DIR, sound), exist_ok=True)
 
     flash(f'Dictionary "{name}" is now active')
-    return redirect(url_for('ml.manage_dictionaries'))
+    return redirect(url_for('ml.list_dictionaries'))
 
 @ml_bp.route('/set_active_dictionary', methods=['POST'])
 def set_active_dictionary():
@@ -1167,7 +1164,7 @@ def set_active_dictionary():
                 Config.set_active_dictionary(d)
                 flash(f'Activated dictionary: {name}')
                 break
-    return redirect(url_for('ml.manage_dictionaries'))
+    return redirect(url_for('ml.list_dictionaries'))
 
 @ml_bp.route('/ml.list_recordings')
 def list_recordings():
@@ -1176,10 +1173,6 @@ def list_recordings():
 
     if session.get('is_admin'):
         # Admin sees everything
-        all_sounds = os.listdir(Config.GOOD_SOUNDS_DIR)
-        # But each sound is a folder, so let's gather from subfolders
-        # Or maybe you're storing files directly in goodsounds?
-        # We'll just list from subfolders:
         recordings_by_sound = {}
         active_dict = Config.get_dictionary()
         if not active_dict:
@@ -1187,7 +1180,7 @@ def list_recordings():
             return redirect(url_for('index'))
 
         for sound in active_dict['sounds']:
-            sound_dir = os.path.join(Config.GOOD_SOUNDS_DIR, sound)
+            sound_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, sound)
             if os.path.exists(sound_dir):
                 files = [f for f in os.listdir(sound_dir) if f.endswith('.wav')]
                 if files:
@@ -1203,7 +1196,7 @@ def list_recordings():
             return redirect(url_for('index'))
 
         for sound in active_dict['sounds']:
-            sound_dir = os.path.join(Config.GOOD_SOUNDS_DIR, sound)
+            sound_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, sound)
             if not os.path.exists(sound_dir):
                 continue
             sound_files = [f for f in os.listdir(sound_dir) if f.endswith('.wav')]
@@ -1229,7 +1222,7 @@ def get_sound_stats():
             'system_total': 0,
             'user_total': 0
         }
-        sound_dir = os.path.join(Config.GOOD_SOUNDS_DIR, sound)
+        sound_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, sound)
         if os.path.exists(sound_dir):
             files = [f for f in os.listdir(sound_dir) if f.endswith('.wav')]
             sound_stats[sound]['system_total'] = len(files)

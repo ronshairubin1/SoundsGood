@@ -66,7 +66,7 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <a href="/dictionaries/manage" class="btn btn-outline-primary">
+                    <a href="/dictionaries" class="btn btn-outline-primary">
                         <i class="bi bi-plus-circle me-1"></i>Create New Dictionary
                     </a>
                 </div>
@@ -240,6 +240,24 @@
                 </ul>
             </div>
         </div>
+        
+        <!-- Add detailed logs display container -->
+        <div class="mt-3">
+            <button class="btn btn-sm btn-secondary" onclick="toggleLogDetails()">
+                <i class="bi bi-terminal"></i> Toggle Detailed Logs
+            </button>
+            <div id="detailedLogs" class="mt-2" style="display: none;">
+                <div class="card">
+                    <div class="card-header bg-dark text-light">
+                        <strong>Training Logs</strong>
+                    </div>
+                    <div class="card-body bg-dark text-light" style="max-height: 300px; overflow-y: auto;">
+                        <pre id="logMessages" style="white-space: pre-wrap;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="alert alert-info">
             <i class="bi bi-info-circle me-2"></i>Training your model may take several minutes depending on the size of your dictionary and the chosen parameters.
         </div>
@@ -305,9 +323,14 @@
         </div>
         
         <div id="mfccNormalizationDetails" class="mt-4" style="display: none;">
-            <h5>MFCC Normalization Details:</h5>
             <div class="card">
-                <div class="card-body">
+                <div class="card-header" style="cursor: pointer;" onclick="toggleMfccDetails(this)">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="bi bi-chevron-right me-2" id="mfccToggleIcon"></i>
+                        MFCC Normalization Details
+                    </h5>
+                </div>
+                <div class="card-body collapse" id="mfccDetailsContent">
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>MFCC Normalization:</strong> The first MFCC coefficient (representing energy/loudness) has been excluded from normalization, and the remaining coefficients have been normalized to improve model performance. The first coefficient has also been excluded from delta and delta-delta calculations, which capture temporal dynamics of the audio. Each feature type (MFCC, delta, delta-delta) is separately normalized.
@@ -321,7 +344,7 @@
                             <button class="nav-link" id="mfcc-coeffs-tab" data-bs-toggle="tab" data-bs-target="#mfcc-coeffs" type="button" role="tab" aria-controls="mfcc-coeffs" aria-selected="false">MFCC Coefficients</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="feature-vector-tab" data-bs-toggle="tab" data-bs-target="#feature-vector" type="button" role="tab" aria-controls="feature-vector" aria-selected="false">Full Feature Vector</button>
+                            <button class="nav-link" id="mfcc-deltas-tab" data-bs-toggle="tab" data-bs-target="#mfcc-deltas" type="button" role="tab" aria-controls="mfcc-deltas" aria-selected="false">Delta Features</button>
                         </li>
                     </ul>
                     
@@ -331,37 +354,20 @@
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <p class="mb-2">Normalization adjusts feature values to have consistent ranges across different types. This helps the model learn from all features equally without being dominated by those with larger scales.</p>
-                                    <table class="table table-bordered">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Statistic</th>
-                                                <th>Before Normalization</th>
-                                                <th>After Normalization</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Min Value</td>
-                                                <td id="mfccMinBefore">-</td>
-                                                <td id="mfccMinAfter">-</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Max Value</td>
-                                                <td id="mfccMaxBefore">-</td>
-                                                <td id="mfccMaxAfter">-</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Mean Value</td>
-                                                <td id="mfccMeanBefore">-</td>
-                                                <td id="mfccMeanAfter">-</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Standard Deviation</td>
-                                                <td id="mfccStdBefore">-</td>
-                                                <td id="mfccStdAfter">-</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light sticky-top">
+                                                <tr>
+                                                    <th>Feature</th>
+                                                    <th>Before Normalization</th>
+                                                    <th>After Normalization</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="mfccStatsTableBody">
+                                                <!-- MFCC stats will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -370,145 +376,21 @@
                         <div class="tab-pane fade" id="mfcc-coeffs" role="tabpanel" aria-labelledby="mfcc-coeffs-tab">
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <p class="mb-2">MFCC coefficients represent the spectral envelope of the audio. Coefficient 1 (energy/loudness) is excluded from normalization and from delta calculations.</p>
-                                    
+                                    <p class="mb-2">MFCC coefficients represent the spectral envelope of the audio. Each coefficient captures different aspects of the sound.</p>
                                     <div id="mfccCoefficientsChart" style="height: 300px;">
                                         <!-- Chart will be rendered here -->
-                                    </div>
-                                    
-                                    <div class="table-responsive mt-3">
-                                        <table class="table table-sm table-bordered">
-                                            <thead class="table-light">
-                                                <tr id="mfcc-coeff-headers">
-                                                    <!-- Coefficient headers will be generated here -->
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr id="mfcc-coeff-values">
-                                                    <!-- Coefficient values will be inserted here -->
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    
-                                    <div class="mt-3">
-                                        <h6>Feature Extraction Details:</h6>
-                                        <ul>
-                                            <li><strong>Basic MFCCs:</strong> 14 coefficients (first coefficient represents energy)</li>
-                                            <li><strong>Delta Features:</strong> First-order time derivatives calculated on coefficients 2-14 only, with separate normalization</li>
-                                            <li><strong>Delta-Delta Features:</strong> Second-order derivatives also calculated on coefficients 2-14, with separate normalization</li>
-                                            <li><strong>Total MFCC Features:</strong> 14 × 2 (mean, std) × 
-3 (basic, delta, delta-delta) = 84 features</li>
-                                        </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Complete Feature Vector Tab -->
-                        <div class="tab-pane fade" id="feature-vector" role="tabpanel" aria-labelledby="feature-vector-tab">
+                        <!-- Delta Features Tab -->
+                        <div class="tab-pane fade" id="mfcc-deltas" role="tabpanel" aria-labelledby="mfcc-deltas-tab">
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <p class="mb-2">The complete feature vector used for training includes all MFCC coefficients (and their statistics), delta features, delta-delta features, and other acoustic features. Each feature is listed with its relative weight in the model.</p>
-                                    
-                                    <div class="mb-4">
-                                        <h6>Feature Vector Components:</h6>
-                                        <div class="alert alert-secondary p-2 feature-vector-display">
-                                            <span id="complete-feature-vector">Loading feature vector...</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-striped table-bordered">
-                                            <thead class="table-primary">
-                                                <tr>
-                                                    <th>Feature Type</th>
-                                                    <th>Features</th>
-                                                    <th>Count</th>
-                                                    <th>Weight Category</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>MFCCs (means)</td>
-                                                    <td>mfcc_mean_1 to mfcc_mean_14</td>
-                                                    <td>14</td>
-                                                    <td>1.0 (primary features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>MFCCs (std)</td>
-                                                    <td>mfcc_std_1 to mfcc_std_14</td>
-                                                    <td>14</td>
-                                                    <td>1.0 (primary features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Delta MFCCs (means)</td>
-                                                    <td>mfcc_delta_mean_2 to mfcc_delta_mean_14 (excluding first coefficient)</td>
-                                                    <td>13</td>
-                                                    <td>0.75 (velocity features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Delta MFCCs (std)</td>
-                                                    <td>mfcc_delta_std_2 to mfcc_delta_std_14 (excluding first coefficient)</td>
-                                                    <td>13</td>
-                                                    <td>0.75 (velocity features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Delta-Delta MFCCs (means)</td>
-                                                    <td>mfcc_delta2_mean_2 to mfcc_delta2_mean_14 (excluding first coefficient)</td>
-                                                    <td>13</td>
-                                                    <td>0.5 (acceleration features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Delta-Delta MFCCs (std)</td>
-                                                    <td>mfcc_delta2_std_2 to mfcc_delta2_std_14 (excluding first coefficient)</td>
-                                                    <td>13</td>
-                                                    <td>0.5 (acceleration features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Pitch Statistics</td>
-                                                    <td>pitch_mean, pitch_std, pitch_min, pitch_max</td>
-                                                    <td>4</td>
-                                                    <td>0.8 (tonal features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Energy Statistics</td>
-                                                    <td>rms_mean, rms_std</td>
-                                                    <td>2</td>
-                                                    <td>0.7 (loudness features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Zero Crossing Rate</td>
-                                                    <td>zcr_mean, zcr_std</td>
-                                                    <td>2</td>
-                                                    <td>0.6 (textural features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Spectral Shape</td>
-                                                    <td>spectral_centroid_mean, spectral_centroid_std, spectral_rolloff_mean, spectral_rolloff_std</td>
-                                                    <td>4</td>
-                                                    <td>0.7 (spectral features)</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Formants</td>
-                                                    <td>formant1_mean, formant2_mean, formant3_mean, formant1_std, formant2_std, formant3_std</td>
-                                                    <td>6</td>
-                                                    <td>0.65 (vowel features)</td>
-                                                </tr>
-                                            </tbody>
-                                            <tfoot class="table-dark">
-                                                <tr>
-                                                    <td colspan="2"><strong>Total Feature Count</strong></td>
-                                                    <td><strong>98</strong></td>
-                                                    <td><em>Scaled to sum to 1.0</em></td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                    
-                                    <div class="alert alert-info mt-3">
-                                        <i class="bi bi-info-circle me-2"></i>
-                                        <strong>Note on Weights:</strong> In traditional machine learning models like Random Forests, the algorithm determines feature importance during training. The weights shown here represent relative importance categories assigned before training. The model will learn the actual importance of each feature.
+                                    <p class="mb-2">Delta features capture the temporal dynamics of the audio. They represent how MFCC coefficients change over time.</p>
+                                    <div id="mfccDeltasChart" style="height: 300px;">
+                                        <!-- Chart will be rendered here -->
                                     </div>
                                 </div>
                             </div>
@@ -806,6 +688,22 @@ function checkTrainingStatus() {
                     
                     if (statsData.success && statsData.stats) {
                         const stats = statsData.stats;
+                        
+                        // Update log messages in the detailed logs section
+                        const logMessages = document.getElementById('logMessages');
+                        if (logMessages && stats.log_messages) {
+                            const formattedLogs = stats.log_messages.map(log => 
+                                `${log.level}: ${log.message}`
+                            ).join('\n');
+                            
+                            logMessages.textContent = formattedLogs;
+                            
+                            // Auto-scroll to bottom of logs
+                            const logContainer = logMessages.parentElement;
+                            if (logContainer) {
+                                logContainer.scrollTop = logContainer.scrollHeight;
+                            }
+                        }
                         
                         // Check for errors in console logs
                         if (stats.log_messages) {
@@ -2156,5 +2054,116 @@ function updateMfccCoefficientsDisplay(coefficients) {
         `;
     }
 }
+
+// Add this function to toggle log details display
+function toggleLogDetails() {
+    const logContainer = document.getElementById('detailedLogs');
+    if (logContainer) {
+        logContainer.style.display = logContainer.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Add this function to toggle MFCC details display
+function toggleMfccDetails(button) {
+    const content = document.getElementById('mfccDetailsContent');
+    if (content.classList.contains('collapse')) {
+        content.classList.remove('collapse');
+        button.querySelector('#mfccToggleIcon').classList.remove('bi-chevron-right');
+        button.querySelector('#mfccToggleIcon').classList.add('bi-chevron-down');
+    } else {
+        content.classList.add('collapse');
+        button.querySelector('#mfccToggleIcon').classList.remove('bi-chevron-down');
+        button.querySelector('#mfccToggleIcon').classList.add('bi-chevron-right');
+    }
+}
+
+// ... existing code ...
+    function updateMfccStats(stats) {
+        if (!stats.mfcc_stats) return;
+        
+        const tableBody = document.getElementById('mfccStatsTableBody');
+        if (!tableBody) return;
+        
+        // Clear existing rows
+        tableBody.innerHTML = '';
+        
+        // Add overall stats
+        const overallStats = [
+            { name: 'Overall Min', before: stats.mfcc_stats.before_normalization.min, after: stats.mfcc_stats.after_normalization.min },
+            { name: 'Overall Max', before: stats.mfcc_stats.before_normalization.max, after: stats.mfcc_stats.after_normalization.max },
+            { name: 'Overall Mean', before: stats.mfcc_stats.before_normalization.mean, after: stats.mfcc_stats.after_normalization.mean },
+            { name: 'Overall Std', before: stats.mfcc_stats.before_normalization.std, after: stats.mfcc_stats.after_normalization.std }
+        ];
+        
+        // Add overall stats
+        overallStats.forEach(stat => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${stat.name}</strong></td>
+                <td>${stat.before !== null ? stat.before.toFixed(4) : '-'}</td>
+                <td>${stat.after !== null ? stat.after.toFixed(4) : '-'}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        // Add separator
+        const separator = document.createElement('tr');
+        separator.innerHTML = '<td colspan="3" class="table-secondary"><strong>Individual Coefficients</strong></td>';
+        tableBody.appendChild(separator);
+        
+        // Add individual coefficients
+        if (stats.mfcc_stats.coefficients) {
+            stats.mfcc_stats.coefficients.forEach((coeff, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>MFCC ${idx + 1}</td>
+                    <td>${coeff.toFixed(4)}</td>
+                    <td>${idx === 0 ? 'Not normalized' : 'Normalized'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Add delta features if available
+        if (stats.mfcc_stats.deltas) {
+            const deltaSeparator = document.createElement('tr');
+            deltaSeparator.innerHTML = '<td colspan="3" class="table-secondary"><strong>Delta Features</strong></td>';
+            tableBody.appendChild(deltaSeparator);
+            
+            stats.mfcc_stats.deltas.forEach((delta, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>Delta ${idx + 1}</td>
+                    <td>${delta.before.toFixed(4)}</td>
+                    <td>${delta.after.toFixed(4)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Add delta-delta features if available
+        if (stats.mfcc_stats.delta_deltas) {
+            const deltaDeltaSeparator = document.createElement('tr');
+            deltaDeltaSeparator.innerHTML = '<td colspan="3" class="table-secondary"><strong>Delta-Delta Features</strong></td>';
+            tableBody.appendChild(deltaDeltaSeparator);
+            
+            stats.mfcc_stats.delta_deltas.forEach((deltaDelta, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>Delta-Delta ${idx + 1}</td>
+                    <td>${deltaDelta.before.toFixed(4)}</td>
+                    <td>${deltaDelta.after.toFixed(4)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Show the MFCC details section
+        const mfccDetails = document.getElementById('mfccNormalizationDetails');
+        if (mfccDetails) {
+            mfccDetails.style.display = 'block';
+        }
+    }
+// ... existing code ...
 </script>
 {% endblock %} 

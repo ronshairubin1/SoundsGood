@@ -24,6 +24,7 @@ def get_dashboard_stats():
         
         # Get user_id from session
         user_id = session.get('user_id')
+        logging.info(f"Getting dashboard stats for user: {user_id}")
         
         # Get statistics from services
         try:
@@ -33,20 +34,35 @@ def get_dashboard_stats():
             
             # Count classes across all dictionaries
             all_classes = set()
-            total_recordings = 0
             for dict_info in dictionaries or []:
-                if 'classes' in dict_info:
-                    all_classes.update(dict_info['classes'])
-                if 'sample_count' in dict_info:
-                    total_recordings += dict_info['sample_count']
+                # Check for classes field first, then sounds field as fallback
+                class_list = []
+                if 'classes' in dict_info and dict_info['classes']:
+                    class_list = dict_info['classes']
+                elif 'sounds' in dict_info and dict_info['sounds']:
+                    class_list = dict_info['sounds']
+                
+                # Add all classes to our set
+                all_classes.update(class_list)
             
             stats['classes'] = len(all_classes)
+            
+            # Count actual wav files in the sounds directory
+            total_recordings = 0
+            for class_name in all_classes:
+                class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
+                if os.path.exists(class_path) and os.path.isdir(class_path):
+                    recordings = [f for f in os.listdir(class_path) if f.endswith('.wav') or f.endswith('.mp3')]
+                    total_recordings += len(recordings)
+                    
             stats['recordings'] = total_recordings
             
             # Count models (by checking files in models directory)
             model_files = [f for f in os.listdir(Config.MODELS_DIR) 
                           if f.endswith('.h5') or f.endswith('.joblib')]
             stats['models'] = len(model_files)
+            
+            logging.info(f"Dashboard stats: {stats}")
         except Exception as e:
             logging.error(f"Error calculating stats: {e}")
         

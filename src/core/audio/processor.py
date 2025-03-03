@@ -96,7 +96,9 @@ class AudioProcessor:
                 'mean': None,
                 'std': None
             },
-            'coefficients': []  # Store individual coefficient values
+            'coefficients': [],  # Store individual coefficient values
+            'deltas': [],        # Store delta feature values
+            'delta_deltas': []   # Store delta-delta feature values
         }
     
     def _generate_feature_names(self):
@@ -460,6 +462,50 @@ class AudioProcessor:
             # Store individual coefficient values (take mean across time frames to get one value per coefficient)
             self.mfcc_stats['coefficients'] = [float(np.mean(mfccs[i])) for i in range(mfccs.shape[0])]
             
+            # Compute delta and delta-delta features if enabled
+            if self.compute_deltas:
+                # MODIFICATION: Exclude the first coefficient when computing deltas
+                # Extract all coefficients except the first
+                mfccs_for_delta = mfccs[1:] if exclude_first_mfcc else mfccs
+                
+                if exclude_first_mfcc:
+                    logging.info("Excluding first MFCC coefficient (energy/loudness) from delta calculation")
+                
+                # Compute deltas
+                deltas = librosa.feature.delta(mfccs_for_delta, width=self.delta_width)
+                
+                # Store delta stats
+                self.mfcc_stats['deltas'] = []
+                for i in range(deltas.shape[0]):
+                    delta_before = float(np.mean(deltas[i]))
+                    # Normalize delta
+                    delta_mean = np.mean(deltas[i])
+                    delta_std = np.std(deltas[i]) + 1e-8
+                    deltas[i] = (deltas[i] - delta_mean) / delta_std
+                    delta_after = float(np.mean(deltas[i]))
+                    self.mfcc_stats['deltas'].append({
+                        'before': delta_before,
+                        'after': delta_after
+                    })
+                
+                if self.compute_delta_deltas:
+                    # Compute delta-deltas
+                    delta_deltas = librosa.feature.delta(deltas, order=2, width=self.delta_width)
+                    
+                    # Store delta-delta stats
+                    self.mfcc_stats['delta_deltas'] = []
+                    for i in range(delta_deltas.shape[0]):
+                        delta_delta_before = float(np.mean(delta_deltas[i]))
+                        # Normalize delta-delta
+                        delta_delta_mean = np.mean(delta_deltas[i])
+                        delta_delta_std = np.std(delta_deltas[i]) + 1e-8
+                        delta_deltas[i] = (delta_deltas[i] - delta_delta_mean) / delta_delta_std
+                        delta_delta_after = float(np.mean(delta_deltas[i]))
+                        self.mfcc_stats['delta_deltas'].append({
+                            'before': delta_delta_before,
+                            'after': delta_delta_after
+                        })
+            
             # Normalize MFCCs if requested
             if normalize_mfcc:
                 # Determine which coefficients to normalize
@@ -488,63 +534,6 @@ class AudioProcessor:
             for i in range(self.n_mfcc):
                 features[f'mfcc_mean_{i+1}'] = np.mean(mfccs[i])
                 features[f'mfcc_std_{i+1}'] = np.std(mfccs[i])
-            
-            # Compute delta and delta-delta features if enabled
-            if self.compute_deltas:
-                # MODIFICATION: Exclude the first coefficient when computing deltas
-                # Extract all coefficients except the first
-                mfccs_for_delta = mfccs[1:] if exclude_first_mfcc else mfccs
-                
-                if exclude_first_mfcc:
-                    logging.info("Excluding first MFCC coefficient (energy/loudness) from delta calculation")
-                
-                # Compute first-order delta (velocity) features
-                delta_mfccs = librosa.feature.delta(mfccs_for_delta, width=self.delta_width)
-                
-                logging.info(f"Computed MFCC delta features with width={self.delta_width}")
-                
-                # Apply separate normalization to delta features
-                delta_mean = np.mean(delta_mfccs, axis=1, keepdims=True)
-                delta_std = np.std(delta_mfccs, axis=1, keepdims=True) + 1e-8  # Avoid division by zero
-                delta_mfccs_normalized = (delta_mfccs - delta_mean) / delta_std
-                logging.info("Applied separate normalization to delta features")
-                
-                # Calculate delta statistics
-                num_delta_feats = delta_mfccs.shape[0]  # Number of features (could be n_mfcc-1 if excluding first coeff)
-                for i in range(num_delta_feats):
-                    # Offset the index by 1 if we excluded the first coefficient
-                    coeff_index = i + (1 if exclude_first_mfcc else 0) + 1
-                    features[f'mfcc_delta_mean_{coeff_index}'] = np.mean(delta_mfccs_normalized[i])
-                    features[f'mfcc_delta_std_{coeff_index}'] = np.std(delta_mfccs_normalized[i])
-                
-                # If first coefficient was excluded, set its delta values to 0 for completeness
-                if exclude_first_mfcc:
-                    features['mfcc_delta_mean_1'] = 0.0
-                    features['mfcc_delta_std_1'] = 0.0
-                
-                # Compute second-order delta (acceleration) features
-                if self.compute_delta_deltas:
-                    delta2_mfccs = librosa.feature.delta(delta_mfccs, width=self.delta_width)
-                    
-                    logging.info(f"Computed MFCC delta-delta features with width={self.delta_width}")
-                    
-                    # Apply separate normalization to delta-delta features
-                    delta2_mean = np.mean(delta2_mfccs, axis=1, keepdims=True)
-                    delta2_std = np.std(delta2_mfccs, axis=1, keepdims=True) + 1e-8  # Avoid division by zero
-                    delta2_mfccs_normalized = (delta2_mfccs - delta2_mean) / delta2_std
-                    logging.info("Applied separate normalization to delta-delta features")
-                    
-                    # Calculate delta-delta statistics
-                    for i in range(num_delta_feats):
-                        # Offset the index by 1 if we excluded the first coefficient
-                        coeff_index = i + (1 if exclude_first_mfcc else 0) + 1
-                        features[f'mfcc_delta2_mean_{coeff_index}'] = np.mean(delta2_mfccs_normalized[i])
-                        features[f'mfcc_delta2_std_{coeff_index}'] = np.std(delta2_mfccs_normalized[i])
-                    
-                    # If first coefficient was excluded, set its delta-delta values to 0 for completeness
-                    if exclude_first_mfcc:
-                        features['mfcc_delta2_mean_1'] = 0.0
-                        features['mfcc_delta2_std_1'] = 0.0
             
             # Extract pitch (fundamental frequency)
             pitches, magnitudes = librosa.piptrack(

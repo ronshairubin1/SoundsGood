@@ -10,7 +10,7 @@
         <div class="recordings-list">
             {% for file in files %}
             <div class="recording-item">
-                <audio controls src="{{ url_for('static', filename='goodsounds/' + file) }}"></audio>
+                <audio controls src="{{ url_for('sounds', class_name=sound, sample_name=file) }}"></audio>
                 <span class="filename">{{ file }}</span>
             </div>
             {% endfor %}

@@ -91,7 +91,19 @@ class MlApi:
             # Get dictionary classes from dictionary service
             from src.services.dictionary_service import DictionaryService
             dictionary_service = DictionaryService()
+            
+            # Add debug logs
+            logging.info(f"Training requested for dictionary: '{dict_name}'")
+            logging.info(f"Request data: {data}")
+            
+            # Get dictionary object
             dictionary = dictionary_service.get_dictionary(dict_name)
+            
+            # Add more debug logs
+            if dictionary:
+                logging.info(f"Found dictionary: {dictionary.get('name')} with keys: {list(dictionary.keys())}")
+            else:
+                logging.error(f"Dictionary '{dict_name}' not found")
             
             if not dictionary:
                 return jsonify({
@@ -100,9 +112,19 @@ class MlApi:
                 }), 404
             
             # Set audio_dir to the training_sounds folder and pass classes list
-            audio_dir = os.path.join(Config.TRAINING_SOUNDS_DIR)
-            classes = dictionary.get('classes', [])
+            audio_dir = Config.TRAINING_SOUNDS_DIR
             
+            # Check for classes or sounds key and use the appropriate one
+            classes = []
+            if 'classes' in dictionary and dictionary['classes']:
+                classes = dictionary['classes']
+                logging.info(f"Using classes from 'classes' key: {classes}")
+            elif 'sounds' in dictionary and dictionary['sounds']:
+                classes = dictionary['sounds']
+                logging.info(f"Using classes from 'sounds' key: {classes}")
+            else:
+                logging.error(f"Dictionary has no classes or sounds defined: {dictionary}")
+                
             if not classes:
                 return jsonify({
                     'success': False,
@@ -120,6 +142,8 @@ class MlApi:
                 'rf_weight': data.get('rf_weight', 0.5),
                 'use_class_weights': data.get('use_class_weights', True)
             }
+            
+            logging.info(f"Starting training with parameters: {train_params}")
             
             # Start training asynchronously
             success = self.training_service.train_model_async(

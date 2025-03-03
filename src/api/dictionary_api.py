@@ -51,6 +51,9 @@ def create_dictionary():
         logging.info(f"Create dictionary request received")
         logging.info(f"Request method: {request.method}")
         logging.info(f"Request content type: {request.content_type}")
+        logging.info(f"Request form data: {request.form}")
+        logging.info(f"Request JSON data: {request.get_json(silent=True)}")
+        logging.info(f"Request headers: {request.headers}")
         
         # Get data from either form submission or JSON
         if request.content_type and 'application/json' in request.content_type:
@@ -69,7 +72,7 @@ def create_dictionary():
             data = {}
             data['name'] = request.form.get('name', '')
             data['description'] = request.form.get('description', '')
-            redirect_url = request.form.get('redirect', '/dictionaries/manage')
+            redirect_url = request.form.get('redirect', '/dictionaries')
             logging.info(f"Received form data: {data}")
             logging.info(f"Redirect URL: {redirect_url}")
         
@@ -158,7 +161,7 @@ def create_dictionary():
         if request.form:
             from flask import redirect, url_for, flash
             flash(error_msg, 'danger')
-            return redirect(request.form.get('redirect', '/dictionaries/manage'))
+            return redirect(request.form.get('redirect', '/dictionaries'))
         
         return jsonify({
             'success': False,
@@ -220,8 +223,8 @@ def add_sample(dict_name, class_name):
         create_class = request.form.get('create_class') == 'true'
         
         # If class doesn't exist and create_class flag is true, create it
-        sounds_dir = Config.SOUNDS_DIR
-        class_path = os.path.join(sounds_dir, class_name)
+        training_sounds_dir = Config.TRAINING_SOUNDS_DIR
+        class_path = os.path.join(training_sounds_dir, class_name)
         
         if create_class and not os.path.exists(class_path):
             logging.info(f"Creating new sound class directory: {class_path}")
@@ -270,15 +273,88 @@ def get_samples(dict_name, class_name):
     else:
         return jsonify(result), 400
 
-@dictionary_bp.route('/<dict_name>', methods=['DELETE'])
+@dictionary_bp.route('/<dict_name>/delete', methods=['POST'])
 def delete_dictionary(dict_name):
     """Delete a dictionary."""
-    result = dictionary_service.delete_dictionary(dict_name)
+    logging.info(f"Delete dictionary request for '{dict_name}'")
     
-    if result['success']:
-        return jsonify(result)
-    else:
-        return jsonify(result), 400
+    # Check for password if security is enabled
+    data = request.get_json(silent=True) or {}
+    password = data.get('password')
+    
+    if Config.ADMIN_PASSWORD and password != Config.ADMIN_PASSWORD:
+        logging.warning(f"Invalid password provided for dictionary deletion: '{dict_name}'")
+        return jsonify({
+            'success': False,
+            'error': 'Invalid password'
+        }), 403
+    
+    try:
+        # Should we delete the classes too?
+        delete_classes = data.get('delete_classes', False)
+        result = dictionary_service.delete_dictionary(dict_name, delete_classes)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        logging.exception(f"Error deleting dictionary: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@dictionary_bp.route('/<dict_name>/set_active', methods=['POST'])
+def set_active_dictionary(dict_name):
+    """Set a dictionary as active."""
+    logging.info(f"Setting active dictionary: {dict_name}")
+    
+    try:
+        result = dictionary_service.set_active_dictionary(dict_name)
+        
+        if result:
+            return jsonify({
+                'success': True,
+                'message': f"Dictionary '{dict_name}' is now active"
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f"Failed to set '{dict_name}' as active dictionary"
+            }), 400
+    except Exception as e:
+        logging.exception(f"Error setting active dictionary: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@dictionary_bp.route('/<dict_name>/remove_class', methods=['POST'])
+def remove_class(dict_name):
+    """Remove a class from a dictionary."""
+    logging.info(f"Remove class from dictionary '{dict_name}'")
+    data = request.get_json()
+    
+    if not data or 'class_name' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Class name is required'
+        }), 400
+    
+    try:
+        result = dictionary_service.remove_class(dict_name, data['class_name'])
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        logging.exception(f"Error removing class: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @dictionary_bp.route('/debug', methods=['GET'])
 def debug_metadata():
@@ -476,4 +552,35 @@ def update_dictionary(dict_name):
         return jsonify({
             'success': False,
             'error': f"Server error: {str(e)}"
+        }), 500
+
+@dictionary_bp.route('/sync_all_counts', methods=['POST'])
+def sync_all_dictionary_counts():
+    """Sync sample counts for all dictionaries"""
+    try:
+        # Get all dictionaries
+        dictionaries = dictionary_service.get_dictionaries()
+        results = []
+        
+        for dictionary in dictionaries:
+            dict_name = dictionary.get('name')
+            if dict_name:
+                logging.info(f"Syncing counts for dictionary: {dict_name}")
+                result = dictionary_service.sync_dictionary_samples(dict_name)
+                results.append({
+                    'dictionary': dict_name,
+                    'success': result.get('success', False),
+                    'sample_count': result.get('sample_count', 0)
+                })
+            
+        return jsonify({
+            'success': True,
+            'message': 'Sample counts synced for all dictionaries',
+            'results': results
+        })
+    except Exception as e:
+        logging.error(f"Error syncing all dictionary counts: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
         }), 500

@@ -414,8 +414,9 @@ def test_microphone():
 
     # Save the recording to a WAV file
     test_recording_int = np.int16(test_recording * INT16_MAX)
-    wavfile.write("test_recording.wav", TEST_FS, test_recording_int)
-    print("Playback complete.")
+    test_recording_path = os.path.join(Config.TEST_SOUNDS_DIR, "test_recording.wav")
+    wavfile.write(test_recording_path, TEST_FS, test_recording_int)
+    print(f"Playback complete. Recording saved to {test_recording_path}")
 
 
 if __name__ == "__main__":

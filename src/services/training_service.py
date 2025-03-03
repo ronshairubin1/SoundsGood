@@ -76,14 +76,22 @@ class TrainingService:
         
         # Get class directories - either use provided classes or scan directory
         if classes:
-            class_dirs = classes
-            # Confirm the class directories exist
-            for class_dir in class_dirs:
+            # Filter out non-existent class directories
+            class_dirs = []
+            for class_dir in classes:
                 class_path = os.path.join(audio_dir, class_dir)
-                if not os.path.isdir(class_path):
+                if os.path.isdir(class_path):
+                    class_dirs.append(class_dir)
+                else:
                     error_msg = f"Class directory {class_path} does not exist"
                     logging.warning(error_msg)
                     self.error_logs.append({'level': 'WARNING', 'message': error_msg})
+                    
+            if not class_dirs:
+                error_msg = f"None of the specified class directories exist in {audio_dir}"
+                logging.error(error_msg)
+                self.error_logs.append({'level': 'ERROR', 'message': error_msg})
+                return None, None, [], stats
         else:
             # Get subdirectories (each corresponds to a class)
             class_dirs = [d for d in os.listdir(audio_dir) 
@@ -845,6 +853,24 @@ class TrainingService:
             logging.error("A training session is already in progress")
             return False
         
+        # Enhanced logging - add these lines
+        logging.info(f"Starting training for model_type={model_type} with audio_dir={audio_dir}")
+        logging.info(f"Training parameters: {kwargs}")
+        
+        # Add debug logging for class directories
+        dict_name = kwargs.get('dict_name', 'unknown')
+        classes = kwargs.get('classes', [])
+        logging.info(f"Dictionary: {dict_name}, Classes: {classes}")
+        
+        # Log if the specified classes exist as directories
+        for class_name in classes:
+            class_path = os.path.join(audio_dir, class_name)
+            if os.path.isdir(class_path):
+                wav_files = [f for f in os.listdir(class_path) if f.endswith('.wav')]
+                logging.info(f"Class directory '{class_path}' exists with {len(wav_files)} WAV files")
+            else:
+                logging.error(f"Class directory '{class_path}' does not exist!")
+        
         # Reset error logs at the start of training
         self.error_logs = []
         
@@ -860,6 +886,8 @@ class TrainingService:
                     'message': self.format(record)
                 }
                 self.log_list.append(log_entry)
+                # Add this line to ensure logs are also shown in the console/main log
+                print(f"TRAINING LOG: {record.levelname} - {self.format(record)}")
         
         # Add the custom handler to the root logger
         handler = LogHandler(self.error_logs)
@@ -869,21 +897,44 @@ class TrainingService:
         def train_thread_fn():
             try:
                 self.is_training = True
+                logging.info(f"Training thread started for {model_type} model")
                 
                 # For CNN and Ensemble models, first check if we have enough data
                 min_samples_per_class = 3  # Minimum samples needed per class for training
                 
                 if model_type in ['cnn', 'ensemble']:
-                    # Check class directories and their sample counts
-                    class_dirs = [d for d in os.listdir(audio_dir) 
-                                if os.path.isdir(os.path.join(audio_dir, d))]
+                    # Get the classes from kwargs
+                    dict_classes = kwargs.get('classes', [])
                     
+                    if not dict_classes:
+                        error_msg = "No classes specified for training. Dictionary must have classes defined."
+                        logging.error(error_msg)
+                        if callback:
+                            callback({
+                                'success': False,
+                                'error': error_msg,
+                                'stats': {
+                                    'log_messages': self.error_logs
+                                }
+                            })
+                        return
+                    
+                    logging.info(f"Checking specified class directories: {dict_classes}")
+                    
+                    # Check only the specified class directories
                     insufficient_classes = []
-                    for class_dir in class_dirs:
-                        class_path = os.path.join(audio_dir, class_dir)
+                    for class_name in dict_classes:
+                        class_path = os.path.join(audio_dir, class_name)
+                        if not os.path.isdir(class_path):
+                            logging.error(f"Class directory doesn't exist: {class_path}")
+                            insufficient_classes.append((class_name, 0))
+                            continue
+                            
                         wav_files = [f for f in os.listdir(class_path) if f.endswith('.wav')]
+                        logging.info(f"Class '{class_name}' has {len(wav_files)} WAV files")
+                        
                         if len(wav_files) < min_samples_per_class:
-                            insufficient_classes.append((class_dir, len(wav_files)))
+                            insufficient_classes.append((class_name, len(wav_files)))
                     
                     if insufficient_classes:
                         error_msg = "Insufficient samples for training: "
@@ -902,7 +953,9 @@ class TrainingService:
                         return
                 
                 # Proceed with training
+                logging.info(f"Starting actual model training for {model_type}")
                 result = self.train_model(model_type, audio_dir, **kwargs)
+                logging.info(f"Training completed with result: {result.get('success', False)}")
                 
                 # Add error logs to the result
                 if isinstance(result, dict):
@@ -914,19 +967,22 @@ class TrainingService:
             except Exception as e:
                 logging.error(f"Error in training thread: {e}")
                 import traceback
-                logging.error(traceback.format_exc())
+                tb = traceback.format_exc()
+                logging.error(tb)
                 if callback:
                     callback({
                         'success': False,
                         'error': str(e),
                         'stats': {
-                            'log_messages': self.error_logs
+                            'log_messages': self.error_logs,
+                            'traceback': tb
                         }
                     })
             finally:
                 # Remove the custom handler
                 logging.getLogger().removeHandler(handler)
                 self.is_training = False
+                logging.info("Training thread completed and resources released")
         
         self.training_thread = Thread(target=train_thread_fn)
         self.training_thread.daemon = True
