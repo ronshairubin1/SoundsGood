@@ -28,8 +28,8 @@ wheels/
 
 # Logs
 *.log
-logs/
-app_output.log
+logs/*
+# app_output.log  # Removed specific log file references as they're now in logs/
 
 # OS specific files
 .DS_Store

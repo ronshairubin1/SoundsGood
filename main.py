@@ -9,10 +9,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+import time
+from config import Config
 
 # Configure logging
 logging.basicConfig(
-    filename='app_execution.log',
+    filename=os.path.join(Config.LOGS_DIR, 'app_execution.log'),
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
@@ -20,7 +22,6 @@ logger = logging.getLogger('main')
 logger.info("=" * 50)
 logger.info("Starting Sound Classifier app with new architecture...")
 
-from config import Config
 logger.info(f"Loaded Config from config.py")
 
 # Import our new API instead of the old routes
@@ -29,6 +30,9 @@ try:
     logger.info("Imported MlApi from src.api.ml_api")
 except ImportError as e:
     logger.error(f"Failed to import MlApi: {e}")
+    import sys
+    logger.critical("MlApi is a critical component. Exiting application due to import failure.")
+    sys.exit(1)
 
 try:
     from src.api.dictionary_api import dictionary_bp
@@ -48,12 +52,12 @@ try:
 except ImportError as e:
     logger.error(f"Failed to import dashboard_bp: {e}")
 
-# Import the ml_blueprint from our fixed file
+# Import the ml_bp from routes
 try:
-    from src.ml_routes_fixed import ml_blueprint
-    logger.info("Imported ml_blueprint from src.ml_routes_fixed")
+    from src.routes.ml_routes import ml_bp
+    logger.info("Imported ml_bp from src.routes.ml_routes")
 except ImportError as e:
-    logger.error(f"Failed to import ml_blueprint: {e}")
+    logger.error(f"Failed to import ml_bp: {e}")
 
 # Import services
 try:
@@ -89,15 +93,18 @@ logger.debug(f"Ensured TEMP_DIR exists: {Config.TEMP_DIR}")
 os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
 logger.debug(f"Ensured TRAINING_SOUNDS_DIR exists: {Config.TRAINING_SOUNDS_DIR}")
 
-# Register blueprints - NOTE: we're not using the old ml_bp anymore
-app.register_blueprint(dictionary_bp)
-logger.info("Registered dictionary_bp blueprint")
-app.register_blueprint(user_bp)
-logger.info("Registered user_bp blueprint")
-app.register_blueprint(dashboard_bp) 
-logger.info("Registered dashboard_bp blueprint")
-app.register_blueprint(ml_blueprint)  # Register the ml_blueprint
-logger.info("Registered ml_blueprint blueprint")
+# Register blueprints
+try:
+    app.register_blueprint(dictionary_bp)
+    logger.info("Registered dictionary_bp blueprint")
+    app.register_blueprint(user_bp)
+    logger.info("Registered user_bp blueprint")
+    app.register_blueprint(dashboard_bp) 
+    logger.info("Registered dashboard_bp blueprint")
+    app.register_blueprint(ml_bp)  # Register the ml_bp
+    logger.info("Registered ml_bp blueprint")
+except Exception as e:
+    logger.error(f"Error registering blueprints: {e}")
 
 # Initialize services
 dictionary_service = DictionaryService()
@@ -111,7 +118,11 @@ ml_api = MlApi(app, model_dir=Config.MODELS_DIR)
 # --------------------------------------------------------------------
 # Logging
 # --------------------------------------------------------------------
-logging.basicConfig(level=logging.DEBUG, format=Config.LOG_FORMAT)
+# Configure app logger with a file handler
+file_handler = logging.FileHandler(os.path.join(Config.LOGS_DIR, 'flask_app.log'))
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter(Config.LOG_FORMAT))
+app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.DEBUG)
 app.logger.debug("Starting Sound Classifier app with new architecture...")
 app.logger.debug(f"Template folder: {app.template_folder}")
@@ -435,7 +446,23 @@ def record_sounds():
         # Sort sound classes alphabetically by name
         sound_classes.sort(key=lambda x: x['name'].lower())
     
-    return render_template('sounds_record.html', sound_classes=sound_classes)
+    # Check if we're coming from a dictionary page
+    source_dict_name = request.args.get('dict_name')
+    source_dictionary = None
+    dict_classes = []
+    
+    if source_dict_name:
+        # Get dictionary information
+        source_dictionary = dictionary_service.get_dictionary(source_dict_name)
+        
+        if source_dictionary and 'classes' in source_dictionary:
+            # Get classes from this dictionary
+            dict_classes = [cls for cls in sound_classes if cls['name'] in source_dictionary['classes']]
+    
+    return render_template('sounds_record.html', 
+                          sound_classes=sound_classes,
+                          source_dictionary=source_dictionary,
+                          dict_classes=dict_classes)
 
 @app.route('/sounds/class/<class_name>')
 def view_sound_class(class_name):
@@ -539,6 +566,39 @@ def api_create_sound_class():
         training_class_path = os.path.join(Config.TRAINING_SOUNDS_DIR, safe_class_name)
         os.makedirs(training_class_path, exist_ok=True)
         app.logger.info(f"Created class directory in TRAINING_SOUNDS_DIR: {training_class_path}")
+        
+        # Also update the classes.json file if it exists
+        classes_dir = os.path.join(os.path.dirname(__file__), 'data', 'classes')
+        classes_json_path = os.path.join(classes_dir, 'classes.json')
+        
+        if os.path.exists(os.path.dirname(classes_json_path)):
+            # Ensure the classes directory exists
+            os.makedirs(os.path.dirname(classes_json_path), exist_ok=True)
+            
+            classes_data = {"classes": {}}
+            if os.path.exists(classes_json_path):
+                try:
+                    with open(classes_json_path, 'r') as f:
+                        classes_data = json.load(f)
+                except Exception as e:
+                    app.logger.error(f"Error loading classes.json: {e}")
+            
+            # Add the new class entry
+            classes_data['classes'][safe_class_name] = {
+                "name": safe_class_name,
+                "samples": [],
+                "sample_count": 0,
+                "created_at": datetime.now().isoformat(),
+                "in_dictionaries": []
+            }
+            
+            # Save the updated classes.json
+            try:
+                with open(classes_json_path, 'w') as f:
+                    json.dump(classes_data, f, indent=4)
+                app.logger.info(f"Updated classes.json with new class: {safe_class_name}")
+            except Exception as e:
+                app.logger.error(f"Error updating classes.json: {e}")
         
         return jsonify({
             'success': True,
@@ -795,8 +855,52 @@ def api_ml_record():
         # Create directories for raw and temp sounds
         raw_sounds_dir = os.path.join(Config.RAW_SOUNDS_DIR, sound_class)
         temp_sounds_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, sound_class)
+        training_sounds_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, sound_class)
+        
+        # Ensure the class directories exist - this creates the class if needed
         os.makedirs(raw_sounds_dir, exist_ok=True)
         os.makedirs(temp_sounds_dir, exist_ok=True)
+        os.makedirs(training_sounds_dir, exist_ok=True)
+        
+        # Check if we need to update the classes.json file
+        created_new_class = False
+        if not os.path.exists(training_sounds_dir) or os.path.getmtime(training_sounds_dir) > time.time() - 2:  # If directory was just created
+            created_new_class = True
+            
+            # Update classes.json if the class was just created
+            classes_dir = os.path.join(os.path.dirname(__file__), 'data', 'classes')
+            classes_json_path = os.path.join(classes_dir, 'classes.json')
+            
+            if os.path.exists(os.path.dirname(classes_json_path)):
+                # Ensure the classes directory exists
+                os.makedirs(os.path.dirname(classes_json_path), exist_ok=True)
+                
+                classes_data = {"classes": {}}
+                if os.path.exists(classes_json_path):
+                    try:
+                        with open(classes_json_path, 'r') as f:
+                            classes_data = json.load(f)
+                    except Exception as e:
+                        app.logger.error(f"Error loading classes.json: {e}")
+                
+                # Check if class already exists in the JSON
+                if sound_class not in classes_data['classes']:
+                    # Add the new class entry
+                    classes_data['classes'][sound_class] = {
+                        "name": sound_class,
+                        "samples": [],
+                        "sample_count": 0,
+                        "created_at": datetime.now().isoformat(),
+                        "in_dictionaries": []
+                    }
+                    
+                    # Save the updated classes.json
+                    try:
+                        with open(classes_json_path, 'w') as f:
+                            json.dump(classes_data, f, indent=4)
+                        app.logger.info(f"Updated classes.json with new class: {sound_class}")
+                    except Exception as e:
+                        app.logger.error(f"Error updating classes.json: {e}")
         
         # Save the original recording to raw_sounds directory
         raw_filename = f"{sound_class}_raw_{timestamp}.webm"

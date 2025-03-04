@@ -1,4 +1,6 @@
 import os
+import json
+import logging
 
 class Config:
     """
@@ -8,10 +10,12 @@ class Config:
     # App directories
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
-    MODELS_DIR = os.path.join(BASE_DIR, 'models')
+    MODELS_DIR = os.path.join(BASE_DIR, 'data/models')
     TEMP_DIR = os.path.join(BASE_DIR, 'temp')
     DATA_DIR = os.path.join(BASE_DIR, 'data')
-    DICTIONARIES_DIR = os.path.join(BASE_DIR, 'dictionaries')
+    DICTIONARIES_DIR = os.path.join(DATA_DIR, 'dictionaries')
+    ANALYSIS_DIR = os.path.join(DATA_DIR, 'analysis')
+    LOGS_DIR = os.path.join(BASE_DIR, 'logs')
     
     # Define specific sound directories within data/sounds
     RAW_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'raw_sounds')
@@ -21,9 +25,9 @@ class Config:
     TRAINING_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'training_sounds')
     
     # Ensure all directories exist
-    for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, 
+    for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, ANALYSIS_DIR,
                       TRAINING_SOUNDS_DIR, RAW_SOUNDS_DIR, PENDING_VERIFICATION_SOUNDS_DIR,
-                      UPLOADED_SOUNDS_DIR, TEST_SOUNDS_DIR]:
+                      UPLOADED_SOUNDS_DIR, TEST_SOUNDS_DIR, LOGS_DIR]:
         os.makedirs(directory, exist_ok=True)
     
     # Audio processing settings
@@ -85,17 +89,187 @@ class Config:
             cls.TEMP_DIR,
             cls.DATA_DIR,
             cls.DICTIONARIES_DIR,
+            cls.ANALYSIS_DIR,
             cls.TRAINING_SOUNDS_DIR,
             cls.RAW_SOUNDS_DIR,
             cls.PENDING_VERIFICATION_SOUNDS_DIR,
             cls.UPLOADED_SOUNDS_DIR,
-            cls.TEST_SOUNDS_DIR
+            cls.TEST_SOUNDS_DIR,
+            cls.LOGS_DIR,
         ]
         
         for directory in directories:
             os.makedirs(directory, exist_ok=True)
             
         return True
+    
+    @classmethod
+    def get_dictionary(cls):
+        """
+        Get the active dictionary from the consolidated dictionaries.json file.
+        
+        Returns:
+            dict: The active dictionary information
+        """
+        try:
+            dictionaries_file = os.path.join(cls.DICTIONARIES_DIR, 'dictionaries.json')
+            with open(dictionaries_file, 'r') as f:
+                data = json.load(f)
+                active_name = data.get('active_dictionary')
+                
+                # Find the dictionary with the matching name in the dictionaries object
+                dictionaries = data.get('dictionaries', {})
+                if active_name and active_name in dictionaries:
+                    dictionary = dictionaries[active_name]
+                    
+                    # Ensure the sounds field exists (which might be called 'classes' in code)
+                    if 'classes' not in dictionary and 'sounds' in dictionary:
+                        dictionary['classes'] = dictionary['sounds']
+                    elif 'sounds' not in dictionary and 'classes' in dictionary:
+                        dictionary['sounds'] = dictionary['classes']
+                    
+                    return dictionary
+                
+                # If no match found, return the first dictionary or default
+                if dictionaries and len(dictionaries) > 0:
+                    first_dict = list(dictionaries.values())[0]
+                    
+                    # Ensure the sounds field exists (which might be called 'classes' in code)
+                    if 'classes' not in first_dict and 'sounds' in first_dict:
+                        first_dict['classes'] = first_dict['sounds']
+                    elif 'sounds' not in first_dict and 'classes' in first_dict:
+                        first_dict['sounds'] = first_dict['classes']
+                    
+                    return first_dict
+                
+                return {
+                    "name": "Default",
+                    "classes": ["ah", "eh", "ee", "oh", "oo"],
+                    "sounds": ["ah", "eh", "ee", "oh", "oo"]
+                }
+        except Exception as e:
+            logging.error(f"Error loading dictionary: {e}")
+            return {
+                "name": "Default",
+                "classes": ["ah", "eh", "ee", "oh", "oo"],
+                "sounds": ["ah", "eh", "ee", "oh", "oo"]
+            }
+
+    @classmethod
+    def get_dictionaries(cls):
+        """
+        Get all dictionaries from the consolidated dictionaries.json file.
+        
+        Returns:
+            list: List of dictionary objects
+        """
+        try:
+            dictionaries_file = os.path.join(cls.DICTIONARIES_DIR, 'dictionaries.json')
+            with open(dictionaries_file, 'r') as f:
+                data = json.load(f)
+                dictionaries = data.get('dictionaries', {})
+                
+                # Convert from dictionary object to list for backwards compatibility
+                dict_list = []
+                for dict_name, dict_data in dictionaries.items():
+                    # Ensure the sounds field exists (which might be called 'classes' in code)
+                    if 'classes' not in dict_data and 'sounds' in dict_data:
+                        dict_data['classes'] = dict_data['sounds']
+                    elif 'sounds' not in dict_data and 'classes' in dict_data:
+                        dict_data['sounds'] = dict_data['classes']
+                    
+                    dict_list.append(dict_data)
+                
+                return dict_list
+        except Exception as e:
+            logging.error(f"Error loading dictionaries: {e}")
+            return [{"name": "Default", "classes": ["ah", "eh", "ee", "oh", "oo"], "sounds": ["ah", "eh", "ee", "oh", "oo"]}]
+
+    @classmethod
+    def save_dictionaries(cls, dictionaries, active_dictionary=None):
+        """
+        Save dictionaries to the consolidated dictionaries.json file.
+        
+        Args:
+            dictionaries (list): List of dictionary objects
+            active_dictionary (str, optional): Name of the active dictionary
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            dictionaries_file = os.path.join(cls.DICTIONARIES_DIR, 'dictionaries.json')
+            
+            # Read the current data first
+            current_data = {}
+            if os.path.exists(dictionaries_file):
+                try:
+                    with open(dictionaries_file, 'r') as f:
+                        current_data = json.load(f)
+                except Exception as e:
+                    logging.error(f"Error reading existing dictionaries file: {e}")
+            
+            # If no active dictionary is specified, try to preserve the current one
+            if active_dictionary is None:
+                active_dictionary = current_data.get('active_dictionary')
+            
+            # Convert the list of dictionaries to a dictionary object with name as key
+            dict_obj = {}
+            for dictionary in dictionaries:
+                # Ensure dictionary has a name
+                name = dictionary.get('name')
+                if not name:
+                    continue
+                    
+                # Handle the 'sounds' vs 'classes' field for compatibility
+                if 'sounds' not in dictionary and 'classes' in dictionary:
+                    dictionary['sounds'] = dictionary['classes']
+                elif 'classes' not in dictionary and 'sounds' in dictionary:
+                    dictionary['classes'] = dictionary['sounds']
+                
+                # Add to dictionary object
+                dict_obj[name] = dictionary
+            
+            # Prepare the data to save
+            data_to_save = {
+                'dictionaries': dict_obj,
+                'active_dictionary': active_dictionary
+            }
+            
+            # Write to file
+            with open(dictionaries_file, 'w') as f:
+                json.dump(data_to_save, f, indent=4)
+                
+            return True
+        except Exception as e:
+            logging.error(f"Error saving dictionaries: {e}")
+            return False
+
+    @classmethod
+    def set_active_dictionary(cls, dictionary):
+        """
+        Set the active dictionary.
+        
+        Args:
+            dictionary (dict or str): Dictionary object or name to set as active
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            dict_name = dictionary
+            if isinstance(dictionary, dict):
+                dict_name = dictionary.get('name')
+                if not dict_name:
+                    logging.error("Cannot set active dictionary: missing name")
+                    return False
+                
+            # Save dictionaries with this one as active
+            dictionaries = cls.get_dictionaries()
+            return cls.save_dictionaries(dictionaries, dict_name)
+        except Exception as e:
+            logging.error(f"Error setting active dictionary: {e}")
+            return False
     
     @classmethod
     def get_model_path(cls, model_name, model_type):

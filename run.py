@@ -9,10 +9,11 @@ import webbrowser
 import threading
 import logging
 import traceback
+from config import Config
 
 # Set up logging
 logging.basicConfig(
-    filename='app_startup.log',
+    filename=os.path.join(Config.LOGS_DIR, 'app_startup.log'),
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )

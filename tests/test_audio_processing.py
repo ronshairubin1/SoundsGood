@@ -4,16 +4,21 @@ Test script to analyze specific audio files that are failing.
 This helps diagnose issues with audio processing.
 """
 
-import os
-import sys
 import logging
 import numpy as np
 import pyloudnorm as pyln
 from src.core.audio.processor import AudioProcessor
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import Config
 
 # Configure logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename=os.path.join(Config.LOGS_DIR, 'test_audio_processing.log'),
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 def test_file(file_path):
     """

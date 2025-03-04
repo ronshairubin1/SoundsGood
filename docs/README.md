@@ -1,168 +1,349 @@
-# Sound Classifier Project
-**Created: March 2, 2025 - 7:52 AM**
+# SoundClassifier v09
 
-## Overview
-This project is a complete sound classification system that records audio, processes it, trains machine learning models with data augmentation, and uses these models to classify sounds in real-time.
+## Project Overview
+This is a sophisticated sound classification system designed to recognize and classify various vocal sounds. The system uses a combination of machine learning models, including CNN and Random Forest classifiers, to achieve high accuracy in sound recognition. The application provides a web interface for training models, managing sound dictionaries, and performing real-time inference.
 
-## Key Files and Their Purposes
+## Project Structure
 
-### Core Application Files
-1. **main.py** - The entry point for the Flask application
-2. **run.py** - Script that manages the server startup process
+### Core Components
+```
+src/
+├── core/
+│   ├── models/         # Core model implementations
+│   │   ├── cnn.py     # CNN model architecture
+│   │   ├── rf.py      # Random Forest model
+│   │   ├── ensemble.py # Ensemble model combining CNN and RF
+│   │   └── base.py    # Base model class and shared functionality
+│   └── audio/
+│       └── processor.py # Audio processing utilities
+├── ml/                 # Machine learning pipeline
+├── api/                # API endpoints
+├── routes/             # Web routes
+├── services/           # Business logic
+└── templates/          # HTML templates
+```
 
-### Backend Functionality
+### Key Directories and Files
 
-#### Training Pipeline
-1. **src/core/train.py** - Handles the entire model training process:
-   - Loads and processes audio data
-   - Performs data augmentation
-   - Creates train/test splits (80/20)
-   - Trains models (CNN, RF, Ensemble)
-   - Saves trained models as .h5 or .joblib files
+#### Machine Learning (`src/ml/`)
+- `cnn_classifier.py`: CNN model implementation for sound classification
+- `rf_classifier.py`: Random Forest classifier implementation
+- `ensemble_classifier.py`: Combines multiple models for improved accuracy
+- `audio_processing.py`: Audio preprocessing and feature extraction
+- `feature_extractor.py`: MFCC and other audio feature extraction
+- `trainer.py`: Model training orchestration
+- `inference.py`: Real-time inference engine
+- `data_augmentation.py`: Audio data augmentation techniques
+- `model_paths.py`: Model file path management
+- `constants.py`: ML-related constants and configurations
 
-2. **src/core/augmentation.py** - Implements data augmentation techniques:
-   - Time stretching
-   - Pitch shifting
-   - Adding noise
-   - Time masking
-   - Frequency masking
-   - Multiple augmentation combinations
+#### API Layer (`src/api/`)
+- `ml_api.py`: Machine learning operations API
+- `user_api.py`: User management API
+- `dashboard_api.py`: Dashboard data API
+- `dictionary_api.py`: Sound dictionary management API
 
-3. **src/core/models/cnn_model.py** - CNN model architecture and training:
-   - Model definition with convolutional layers
-   - Training functions with callbacks
-   - Evaluation metrics
+#### Services (`src/services/`)
+- `training_service.py`: Orchestrates model training workflow
+- `inference_service.py`: Manages real-time inference
+- `dictionary_service.py`: Sound dictionary CRUD operations
+- `user_service.py`: User authentication and management
 
-4. **src/core/models/rf_model.py** - Random Forest implementation:
-   - Feature extraction from audio
-   - Model training and hyperparameter tuning
-   - Prediction functions
+#### Web Routes (`src/routes/`)
+- `ml_routes.py`: Machine learning interface routes
+- `train_app.py`: Training interface routes
 
-5. **src/core/models/ensemble_model.py** - Ensemble model combining CNN and RF:
-   - Weighted averaging of model outputs
-   - Combined training approach
+#### Templates (`src/templates/`)
+Organized HTML templates for various functionalities:
+- Model Management: `model_summary.html`, `model_status.html`, `train_model.html`
+- Sound Management: `sounds_management.html`, `upload_sounds.html`, `record.html`
+- Dictionary Management: `dictionary_manager.html`, `manage_dictionaries.html`
+- Analytics: `view_analysis.html`, `inference_statistics.html`
+- User Interface: `dashboard.html`, `login.html`, `register.html`
 
-#### Model Management & API Routes
-1. **src/ml_routes_fixed.py** - The primary file handling all ML-related endpoints:
-   - Audio capture and processing
-   - Model selection and loading
-   - Real-time prediction streaming
-   - Training initiation and progress tracking
+## Data Flow and Architecture
 
-2. **src/core/models/__init__.py** - Model factory and base classes:
-   - Creates appropriate model types (CNN, RF, Ensemble)
-   - Handles model loading and initialization
+### Authentication Flow
+1. Users register/login through `user_api.py`
+2. `user_service.py` handles authentication
+3. Session management ensures secure access to features
 
-#### Audio Processing
-1. **src/core/audio_processing.py** - Central audio processing utilities:
-   - Feature extraction (mel spectrograms, MFCCs)
-   - Sound detection algorithms
-   - Preprocessing for different model types
-   - Normalization and segmentation
+### Training Flow
+1. Users upload sounds through the web interface
+2. `dictionary_service.py` manages sound organization
+3. `training_service.py` orchestrates the training process:
+   - Audio preprocessing
+   - Feature extraction
+   - Model training
+   - Performance evaluation
+4. Results are stored and displayed through the dashboard
 
-2. **src/ml_routes_fixed.py** (SoundProcessor class) - Real-time processing:
-   - Sound detection and boundary identification
-   - Audio normalization and centering
-   - Feature extraction tied to the model types
+### Inference Flow
+1. Real-time audio capture
+2. `audio_processing.py` handles preprocessing
+3. `inference_service.py` manages model predictions
+4. Results are displayed through the web interface
 
-### Frontend Functionality
-1. **src/templates/predict.html** - Prediction interface
-2. **src/templates/train.html** - Training interface for:
-   - Dataset selection and management
-   - Model configuration
-   - Training progress visualization
-   - Augmentation settings
+## Key Features
 
-## Workflow Components
+### Model Management
+- Multiple model architectures (CNN, RF, Ensemble)
+- Model versioning and comparison
+- Performance metrics tracking
+- Model export and import capabilities
 
-### 1. Class Creation
-- Sound classes are defined when creating a new dataset
-- Classes can be customized or selected from predefined dictionaries
-- Class definitions feed into both training and prediction pipelines
+### Sound Management
+- Sound recording and upload
+- Automatic sound validation
+- Sound dictionary organization
+- Data augmentation options
 
-### 2. Dictionary Creation from Classes
-- Dictionaries map sound classes to specific model types
-- Custom dictionaries can be created through the UI
-- Metadata files store dictionary information alongside models
+### Training Management
+- Configurable training parameters
+- Real-time training progress monitoring
+- Cross-validation support
+- Performance visualization
 
-### 3. Recording and Preprocessing
-- Audio capture pipeline for both training data collection and real-time prediction
-- Specialized preprocessing based on model requirements
-- Consistent preprocessing between training and inference
+### Inference
+- Real-time sound classification
+- Confidence score display
+- Performance statistics
+- Batch processing capability
 
-### 4. Data Augmentation
-- **Critical component for improving model performance**
-- Implemented in **src/core/augmentation.py**
-- Techniques include:
-  - Time stretching: Speeds up or slows down audio
-  - Pitch shifting: Changes the pitch of the audio
-  - Noise injection: Adds various types of noise
-  - Time masking: Masks segments of the spectrogram in time
-  - Frequency masking: Masks segments of the spectrogram in frequency
-  - Combined augmentations: Multiple techniques applied sequentially
-- Augmentation settings configurable through the UI
-- Implementation leverages librosa for audio transformations
+## Configuration
 
-### 5. Training the Model (80/20 split)
-- **Fully implemented in src/core/train.py**
-- Training process:
-  1. Loads audio samples for specified classes
-  2. Applies configured augmentation techniques
-  3. Splits data into training (80%) and validation (20%) sets
-  4. Extracts features appropriate for the model type
-  5. Initializes and trains the selected model architecture
-  6. Evaluates on validation set
-  7. Saves model files (.h5 for CNN, .joblib for RF)
-  8. Creates metadata files with class information
-- Supports CNN, RF, and Ensemble model types
-- Training progress displayed in real-time via the UI
+### Environment Setup
+- Python 3.10+ required
+- Virtual environment recommended
+- Dependencies in requirements.txt
+- Environment variables in .env
 
-### 6. Using the Model for Predictions
-- Real-time audio capture and processing
-- Model selection from trained models
-- Streaming predictions to the UI
+### Key Configuration Files
+- `config.py`: Application configuration
+- `model_paths.py`: Model storage configuration
+- `constants.py`: ML pipeline parameters
 
-### 7. Analyzing Predictions
-- Performance tracking and metrics collection
-- User feedback integration
-- Model evaluation and comparison tools
+For detailed information about the configuration system, see [CONFIGURATION.md](CONFIGURATION.md).
 
-## Recent Changes
-- Added PyAudio support for audio capture
-- Enhanced audio processing pipeline
-- Implemented mock detector for testing
-- Fixed API endpoints for model data
+## Development Guidelines
 
-## What's Working
-- The core application framework
-- Mock detector for testing
-- API endpoints for sound classes and statistics
+### Code Organization
+- Follow the established module structure
+- Keep ML logic in `src/ml/`
+- Place business logic in `src/services/`
+- Use appropriate API endpoints in `src/api/`
 
-## What's Left to Do
-1. **Model Storage**:
-   - Ensure model files are correctly stored and loaded
-   - Verify metadata is properly associated with models
+### Best Practices
+- Write unit tests for new features
+- Document code changes
+- Follow PEP 8 style guide
+- Use type hints
+- Handle errors appropriately
 
-2. **Training Integration**:
-   - Verify the training pipeline works end-to-end with the UI
-   - Test augmentation settings and their effects
+### Legacy Code
+Legacy code is maintained in the `legacy/` directory for reference but is not actively used. New development should follow the current architecture in `src/`.
 
-3. **Ensemble Models**:
-   - Finalize ensemble model implementation
-   - Test with combined CNN+RF approaches
+## Deployment
 
-## Getting Started
-1. Install dependencies: `pip install -r requirements.txt`
-2. Ensure PyAudio is installed: `pip install pyaudio`
-3. Run the application: `python run.py`
-4. Access the web interface: http://localhost:5002
+### Prerequisites
+- Python 3.10+
+- Required system libraries for audio processing
+- Sufficient storage for model files
+- GPU recommended for training
 
-For training new models:
-1. Navigate to the training interface
-2. Select or create sound classes 
-3. Configure augmentation settings
-4. Start training
-5. Monitor progress through the UI
-6. Use trained models in the prediction interface
+### Setup Steps
+1. Clone repository
+2. Create virtual environment
+3. Install dependencies
+4. Configure environment variables
+5. Initialize database
+6. Run migrations
+7. Start application
 
-The application provides a complete pipeline from data collection through augmentation, training, and inference for sound classification tasks. 
+### Production Considerations
+- Use appropriate WSGI server
+- Configure proper logging
+- Set up monitoring
+- Implement backup strategy
+- Configure SSL/TLS
+
+## Future Development
+
+### Planned Features
+- Additional model architectures
+- Enhanced data augmentation
+- Improved real-time processing
+- Extended API capabilities
+- Advanced analytics
+
+### Known Issues
+- Document any current limitations
+- List planned improvements
+- Note performance considerations
+
+## Support and Documentation
+- API documentation available in `/docs`
+- Training guide in `/docs/training`
+- Model documentation in `/docs/models`
+- Configuration guide in `/docs/config`
+
+## Contributing
+- Fork the repository
+- Create feature branch
+- Follow coding standards
+- Submit pull request
+- Include tests and documentation
+
+This codebase represents a sophisticated sound classification system with emphasis on modularity, scalability, and maintainability. The architecture supports both research and production use cases, with clear separation of concerns and well-defined interfaces between components. 
+
+Code Ontology - SoundClassifier v09
+
+1. Core Models
+src/core/models/base.py
+    class BaseModel
+        --> def preprocess_audio()
+        --> def train()
+        --> def predict()
+
+src/core/models/cnn.py
+    class CNNModel (inherits BaseModel)
+        --> def build_model()
+        --> def train()
+        --> def predict()
+        --> def preprocess_audio()
+
+src/core/models/rf.py
+    class RFModel (inherits BaseModel)
+        --> def train()
+        --> def predict()
+        --> def extract_features()
+
+src/core/models/ensemble.py
+    class EnsembleModel (inherits BaseModel)
+        --> def train()
+        --> def predict()
+        Uses: CNNModel, RFModel
+
+2. Audio Processing
+src/core/audio/processor.py
+    class AudioProcessor
+        --> def process_audio()
+        --> def extract_features()
+        --> def normalize_audio()
+
+3. ML Components
+src/ml/audio_processing.py
+    --> def process_audio_for_cnn()
+    --> def process_audio_for_rf()
+    Uses: AudioProcessor
+
+src/ml/feature_extractor.py
+    class FeatureExtractor
+        --> def extract_mfcc()
+        --> def extract_spectral_features()
+    Uses: audio_processing.py
+
+src/ml/trainer.py
+    class ModelTrainer
+        --> def train_model()
+        --> def validate_model()
+        --> def save_model()
+    Uses: CNNClassifier, RFClassifier, FeatureExtractor
+
+src/ml/inference.py
+    class InferenceEngine
+        --> def predict()
+        --> def batch_predict()
+    Uses: CNNModel, RFModel, EnsembleModel
+
+4. Services Layer
+src/services/training_service.py
+    class TrainingService
+        --> def train_model_async()
+        --> def get_training_status()
+    Uses: ModelTrainer, DictionaryService
+
+src/services/inference_service.py
+    class InferenceService
+        --> def predict()
+        --> def get_prediction_stats()
+    Uses: InferenceEngine, DictionaryService
+
+src/services/dictionary_service.py
+    class DictionaryService
+        --> def get_dictionary()
+        --> def update_dictionary()
+        --> def validate_sounds()
+
+src/services/user_service.py
+    class UserService
+        --> def authenticate()
+        --> def register()
+        --> def get_user_stats()
+
+5. API Layer
+src/api/ml_api.py
+    --> @route('/api/ml/train')
+    --> @route('/api/ml/predict')
+    Uses: TrainingService, InferenceService
+
+src/api/dictionary_api.py
+    --> @route('/api/dictionary')
+    Uses: DictionaryService
+
+src/api/user_api.py
+    --> @route('/api/user')
+    Uses: UserService
+
+src/api/dashboard_api.py
+    --> @route('/api/dashboard')
+    Uses: TrainingService, InferenceService
+
+6. Routes Layer
+src/routes/ml_routes.py
+    --> @route('/train')
+    --> @route('/predict')
+    Uses: ml_api.py, dictionary_api.py
+    Templates: train_model.html, predict.html
+
+src/routes/train_app.py
+    --> @route('/training')
+    --> @route('/models')
+    Uses: training_service.py, dictionary_service.py
+    Templates: training.html, model_summary.html
+
+7. Data Flow
+User Request
+    --> Routes Layer
+        --> API Layer
+            --> Services Layer
+                --> ML Components
+                    --> Core Components
+                        --> Results
+                            --> Services Layer
+                                --> API Layer
+                                    --> Routes Layer
+                                        --> Templates
+                                            --> User Response
+
+8. Template Structure
+templates/
+├── base.html                    # Base template with common layout
+├── model_management/
+│   ├── model_summary.html      # Model details and statistics
+│   ├── model_status.html       # Training status and progress
+│   └── train_model.html        # Training interface
+├── sound_management/
+│   ├── sounds_management.html  # Sound file management
+│   ├── upload_sounds.html     # Sound upload interface
+│   └── record.html            # Sound recording interface
+├── dictionary_management/
+│   ├── dictionary_manager.html # Dictionary CRUD operations
+│   └── manage_dictionaries.html # Dictionary list and management
+├── analytics/
+│   ├── view_analysis.html     # Analysis results
+│   └── inference_statistics.html # Prediction statistics
+└── user_interface/
+    ├── dashboard.html         # Main user dashboard
+    ├── login.html            # User login
+    └── register.html         # User registration 
