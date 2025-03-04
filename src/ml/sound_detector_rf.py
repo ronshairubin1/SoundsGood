@@ -11,7 +11,6 @@ import pyaudio
 import wave
 import time
 from threading import Thread, Lock
-from .sound_processor import SoundProcessor
 from .audio_feature_extractor import AudioFeatureExtractor
 
 class SoundDetectorRF:

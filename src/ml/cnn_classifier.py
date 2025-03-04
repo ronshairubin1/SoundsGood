@@ -56,12 +56,9 @@ def build_dataset(sound_folder):
     # Initialize SoundProcessor
     sound_processor = SoundProcessor(sample_rate=SAMPLE_RATE)
 
-    # Load the active dictionary from config
-    config_file = os.path.join(Config.CONFIG_DIR, 'active_dictionary.json')
-    logging.info(f"Looking for config file at: {config_file}")
-    with open(config_file, 'r') as f:
-        active_dict = json.load(f)
-    class_names = active_dict['sounds']
+    # Load the active dictionary using the Config method 
+    active_dict = get_active_dictionary()
+    class_names = active_dict.get('sounds', active_dict.get('classes', []))
     logging.info(f"Found class names: {class_names}")
 
     # Map each class_name to an integer
@@ -285,6 +282,20 @@ def get_cnn_history():
     # For example, you might do:
     # return global_cnn_history
     return {}
+
+def get_active_dictionary():
+    """
+    Retrieve the active dictionary from the consolidated dictionaries file.
+    
+    Returns:
+        dict: The active dictionary
+    """
+    try:
+        # Use the Config class method directly for consistency
+        return Config.get_dictionary()
+    except Exception as e:
+        logging.error(f"Error loading active dictionary: {e}")
+        return {"name": "Default", "classes": ["ah", "eh", "ee", "oh", "oo"]}
 
 # -----------------------------
 # Optional: training test

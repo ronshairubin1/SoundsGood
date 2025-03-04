@@ -15,14 +15,15 @@ import pyaudio
 from threading import Thread, Lock
 import tempfile
 import wave
-from .sound_processor import SoundProcessor
 
 # Import shared constants and the SoundProcessor from audio_processing
 from .constants import SAMPLE_RATE, AUDIO_DURATION, AUDIO_LENGTH, TEST_DURATION, TEST_FS, INT16_MAX
 from .audio_processing import SoundProcessor
+from config import Config
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('inference')
+logger.setLevel(logging.INFO)
 
 # Print available audio devices for reference
 print(sd.query_devices())

@@ -2,47 +2,212 @@
 {% block content %}
 <div class="container mt-5">
     <h1>RF Training Summary for {{ training_stats.get('dictionary_name', 'No Training Data') }}</h1>
+    
+    <!-- Back to training button -->
+    <div class="mb-3">
+        <a href="{{ url_for('ml.train_model') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Back to Training
+        </a>
+    </div>
 
-    <!-- Show classes -->
-    <h2>Classes: {{ training_stats.get('classes', []) }}</h2>
+    <div class="row">
+        <!-- Main Information Column -->
+        <div class="col-md-8">
+            <!-- Data Summary Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Data Summary</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Train Samples:</strong> {{ training_stats.get('train_samples', 0) }}</p>
+                            <p><strong>Validation Samples:</strong> {{ training_stats.get('val_samples', 0) }}</p>
+                            <p><strong>Total Samples:</strong> {{ training_stats.get('total_samples', 0) }}</p>
+                        </div>
+                        <div class="col-md-8">
+                            <h5>Class Distribution:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Class</th>
+                                            <th>Original</th>
+                                            <th>Augmented</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for class_name in training_stats.get('class_names', []) %}
+                                        <tr>
+                                            <td>{{ class_name }}</td>
+                                            <td>{{ training_stats.get('original_counts', {}).get(class_name, 0) }}</td>
+                                            <td>{{ training_stats.get('augmented_counts', {}).get(class_name, 0) }}</td>
+                                            <td>{{ training_stats.get('original_counts', {}).get(class_name, 0) + training_stats.get('augmented_counts', {}).get(class_name, 0) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Additional stats from training_stats -->
-    <hr>
-    <h3>Data Summary</h3>
-    <p>Train Samples: {{ training_stats.get('train_samples', 0) }}</p>
-    <p>Validation Samples: {{ training_stats.get('val_samples', 0) }}</p>
-    <p>Total Samples: {{ training_stats.get('total_samples', 0) }}</p>
-    <hr>
-    <h3>Additional Random Forest Stats</h3>
-    <p>Number of Estimators: {{ training_stats.get('rf_n_estimators', 'N/A') }}</p>
-    <p>Max Depth: {{ training_stats.get('rf_max_depth', 'N/A') }}</p>
-    <p>Number of Features: {{ training_stats.get('rf_num_features', 'N/A') }}</p>
-    <p>Training Time (s): {{ training_stats.get('rf_training_time', 'N/A') }}</p>
+            <!-- Model Performance Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Model Performance</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Validation Accuracy</h4>
+                            <h2 class="display-4 text-success">{{ "%.2f"|format(training_stats.get('validation_accuracy', 0) * 100) }}%</h2>
+                            <p><strong>Training Duration:</strong> {{ "%.2f"|format(training_stats.get('training_duration', 0)) }} seconds</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Confusion Matrix</h4>
+                            <!-- Simplified display, styled for clarity -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        {% for row in training_stats.get('confusion_matrix', []) %}
+                                        <tr>
+                                            {% for cell in row %}
+                                            <td {% if loop.index0 == loop.parent.index0 %}class="table-success"{% endif %}>{{ cell }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <small class="text-muted">Matrix rows: true label, columns: predicted label</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Display Confusion Matrix if available -->
-    {% if training_stats.get('rf_confusion_matrix') %}
-    <h4>Confusion Matrix</h4>
-    <pre>{{ training_stats.get('rf_confusion_matrix') }}</pre>
-    {% endif %}
-
-    <!-- Display Classification Report if available -->
-    {% if training_stats.get('rf_classification_report') %}
-    <h4>Classification Report</h4>
-    <pre>{{ training_stats.get('rf_classification_report') }}</pre>
-    {% endif %}
-
-    <h4>Original Counts</h4>
-    <pre>{{ training_stats.get('original_counts', {}) }}</pre>
-    <h4>Augmented Counts</h4>
-    <pre>{{ training_stats.get('augmented_counts', {}) }}</pre>
-
-    <!-- RF-specific fields -->
-    <hr>
-    <h3>Random Forest Results</h3>
-    <p>Method: {{ training_stats.get('method', 'N/A') }}</p>
-    <p>RF Accuracy: {{ training_stats.get('rf_acc', 'N/A') }}</p>
-
-    <!-- If you have additional metrics, show them here -->
-    <p>Additional stats: {{ training_stats.get('rf_extra_stats', {}) }}</p>
+            <!-- Classification Report Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">Classification Report</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Support</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if training_stats.get('classification_report') %}
+                                    {% for class_name in training_stats.get('class_names', []) %}
+                                        {% if class_name in training_stats.get('classification_report', {}) %}
+                                            {% set class_stats = training_stats.get('classification_report', {}).get(class_name, {}) %}
+                                            <tr>
+                                                <td>{{ class_name }}</td>
+                                                <td>{{ "%.2f"|format(class_stats.get('precision', 0)) }}</td>
+                                                <td>{{ "%.2f"|format(class_stats.get('recall', 0)) }}</td>
+                                                <td>{{ "%.2f"|format(class_stats.get('f1-score', 0)) }}</td>
+                                                <td>{{ class_stats.get('support', 0) }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if training_stats.get('classification_report', {}).get('accuracy') %}
+                                        <tr class="table-success">
+                                            <td><strong>Accuracy</strong></td>
+                                            <td colspan="3" class="text-center">{{ "%.2f"|format(training_stats.get('classification_report', {}).get('accuracy', 0)) }}</td>
+                                            <td>{{ training_stats.get('classification_report', {}).get('macro avg', {}).get('support', 0) }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar with Model Info -->
+        <div class="col-md-4">
+            <!-- Model Parameters Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Model Parameters</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Number of Estimators
+                            <span class="badge bg-primary rounded-pill">{{ training_stats.get('params', {}).get('n_estimators', 'N/A') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Max Depth
+                            <span class="badge bg-primary rounded-pill">{{ training_stats.get('params', {}).get('max_depth', 'None') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Min Samples Split
+                            <span class="badge bg-primary rounded-pill">{{ training_stats.get('params', {}).get('min_samples_split', 'N/A') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Min Samples Leaf
+                            <span class="badge bg-primary rounded-pill">{{ training_stats.get('params', {}).get('min_samples_leaf', 'N/A') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Number of Classes
+                            <span class="badge bg-success rounded-pill">{{ training_stats.get('num_classes', 'N/A') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Training Timestamp
+                            <span class="badge bg-info">{{ training_stats.get('timestamp', 'N/A').split('T')[0] }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Feature Importance Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Feature Importance</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Importance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set feature_importance = training_stats.get('feature_importance', {}) %}
+                                {% for feature, importance in feature_importance.items()|sort(reverse=True, attribute='1') %}
+                                <tr>
+                                    <td>{{ feature }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                 style="width: {{ (importance * 100)|int }}%;" 
+                                                 aria-valuenow="{{ (importance * 100)|int }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ "%.3f"|format(importance) }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

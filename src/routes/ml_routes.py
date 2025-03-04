@@ -10,6 +10,7 @@ import time
 import threading
 from datetime import datetime
 import uuid
+import glob
 
 # Flask imports
 from flask import (
@@ -28,12 +29,16 @@ import librosa
 
 # Local application imports
 from config import Config
-from src.ml.cnn_classifier import build_model, build_dataset
+# Import the necessary training components
+from src.services.training_service import TrainingService
+# Import model classes
+from src.core.ml_algorithms.cnn import CNNModel
+from src.core.ml_algorithms.rf import RandomForestModel
 from src.ml.rf_classifier import RandomForestClassifier
 from src.ml.ensemble_classifier import EnsembleClassifier
 from src.ml.inference import predict_sound, SoundDetector
 from src.ml.audio_processing import SoundProcessor
-from src.ml.trainer import Trainer
+# Trainer has been moved to legacy and replaced by TrainingService
 from src.ml.sound_detector_rf import SoundDetectorRF
 from src.ml.sound_detector_ensemble import SoundDetectorEnsemble
 from src.ml.feature_extractor import AudioFeatureExtractor
@@ -157,7 +162,6 @@ def train_model():
 
     if request.method == 'GET':
         # Display the form (train_model.html) with the dropdown to select method
-        # Existing code: no changes here
         sounds = get_sound_list()  # Example function to list sounds
         return render_template('train_model.html', sounds=sounds)
 
@@ -166,206 +170,157 @@ def train_model():
     goodsounds_dir = get_goodsounds_dir_path()  # however you get your data path
 
     try:
-        # Turn off debug if needed (per your existing code)
+        # Turn off debug if needed
         original_debug = current_app.config['DEBUG']
         current_app.config['DEBUG'] = False
 
-        # Create an instance of your Trainer (if you have one)
-        trainer = Trainer(model_dir=os.path.join(Config.PROJECT_ROOT, 'models'))
-
-        # We will store some results in these variables
-        rf_result = None
-        cnn_result = None
-        ensemble_result = None
-
+        # Get the dictionary name for model naming
+        dict_name = Config.get_dictionary().get('name', 'Unknown')
+        
+        # Initialize the training service
+        training_service = TrainingService()
+        
+        # Create an instance of the appropriate model based on train_method
         if train_method == 'cnn':
-            logging.info("# NEW LOG: Entering CNN training block (cnn only).")
-
-            X, y, class_names, stats = build_dataset(goodsounds_dir)
-            if X is None or y is None:
-                flash("No training data found for CNN.")
-                return redirect(url_for('ml.train_model'))
-
-            # (B) Shuffle / split data
-            idx = np.arange(len(X))
-            np.random.shuffle(idx)
-            X = X[idx]
-            y = y[idx]
-            split_idx = int(len(X)*0.8)
-            X_train, X_val = X[:split_idx], X[split_idx:]
-            y_train, y_val = y[:split_idx], y[split_idx:]
-            input_shape = X_train.shape[1:]
-
-            # (C) Build & train the CNN model
-            model, model_summary_cnn = build_model(input_shape, num_classes=len(class_names))
-            class_weights = {}
-            total_samples = len(y_train)
-            for i in range(len(class_names)):
-                ccount = (y_train == i).sum()
-                class_weights[i] = total_samples / (len(class_names)*ccount)
-
-            callback = tf.keras.callbacks.EarlyStopping(
-                monitor='val_accuracy',
-                patience=10,
-                min_delta=0.001,
-                restore_best_weights=True
-            )
-            reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-                monitor='val_accuracy',
-                factor=0.2,
-                patience=5,
-                min_lr=1e-5
-            )
-
-            history = model.fit(
-                X_train, y_train,
-                validation_data=(X_val, y_val),
+            model = CNNModel(model_dir=os.path.join('models', 'cnn', dict_name.replace(' ', '_')))
+            
+            logging.info("Starting CNN training using training service...")
+            
+            # Train the model using the service
+            result = training_service.train_model(
+                'cnn', 
+                goodsounds_dir, 
+                save=True,
+                dict_name=dict_name,
                 epochs=50,
-                class_weight=class_weights,
-                callbacks=[callback, reduce_lr],
                 batch_size=32,
-                verbose=1
+                use_class_weights=True
             )
-
-            # (D) Optionally evaluate on val set
-            val_loss, val_acc = model.evaluate(X_val, y_val)
-
-            # (E) Build training_stats & training_history from the CNN
-            training_stats, training_history = build_training_stats_and_history(
-                X_train, y_train, X_val, y_val,
-                class_names, stats, model_summary_cnn, history
-            )
-            model_summary_str = model_summary_cnn
-            cnn_result = {'val_acc': val_acc, 'model': model}  # keep for ensemble?
-            training_stats['classes'] = class_names
-            training_stats['dictionary_name'] = Config.get_dictionary().get('name', 'Unknown')
-
-            # Find this line where the model is saved and log it
-            model_path = os.path.join('models', f"{Config.get_dictionary().get('name', 'Unknown').replace(' ', '_')}_model.h5")
-            logging.info(f"Saving model to: {model_path}")
-            model.save(model_path)
-
+            
+            if not result.get('success', False):
+                flash(result.get('error', 'Training failed. See logs for details.'))
+                return redirect(url_for('ml.train_model'))
+                
+            # Get training statistics for display
+            training_stats = result.get('training_stats', {})
+            training_history = result.get('history', None)
+            model_summary_str = result.get('model_summary', '')
+            
+            # Ensure these are set for the template
+            if 'classes' not in training_stats and 'class_names' in result:
+                training_stats['classes'] = result['class_names']
+            if 'dictionary_name' not in training_stats:
+                training_stats['dictionary_name'] = dict_name
+                
             return redirect(url_for('ml.cnn_training_summary'))
-
-        elif train_method == 'rf':  # NEW
-            logging.info("# NEW LOG: Entering RF training block (rf only).")
-
-            # 1) Train the Random Forest
-            success = trainer.train_rf(goodsounds_dir)
-            rf_accuracy = trainer.get_rf_accuracy()
-            class_names = trainer.get_rf_class_names()
-
-            # ─────────────────────────────────────────────────────────────
-            # 2) Retrieve X_train, X_val, stats from the trainer
-            X_train, X_val, stats = trainer.get_rf_train_data()
-            # ─────────────────────────────────────────────────────────────
-
-            # 3) Construct training_stats
-            training_stats = {
-                'method': 'Random Forest Only',
-                'rf_acc': rf_accuracy,
-                'classes': class_names,
-                'dictionary_name': Config.get_dictionary().get('name', 'Unknown'),
-
-                # Now these train/val stats show the real split
-                'train_samples': len(X_train) if X_train is not None else 0,
-                'val_samples': len(X_val) if X_val is not None else 0,
-                'total_samples': (len(X_train) + len(X_val)) if X_train is not None and X_val is not None else 0,
-
-                # Use what you stored in trainer._stats
-                'original_counts': stats.get('original_counts', {}),
-                'augmented_counts': stats.get('augmented_counts', {}),
-                'model_summary_str': model_summary_str,
-                'training_history': training_history,
-            }
-
+            
+        elif train_method == 'rf':
+            model = RandomForestModel(model_dir=os.path.join('models', 'rf', dict_name.replace(' ', '_')))
+            
+            logging.info("Starting RF training using training service...")
+            
+            # Train the RF model using the service
+            result = training_service.train_model(
+                'rf', 
+                goodsounds_dir, 
+                save=True,
+                dict_name=dict_name
+            )
+            
+            if not result.get('success', False):
+                flash(result.get('error', 'RF Training failed. See logs for details.'))
+                return redirect(url_for('ml.train_model'))
+                
+            # Get training statistics for display
+            training_stats = result.get('training_stats', {})
+            if 'classes' not in training_stats and 'class_names' in result:
+                training_stats['classes'] = result['class_names']
+            if 'dictionary_name' not in training_stats:
+                training_stats['dictionary_name'] = dict_name
+                
             training_history = None
             model_summary_str = "Random Forest does not have a Keras-style summary."
-
-            # 4) Redirect to summary
+            
             return redirect(url_for('ml.rf_training_summary'))
-        
-        elif train_method == 'ensemble':  # NEW
-            logging.info("# NEW LOG: Entering Ensemble training block (cnn+rf).")
-
-            # You might need a current CNN model and a current RF model
-            # If you want to train them freshly here, do so, or load from disk
-            # Minimal approach: 
-            success_rf = trainer.train_rf(goodsounds_dir)
-            X, y, class_names, stats = build_dataset(goodsounds_dir)
-            input_shape = X.shape[1:]
-            model, model_summary_cnn = build_model(input_shape, len(class_names))
-            # Maybe skip the full .fit() if you're just loading existing weights
-            # or do a short training. Example:
-            history = model.fit(X, y, epochs=2, verbose=1)  # short train or load
-
-            # Then do your ensemble logic, e.g. weighted average:
-            # predictions_cnn = model.predict(...)
-            # predictions_rf = trainer.rf_classifier.predict_proba(...)
-            # ensemble_preds = 0.5 * predictions_cnn + 0.5 * predictions_rf
-            # ...
-            ensemble_acc = 0.99  # example placeholder
-
-            # Build training_stats for summary
-            training_stats = {
-                'method': 'Ensemble Only',
-                'ensemble_acc': ensemble_acc,
-                # Possibly store partial stats for CNN, RF as well
-            }
-            model_summary_str = "Ensemble combines CNN + RF results."
+            
+        elif train_method == 'ensemble':
+            logging.info("Starting Ensemble training using training service...")
+            
+            # Train the ensemble model using the service
+            result = training_service.train_model(
+                'ensemble', 
+                goodsounds_dir, 
+                save=True,
+                dict_name=dict_name
+            )
+            
+            if not result.get('success', False):
+                flash(result.get('error', 'Ensemble Training failed. See logs for details.'))
+                return redirect(url_for('ml.train_model'))
+                
+            # Get training statistics for display
+            training_stats = result.get('training_stats', {})
+            if 'classes' not in training_stats and 'class_names' in result:
+                training_stats['classes'] = result['class_names']
+            if 'dictionary_name' not in training_stats:
+                training_stats['dictionary_name'] = dict_name
+                
             training_history = None
-            ensemble_result = {'val_acc': ensemble_acc}
-            training_stats['classes'] = class_names
-            training_stats['dictionary_name'] = Config.get_dictionary().get('name', 'Unknown')
+            model_summary_str = "Ensemble combines CNN + RF results."
+            
             return redirect(url_for('ml.ensemble_training_summary'))
-
-        elif train_method == 'all':  # NEW
-            logging.info("# NEW LOG: Entering ALL training block (cnn + rf + ensemble).")
-
-            #  A) Train CNN
-            X, y, class_names, stats = build_dataset(goodsounds_dir)
-            ...
-            # The same CNN code from above, or
-            model, model_summary_cnn, c_acc = train_cnn_briefly(X, y, class_names, stats)
-            cnn_result = {'val_acc': c_acc, 'model': model}
-
-            #  B) Train RF
-            success_rf = trainer.train_rf(goodsounds_dir)
-            rf_accuracy = trainer.get_rf_accuracy()
-
-            #  C) Do ensemble
-            # E.g. do a weighted average from both newly trained models
-            # ensemble_acc = compute_ensemble_accuracy(model, trainer.rf_classifier)
-            ensemble_acc = 0.98  # placeholder
-
-            #  D) Build training_stats with all 3 results
+            
+        elif train_method == 'all':
+            logging.info("Training all models (CNN, RF, Ensemble) using training service...")
+            
+            # First train CNN
+            cnn_result = training_service.train_model(
+                'cnn', 
+                goodsounds_dir, 
+                save=True,
+                dict_name=dict_name
+            )
+            
+            # Then train RF
+            rf_result = training_service.train_model(
+                'rf', 
+                goodsounds_dir, 
+                save=True,
+                dict_name=dict_name
+            )
+            
+            # Finally train ensemble
+            ensemble_result = training_service.train_model(
+                'ensemble', 
+                goodsounds_dir, 
+                save=True,
+                dict_name=dict_name
+            )
+            
+            # Combine results for display
             training_stats = {
                 'method': 'All (CNN + RF + Ensemble)',
-                'cnn_acc': c_acc,
-                'rf_acc': rf_accuracy,
-                'ensemble_acc': ensemble_acc,
-                # add shapes, stats, etc. if needed
+                'cnn_acc': cnn_result.get('metrics', {}).get('val_accuracy', None),
+                'rf_acc': rf_result.get('metrics', {}).get('accuracy', None),
+                'ensemble_acc': ensemble_result.get('metrics', {}).get('accuracy', None),
+                'classes': cnn_result.get('class_names', []),
+                'dictionary_name': dict_name
             }
+            
             training_history = None
-            model_summary_str = "Trained CNN, trained RF, computed ensemble."
-            ensemble_result = {'val_acc': ensemble_acc}
-            training_stats['classes'] = class_names
-            training_stats['dictionary_name'] = Config.get_dictionary().get('name', 'Unknown')
+            model_summary_str = "Trained CNN, RF, and Ensemble models."
+            
             return redirect(url_for('ml.training_model_comparisons'))
             
         else:
-            # If the user somehow selected something else, default to CNN or redirect
+            # If the user somehow selected something else, default to CNN
             logging.warning(f"Unknown train method {train_method}, defaulting to CNN.")
             return redirect(url_for('ml.train_model'))
-
+            
     except Exception as e:
-        logging.error(f"Error during training: {e}", exc_info=True)
-        flash(str(e), 'error')
-    finally:
-        current_app.config['DEBUG'] = original_debug
-
-    # Once we finish training, redirect to the summary page
-    # return redirect(url_for('ml.training_model_comparisons'))
+        logging.error(f"Error in train_model: {str(e)}", exc_info=True)
+        flash(f"An error occurred during training: {str(e)}")
+        return redirect(url_for('ml.train_model'))
 
 # ... existing imports and code above ...
 
@@ -827,116 +782,130 @@ def prediction_stream():
 
 @ml_bp.route('/inference_statistics')
 def inference_statistics():
-    stats = current_app.inference_stats
-    if not stats['confidence_levels']:
-        avg_conf = 0.0
-    else:
-        avg_conf = sum(stats['confidence_levels']) / len(stats['confidence_levels'])
-
-    # Class accuracy
-    class_accuracy = {}
-    cm = stats.get('confusion_matrix', {})
-    for actual_sound in cm:
-        total = sum(cm[actual_sound].values())
-        correct = cm[actual_sound].get(actual_sound, 0)
-        if total > 0:
-            class_accuracy[actual_sound] = {
-                'accuracy': correct / total,
-                'total_samples': total,
-                'correct_samples': correct
-            }
-        else:
-            class_accuracy[actual_sound] = {
-                'accuracy': 0.0,
-                'total_samples': 0,
-                'correct_samples': 0
-            }
-
-    misclass_patterns = []
-    for a_sound in cm:
-        for p_sound, count in cm[a_sound].items():
-            if a_sound != p_sound and count>0:
-                misclass_patterns.append({
-                    'actual': a_sound,
-                    'predicted': p_sound,
-                    'count': count
-                })
-    misclass_patterns.sort(key=lambda x: x['count'], reverse=True)
-
-    return jsonify({
-        'total_predictions': stats.get('total_predictions',0),
-        'average_confidence': avg_conf,
-        'class_counts': stats.get('class_counts',{}),
-        'class_accuracy': class_accuracy,
-        'confusion_matrix': cm,
-        'misclassification_patterns': misclass_patterns,
-        'recent_misclassifications': stats.get('misclassifications', [])[-10:],
-        'recent_correct_classifications': stats.get('correct_classifications', [])[-10:]
-    })
+    """
+    Get statistics about model inference performance.
+    
+    Returns:
+        JSON: Statistics about model predictions, including accuracy and confidence
+    """
+    try:
+        # Get stats from the inference service
+        stats = current_app.inference_service.get_inference_stats()
+        
+        # Return the stats directly - they're already formatted properly by the service
+        return jsonify(stats)
+    except Exception as e:
+        logging.error(f"Error getting inference statistics: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to get inference statistics: {str(e)}"
+        }), 500
 
 @ml_bp.route('/record_feedback', methods=['POST'])
 def record_feedback():
-    if 'username' not in session:
-        return jsonify({'status':'error','message':'Please log in first'}), 401
-
-    data = request.get_json()
-    predicted_sound = data.get('predicted_sound')
-    actual_sound = data.get('actual_sound')
-    confidence = data.get('confidence')
-
-    if not all([predicted_sound, actual_sound, confidence is not None]):
-        return jsonify({'status':'error','message':'Missing data'}), 400
-
-    # Fire the callback with "actual" so the confusion matrix updates
-    cb_pred = {
-        'class': predicted_sound,
-        'confidence': confidence,
-        'actual_sound': actual_sound
+    """
+    Record user feedback about a prediction.
+    
+    Expected JSON payload:
+    {
+        "predicted_class": "class_name",
+        "actual_class": "correct_class_name",
+        "confidence": 0.95,
+        "is_correct": false
     }
-    prediction_callback(cb_pred)
-    return jsonify({'status':'success'})
+    
+    Returns:
+        JSON: Updated inference statistics
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['predicted_class', 'actual_class']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Missing required field: {field}'
+                }), 400
+        
+        # Add is_correct field if not provided
+        if 'is_correct' not in data:
+            data['is_correct'] = (data['predicted_class'] == data['actual_class'])
+        
+        # Record the feedback using the inference service
+        updated_stats = current_app.inference_service.record_feedback(data)
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Feedback recorded successfully',
+            'updated_stats': updated_stats
+        })
+    except Exception as e:
+        logging.error(f"Error recording feedback: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to record feedback: {str(e)}"
+        }), 500
 
 @ml_bp.route('/save_analysis', methods=['POST'])
 def save_analysis():
+    """
+    Save the current inference analysis data to a file.
+    
+    Returns:
+        JSON: Status of the save operation
+    """
     if 'username' not in session:
-        return jsonify({'status':'error','message':'Please log in first'}), 401
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
 
-    stats = current_app.inference_stats
-    dict_name = Config.get_dictionary().get('name','unknown')
-    analysis_data = {
-        'timestamp': datetime.now().isoformat(),
-        'dictionary': dict_name,
-        'confusion_matrix': stats.get('confusion_matrix',{}),
-        'misclassifications': stats.get('misclassifications',[]),
-        'correct_classifications': stats.get('correct_classifications',[]),
-        'total_predictions': (len(stats.get('misclassifications',[])) +
-                              len(stats.get('correct_classifications',[]))),
-        'confidence_levels': stats.get('confidence_levels',[]),
-        'class_counts': stats.get('class_counts',{})
-    }
+    try:
+        # Get stats from the inference service
+        stats = current_app.inference_service.get_inference_stats()
+        dict_name = Config.get_dictionary().get('name', 'unknown')
+        
+        # Create analysis data with timestamp and dictionary info
+        analysis_data = {
+            'timestamp': datetime.now().isoformat(),
+            'dictionary': dict_name,
+            **stats  # Include all stats from the inference service
+        }
 
-    analysis_dir = os.path.join(Config.CONFIG_DIR, 'analysis')
-    os.makedirs(analysis_dir, exist_ok=True)
-    filename = f"analysis_{dict_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    filepath = os.path.join(analysis_dir, filename)
-    with open(filepath, 'w') as f:
-        json.dump(analysis_data, f, indent=2)
+        # Save to file
+        os.makedirs(Config.ANALYSIS_DIR, exist_ok=True)
+        filename = f"analysis_{dict_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        filepath = os.path.join(Config.ANALYSIS_DIR, filename)
+        
+        with open(filepath, 'w') as f:
+            json.dump(analysis_data, f, indent=2)
 
-    return jsonify({'status':'success','message':'Analysis data saved'})
+        return jsonify({
+            'status': 'success',
+            'message': 'Analysis data saved',
+            'filepath': filepath
+        })
+    except Exception as e:
+        logging.error(f"Error saving analysis data: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to save analysis data: {str(e)}"
+        }), 500
 
 @ml_bp.route('/view_analysis')
 def view_analysis():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    analysis_dir = os.path.join(Config.CONFIG_DIR, 'analysis')
-    if not os.path.exists(analysis_dir):
+    if not os.path.exists(Config.ANALYSIS_DIR):
         return render_template('view_analysis.html', analysis_files=[])
 
     analysis_files = []
-    for fname in os.listdir(analysis_dir):
+    for fname in os.listdir(Config.ANALYSIS_DIR):
         if fname.endswith('.json'):
-            path = os.path.join(analysis_dir, fname)
+            path = os.path.join(Config.ANALYSIS_DIR, fname)
             with open(path,'r') as f:
                 data = json.load(f)
             analysis_files.append({
@@ -953,11 +922,10 @@ def get_analysis(filename):
     if 'username' not in session:
         return jsonify({'status':'error','message':'Please log in first'}), 401
 
-    analysis_dir = os.path.join(Config.CONFIG_DIR, 'analysis')
-    filepath = os.path.join(analysis_dir, filename)
+    filepath = os.path.join(Config.ANALYSIS_DIR, filename)
 
     # Safety check
-    if not os.path.abspath(filepath).startswith(os.path.abspath(analysis_dir)):
+    if not os.path.abspath(filepath).startswith(os.path.abspath(Config.ANALYSIS_DIR)):
         return jsonify({'status':'error','message':'Invalid filename'}),400
 
     if not os.path.exists(filepath):
@@ -1269,6 +1237,13 @@ def process_uploads():
 
 
 def gather_training_stats_for_rf():
+    """
+    Get RF training statistics. This is a legacy method maintained for backwards compatibility.
+    The training_stats global variable should be populated by the RF training process.
+    
+    Returns:
+        dict: RF training statistics
+    """
     global training_stats, training_history, model_summary_str
     if training_stats is None:
         return {}
@@ -1278,12 +1253,63 @@ def gather_training_stats_for_rf():
 def rf_training_summary():
     global training_stats, training_history, model_summary_str
 
-    # For example, you can gather stats from your Trainer or session
-    trainer = Trainer()
-    trainer.train_rf(goodsounds_dir)
-    # Suppose 'training_stats' is a dictionary we either get from trainer or a global store
-    training_stats = gather_training_stats_for_rf()  # define as needed
-    return render_template("rf_training_summary_stats.html", training_stats=training_stats)
+    # Get the active dictionary data
+    dict_name = Config.get_dictionary().get('name', 'Unknown')
+    goodsounds_dir = get_goodsounds_dir_path()
+    
+    # Create a new RandomForestModel and TrainingService
+    # We're using the ModelService interface instead of directly calling Trainer
+    try:
+        # If training_stats is already populated from a previous training request, use it
+        if training_stats and training_stats.get('model_type') == 'rf':
+            return render_template("rf_training_summary_stats.html", training_stats=training_stats)
+            
+        # Otherwise, load the most recent RF model for this dictionary
+        models_dir = os.path.join('models', 'rf', dict_name.replace(' ', '_'))
+        if os.path.exists(models_dir):
+            # Find the most recent RF model
+            model_files = [f for f in os.listdir(models_dir) if f.endswith('.joblib')]
+            if model_files:
+                # Sort by modification time (newest first)
+                model_files.sort(key=lambda x: os.path.getmtime(os.path.join(models_dir, x)), reverse=True)
+                # Look for the metadata file
+                model_base = model_files[0].replace('.joblib', '')
+                metadata_file = os.path.join(models_dir, f"{model_base}_metadata.json")
+                if os.path.exists(metadata_file):
+                    with open(metadata_file, 'r') as f:
+                        training_stats = json.load(f)
+                    return render_template("rf_training_summary_stats.html", training_stats=training_stats)
+        
+        # If we get here, we need to train a new model
+        logging.warning("No RF model found, training a new one")
+        
+        # Create a training service instance
+        training_service = TrainingService()
+        
+        # Create a RandomForestModel
+        from src.core.ml_algorithms.rf import RandomForestModel
+        model = RandomForestModel(model_dir=os.path.join('models', 'rf', dict_name.replace(' ', '_')))
+        
+        # Train using the training service
+        result = training_service.train_model(
+            'rf',
+            goodsounds_dir,
+            save=True,
+            dict_name=dict_name,
+            n_estimators=100
+        )
+        
+        if result.get('success', False):
+            # Get the training statistics
+            training_stats = result.get('stats', {})
+            return render_template("rf_training_summary_stats.html", training_stats=training_stats)
+        else:
+            flash(f"RF training failed: {result.get('error', 'Unknown error')}")
+            return redirect(url_for('ml.train_model'))
+    except Exception as e:
+        logging.error(f"Error in RF training: {str(e)}", exc_info=True)
+        flash(f"Error during RF training: {str(e)}")
+        return redirect(url_for('ml.train_model'))
 
 #########################
 # Minimal Helper Functions (to read from global vars, for example)
@@ -1302,18 +1328,27 @@ def get_cnn_history():
 
 @ml_bp.route("/cnn_training_summary")
 def cnn_training_summary():
+    """
+    Display CNN training summary statistics.
+    
+    Uses the global training_stats and training_history set during the training process.
+    """
     global training_stats, training_history, model_summary_str
 
-    trainer = Trainer()
-    training_stats = gather_training_stats_for_cnn()  # You implement or adapt
-    training_history = get_cnn_history()              # So you can show epoch-by-epoch data
-    # model_summary might also come from trainer
-    model_summary = training_stats.get('model_summary', None)
+    # Use TrainingService instead of Trainer
+    training_service = TrainingService()
+    
+    # Get stats from globals - these are set during the training process
+    stats = gather_training_stats_for_cnn()
+    history = get_cnn_history()
+    
+    # Get model summary from stats
+    model_summary = stats.get('model_summary', model_summary_str)
 
     return render_template(
         "cnn_training_summary_stats.html",
-        training_stats=training_stats,
-        training_history=training_history,
+        training_stats=stats,
+        training_history=history,
         model_summary=model_summary
     )
 
@@ -1326,10 +1361,23 @@ def gather_training_stats_for_ensemble():
 
 @ml_bp.route("/ensemble_training_summary")
 def ensemble_training_summary():
-
-    trainer = Trainer()
-    training_stats = gather_training_stats_for_ensemble()
-    return render_template("ensemble_training_summary_stats.html", training_stats=training_stats)
+    """
+    Display ensemble model training summary statistics.
+    
+    Uses the global training_stats set during the training process.
+    """
+    global training_stats
+    
+    # Use TrainingService instead of Trainer
+    training_service = TrainingService()
+    
+    # Get stats from globals - these are set during the training process
+    stats = gather_training_stats_for_ensemble()
+    
+    return render_template(
+        "ensemble_training_summary_stats.html", 
+        training_stats=stats
+    )
 
 def gather_training_stats_for_all():
     global training_stats
@@ -1340,10 +1388,23 @@ def gather_training_stats_for_all():
 
 @ml_bp.route("/training_model_comparisons")
 def training_model_comparisons():
-
-    trainer = Trainer()
-    training_stats = gather_all_model_stats()
-    return render_template("training_model_comparisons_stats.html", training_stats=training_stats)
+    """
+    Display comparison of different model training results.
+    
+    Uses the global training_stats set during the training process.
+    """
+    global training_stats
+    
+    # Use TrainingService instead of Trainer
+    training_service = TrainingService()
+    
+    # Get stats from globals - these are set during the training process
+    stats = gather_training_stats_for_all()
+    
+    return render_template(
+        "training_model_comparisons_stats.html", 
+        training_stats=stats
+    )
 
 @ml_bp.route('/model_summary')
 def model_summary():
@@ -1351,15 +1412,15 @@ def model_summary():
     # We do not remove old code above, just replace with this new rendering
     return render_template('model_summary_hub.html')
 
-@ml_bp.route('/api/models')
+@ml_bp.route('/api/ml/models')
 def get_available_models():
     """
     Get a list of available trained models for the current dictionary.
     Returns:
     {
         "models": [
-            {"id": "cnn_model", "name": "CNN Model", "type": "cnn"},
-            {"id": "rf_model", "name": "Random Forest", "type": "rf"}
+            {"id": "cnn_model", "name": "CNN Model", "type": "cnn", "class_names": ["class1", "class2"]},
+            {"id": "rf_model", "name": "Random Forest", "type": "rf", "class_names": ["class1", "class2"]}
         ],
         "dictionary_name": "Current Dictionary"
     }
@@ -1372,55 +1433,124 @@ def get_available_models():
         active_dict = Config.get_dictionary()
         dict_name = active_dict.get('name', 'Unknown')
         
-        # Check models directory for available models
-        models_dir = 'models'
+        # Load the models.json file which contains the registry of all models
+        models_json_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'models.json')
         available_models = []
         
-        if os.path.exists(models_dir):
-            # Look for CNN models (*.h5 files)
-            cnn_files = [f for f in os.listdir(models_dir) if f.endswith('.h5')]
-            for file in cnn_files:
-                if dict_name.replace(' ', '_') in file:
-                    model_id = file.replace('.h5', '')
-                    available_models.append({
-                        'id': model_id,
-                        'name': f"{dict_name} CNN Model",
-                        'type': 'cnn'
-                    })
-            
-            # Look for RF models (*.joblib files)
-            rf_files = [f for f in os.listdir(models_dir) if f.endswith('.joblib')]
-            for file in rf_files:
-                if dict_name.replace(' ', '_') in file:
-                    model_id = file.replace('.joblib', '')
-                    available_models.append({
-                        'id': model_id,
-                        'name': f"{dict_name} RF Model",
-                        'type': 'rf'
-                    })
-            
-            # Look for ensemble models (*.pkl files)
-            ensemble_files = [f for f in os.listdir(models_dir) if f.endswith('.pkl')]
-            for file in ensemble_files:
-                if dict_name.replace(' ', '_') in file:
-                    model_id = file.replace('.pkl', '')
-                    available_models.append({
-                        'id': model_id,
-                        'name': f"{dict_name} Ensemble Model",
-                        'type': 'ensemble'
-                    })
+        if os.path.exists(models_json_path):
+            try:
+                with open(models_json_path, 'r') as f:
+                    models_registry = json.load(f)
+                    
+                logging.info(f"Successfully loaded models registry from {models_json_path}")
+                
+                # Extract CNN models from the registry
+                if 'models' in models_registry and 'cnn' in models_registry['models']:
+                    cnn_models = models_registry['models']['cnn']
+                    
+                    # Find all relevant models for the current dictionary
+                    dict_name_normalized = dict_name.replace(' ', '_')
+                    
+                    for model_id, model_data in cnn_models.items():
+                        # Check if this model is for the current dictionary or if it's an EhOh model
+                        # Note: Some older models might not have the 'dictionary' field
+                        model_dict = model_data.get('dictionary', '')
+                        
+                        # Handle special case for EhOh models
+                        is_ehoh_model = dict_name.lower() == 'ehoh' and model_id.startswith('EhOh')
+                        
+                        # Match by dictionary name in model_id or by the dictionary field
+                        if dict_name_normalized in model_id or model_dict == dict_name_normalized or is_ehoh_model:
+                            # Get model path
+                            file_path = model_data.get('file_path', '')
+                            model_path = os.path.join(Config.BASE_DIR, 'data', 'models', file_path)
+                            
+                            # Try to load class names from metadata
+                            class_names = []
+                            metadata_path = model_path.replace('.h5', '_metadata.json')
+                            if os.path.exists(metadata_path):
+                                try:
+                                    with open(metadata_path, 'r') as f:
+                                        metadata = json.load(f)
+                                    class_names = metadata.get('class_names', [])
+                                    logging.info(f"Loaded {len(class_names)} class names from {metadata_path}")
+                                except Exception as e:
+                                    logging.warning(f"Error loading metadata for {model_id}: {e}")
+                            
+                            # If no class names in metadata, use dictionary sounds
+                            if not class_names and 'sounds' in active_dict:
+                                class_names = active_dict['sounds']
+                                logging.info(f"Using {len(class_names)} class names from active dictionary")
+                            
+                            available_models.append({
+                                'id': model_id,
+                                'name': model_data.get('name', model_id),
+                                'type': model_data.get('type', 'cnn'),
+                                'dictionary': model_data.get('dictionary', dict_name_normalized),
+                                'path': file_path,
+                                'created_at': model_data.get('created_at', ''),
+                                'class_names': class_names  # Include class names in the response
+                            })
+                
+                logging.info(f"Found {len(available_models)} models for dictionary '{dict_name}'")
+            except Exception as e:
+                logging.error(f"Error parsing models.json: {e}", exc_info=True)
         
-        # If no models found, add fallbacks
+        # If no models found, check the old models directory as fallback
         if not available_models:
-            available_models = [
-                {
-                    'id': f"{dict_name.replace(' ', '_')}_model",
-                    'name': f"{dict_name} Default Model",
-                    'type': 'cnn'
-                }
-            ]
+            logging.warning(f"No models found in registry for dictionary '{dict_name}', checking legacy location")
+            
+            # Check models directory for available models
+            models_dir = os.path.join(Config.BASE_DIR, 'models')
+            
+            if os.path.exists(models_dir):
+                # Look for CNN models (*.h5 files)
+                cnn_files = [f for f in os.listdir(models_dir) if f.endswith('.h5')]
+                for file in cnn_files:
+                    if dict_name.replace(' ', '_') in file:
+                        model_id = file.replace('.h5', '')
+                        
+                        # Try to get class names from dictionary
+                        class_names = active_dict.get('sounds', [])
+                        
+                        available_models.append({
+                            'id': model_id,
+                            'name': f"{dict_name} CNN Model",
+                            'type': 'cnn',
+                            'dictionary': dict_name.replace(' ', '_'),
+                            'class_names': class_names  # Include class names in the response
+                        })
+        
+        # If still no models found, add fallbacks
+        if not available_models:
+            # Check if the EhOh dictionary is selected but no EhOh models are available in the registry
+            if dict_name.lower() == 'ehoh':
+                logging.warning(f"No EhOh models found in registry, adding fallback")
+                available_models = [
+                    {
+                        'id': "EhOh_cnn_default",
+                        'name': "EhOh Default CNN Model",
+                        'type': 'cnn',
+                        'dictionary': 'EhOh',
+                        'class_names': ['eh', 'oh']  # Default class names for EhOh
+                    }
+                ]
+            else:
+                logging.warning(f"No models found for '{dict_name}', adding fallback")
+                # Use dictionary sounds as class names
+                class_names = active_dict.get('sounds', [])
+                available_models = [
+                    {
+                        'id': f"{dict_name.replace(' ', '_')}_model",
+                        'name': f"{dict_name} Default Model",
+                        'type': 'cnn',
+                        'dictionary': dict_name.replace(' ', '_'),
+                        'class_names': class_names  # Include class names from dictionary
+                    }
+                ]
         
         return jsonify({
+            'success': True,
             'models': available_models,
             'dictionary_name': dict_name
         })
@@ -1428,7 +1558,8 @@ def get_available_models():
         logging.error(f"Error getting available models: {e}", exc_info=True)
         return jsonify({
             'status': 'error',
-            'message': str(e)
+            'message': str(e),
+            'success': False
         }), 500
 
 @ml_bp.route('/api/dictionary/sounds')
@@ -1456,5 +1587,297 @@ def get_dictionary_sounds():
         return jsonify({
             'status': 'error',
             'message': str(e)
+        }), 500
+
+@ml_bp.route('/views/analysis/<analysis_id>')
+def view_analysis(analysis_id):
+    try:
+        # Use Config.ANALYSIS_DIR directly
+        analysis_path = os.path.join(Config.ANALYSIS_DIR, f"analysis_{analysis_id}.json")
+        
+        if not os.path.exists(analysis_path):
+            return render_template('error.html', error_message=f"Analysis {analysis_id} not found"), 404
+            
+        with open(analysis_path, 'r') as f:
+            analysis_data = json.load(f)
+        
+        return render_template('analysis.html', analysis=analysis_data)
+    except Exception as e:
+        logging.error(f"Error viewing analysis: {e}")
+        return render_template('error.html', error_message=f"Error viewing analysis: {e}"), 500
+        
+@ml_bp.route('/api/analysis/<analysis_id>')
+def get_analysis_data(analysis_id):
+    try:
+        # Use Config.ANALYSIS_DIR directly
+        analysis_path = os.path.join(Config.ANALYSIS_DIR, f"analysis_{analysis_id}.json")
+        
+        if not os.path.exists(analysis_path):
+            return jsonify({"error": f"Analysis {analysis_id} not found"}), 404
+            
+        with open(analysis_path, 'r') as f:
+            analysis_data = json.load(f)
+        
+        return jsonify(analysis_data)
+    except Exception as e:
+        logging.error(f"Error getting analysis data: {e}")
+        return jsonify({"error": f"Error getting analysis data: {e}"}), 500
+
+@ml_bp.route('/api/analysis')
+def list_analyses():
+    try:
+        # Use Config.ANALYSIS_DIR directly
+        analysis_dir = Config.ANALYSIS_DIR
+        
+        if not os.path.exists(analysis_dir):
+            os.makedirs(analysis_dir, exist_ok=True)
+            return jsonify({"analyses": []})
+            
+        analysis_files = glob.glob(os.path.join(analysis_dir, "analysis_*.json"))
+        analyses = []
+        
+        for file_path in analysis_files:
+            file_name = os.path.basename(file_path)
+            analysis_id = file_name.replace("analysis_", "").replace(".json", "")
+            
+            try:
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+                    analyses.append({
+                        "id": analysis_id,
+                        "name": data.get("model_name", "Unknown"),
+                        "date": data.get("date", "Unknown"),
+                        "accuracy": data.get("accuracy", 0),
+                        "dictionary": data.get("dictionary", "Unknown")
+                    })
+            except Exception as e:
+                logging.error(f"Error reading analysis file {file_path}: {e}")
+        
+        return jsonify({"analyses": analyses})
+    except Exception as e:
+        logging.error(f"Error listing analyses: {e}")
+        return jsonify({"error": f"Error listing analyses: {e}"}), 500
+
+@ml_bp.route('/confidence_distribution')
+def confidence_distribution():
+    """
+    Get the distribution of confidence values for predictions.
+    
+    Returns:
+        JSON: Confidence distribution statistics
+    """
+    try:
+        # Get confidence distribution from the inference service
+        distribution = current_app.inference_service.get_confidence_distribution()
+        
+        return jsonify(distribution)
+    except Exception as e:
+        logging.error(f"Error getting confidence distribution: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to get confidence distribution: {str(e)}"
+        }), 500
+
+@ml_bp.route('/detect_drift')
+def detect_drift():
+    """
+    Detect potential model drift based on recent accuracy.
+    
+    Query parameters:
+        window_size (int): Number of recent predictions to analyze (default: 100)
+    
+    Returns:
+        JSON: Drift analysis results
+    """
+    try:
+        # Get window size from query parameters
+        window_size = request.args.get('window_size', 100, type=int)
+        
+        # Get drift analysis from the inference service
+        drift_analysis = current_app.inference_service.detect_drift(window_size)
+        
+        return jsonify(drift_analysis)
+    except Exception as e:
+        logging.error(f"Error detecting model drift: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to detect model drift: {str(e)}"
+        }), 500
+
+@ml_bp.route('/recent_predictions')
+def recent_predictions():
+    """
+    Get the most recent predictions.
+    
+    Query parameters:
+        count (int): Number of predictions to return (default: 10)
+    
+    Returns:
+        JSON: List of recent predictions
+    """
+    try:
+        # Get count from query parameters
+        count = request.args.get('count', 10, type=int)
+        
+        # Get recent predictions from the inference service
+        predictions = current_app.inference_service.get_recent_predictions(count)
+        
+        return jsonify({
+            'status': 'success',
+            'count': len(predictions),
+            'predictions': predictions
+        })
+    except Exception as e:
+        logging.error(f"Error getting recent predictions: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to get recent predictions: {str(e)}"
+        }), 500
+
+@ml_bp.route('/class_accuracy/<class_name>')
+def class_accuracy(class_name):
+    """
+    Get the accuracy for a specific class.
+    
+    Args:
+        class_name (str): Name of the class
+    
+    Returns:
+        JSON: Accuracy for the specified class
+    """
+    try:
+        # Get class accuracy from the inference service
+        accuracy = current_app.inference_service.get_class_accuracy(class_name)
+        
+        return jsonify({
+            'status': 'success',
+            'class': class_name,
+            'accuracy': accuracy
+        })
+    except Exception as e:
+        logging.error(f"Error getting class accuracy: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to get class accuracy: {str(e)}"
+        }), 500
+
+@ml_bp.route('/reset_inference_stats', methods=['POST'])
+def reset_inference_stats():
+    """
+    Reset all inference statistics.
+    
+    Returns:
+        JSON: Fresh inference statistics
+    """
+    try:
+        # Reset stats using the inference service
+        fresh_stats = current_app.inference_service.reset_stats()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Inference statistics reset successfully',
+            'stats': fresh_stats
+        })
+    except Exception as e:
+        logging.error(f"Error resetting inference statistics: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"Failed to reset inference statistics: {str(e)}"
+        }), 500
+
+@ml_bp.route('/model_metadata/<model_id>', methods=['GET'])
+def get_model_metadata_direct(model_id):
+    """
+    Get metadata for a specific model including class_names
+    This is an alternative endpoint that should be accessible regardless of blueprint prefix
+    
+    Path parameter:
+        model_id: The ID of the model to retrieve metadata for
+        
+    Returns:
+        JSON response containing model metadata
+    """
+    if not model_id:
+        return jsonify({
+            'status': 'error', 
+            'message': 'No model_id provided'
+        }), 400
+    
+    try:
+        # First try to get the model from models.json
+        models_json_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'models.json')
+        if os.path.exists(models_json_path):
+            with open(models_json_path, 'r') as f:
+                registry = json.load(f)
+            
+            # Look for the model in each type category
+            model_data = None
+            for model_type, models in registry.get('models', {}).items():
+                if model_id in models:
+                    model_data = models[model_id]
+                    break
+            
+            if model_data:
+                # If model has class_names directly in the registry, return them
+                if 'class_names' in model_data:
+                    return jsonify({
+                        'status': 'success',
+                        'metadata': model_data
+                    })
+        
+        # If we didn't find class_names in models.json or the model wasn't found,
+        # try to load from the model's metadata file
+        model_parts = model_id.split('_')
+        if len(model_parts) >= 3:
+            model_type = model_parts[1]  # e.g., 'cnn', 'rf'
+            
+            # Determine the metadata file path based on model type and ID
+            if model_type.lower() == 'cnn':
+                metadata_path = os.path.join(
+                    Config.BASE_DIR, 'data', 'models', 'cnn', model_id, f'{model_id}_metadata.json'
+                )
+            elif model_type.lower() == 'rf':
+                metadata_path = os.path.join(
+                    Config.BASE_DIR, 'data', 'models', 'rf', model_id, f'{model_id}_metadata.json'
+                )
+            elif model_type.lower() in ['ens', 'ensemble']:
+                metadata_path = os.path.join(
+                    Config.BASE_DIR, 'data', 'models', 'ensemble', model_id, f'{model_id}_metadata.json'
+                )
+            else:
+                # Unknown model type
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Unknown model type: {model_type}'
+                }), 400
+                
+            # Check if metadata file exists
+            if os.path.exists(metadata_path):
+                with open(metadata_path, 'r') as f:
+                    metadata = json.load(f)
+                
+                # Return the metadata
+                return jsonify({
+                    'status': 'success',
+                    'metadata': metadata
+                })
+            else:
+                # Metadata file doesn't exist
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Metadata file not found for model {model_id}'
+                }), 404
+        
+        # If we get here, we couldn't find the model or its metadata
+        return jsonify({
+            'status': 'error',
+            'message': f'Model {model_id} not found or has no metadata'
+        }), 404
+    
+    except Exception as e:
+        app.logger.error(f"Error retrieving model metadata: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error retrieving model metadata: {str(e)}'
         }), 500
 

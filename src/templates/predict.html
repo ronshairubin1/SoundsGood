@@ -235,6 +235,39 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Latest Prediction - moved directly under Available Sound Classes -->
+        <div id="latestPrediction" class="prediction-result mt-3" style="display: none;">
+            <h5><i class="bi bi-soundwave me-2"></i>Latest Prediction</h5>
+            
+            <div class="result-label text-center">
+                <span id="predictedClass">Unknown</span>
+                <div class="fs-6 text-muted" id="confidenceValue">0% confidence</div>
+            </div>
+            
+            <div class="feedback-form">
+                <h6>Was this prediction correct?</h6>
+                <p class="text-muted">Please select what you actually said:</p>
+                
+                <div class="feedback-options" id="feedbackOptions">
+                    <!-- Feedback options will be loaded here -->
+                    {% if active_dict and active_dict.sounds %}
+                        {% for sound in active_dict.sounds %}
+                            <div class="feedback-option">
+                                <input type="radio" name="feedbackSound" id="sound_{{ sound }}" value="{{ sound }}" class="form-check-input">
+                                <label for="sound_{{ sound }}" class="form-check-label">{{ sound }}</label>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary" id="submitFeedbackBtn" disabled>
+                        <i class="bi bi-check2-circle me-1"></i>Submit Feedback
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -256,41 +289,8 @@
                 </div>
             </div>
         </div>
-            </div>
-            
-    <!-- Latest Prediction -->
-    <div id="latestPrediction" class="prediction-result" style="display: none;">
-        <h5><i class="bi bi-soundwave me-2"></i>Latest Prediction</h5>
-        
-        <div class="result-label text-center">
-            <span id="predictedClass">Unknown</span>
-            <div class="fs-6 text-muted" id="confidenceValue">0% confidence</div>
-            </div>
-        
-        <div class="feedback-form">
-            <h6>Was this prediction correct?</h6>
-            <p class="text-muted">Please select what you actually said:</p>
-            
-            <div class="feedback-options" id="feedbackOptions">
-                <!-- Feedback options will be loaded here -->
-                {% if active_dict and active_dict.sounds %}
-                    {% for sound in active_dict.sounds %}
-                        <div class="feedback-option">
-                            <input type="radio" name="feedbackSound" id="sound_{{ sound }}" value="{{ sound }}" class="form-check-input">
-                            <label for="sound_{{ sound }}" class="form-check-label">{{ sound }}</label>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-        </div>
-        
-            <div class="text-center mt-3">
-                <button class="btn btn-primary" id="submitFeedbackBtn" disabled>
-                    <i class="bi bi-check2-circle me-1"></i>Submit Feedback
-            </button>
-        </div>
     </div>
-</div>
-
+            
     <!-- Prediction History -->
     <div id="predictionHistory" class="mt-4" style="display: none;">
         <h5><i class="bi bi-clock-history me-2"></i>Prediction History</h5>
@@ -588,92 +588,70 @@ function loadAvailableModels() {
                     `;
                     modelsList.appendChild(dictionaryHeader);
                     
-                    // Add models for this dictionary
-                    modelsByDictionary[dictionaryName].forEach((model, index) => {
-                        console.log(`📋 DEBUG: Adding model ${model.name} to DOM`);
+                    // Sort models by timestamp (newest first)
+                    const sortedModels = [...modelsByDictionary[dictionaryName]].sort((a, b) => {
+                        // Extract timestamps and compare (handle missing timestamps)
+                        const aTime = a.timestamp || '';
+                        const bTime = b.timestamp || '';
+                        return bTime.localeCompare(aTime); // Descending order
+                    });
+                    
+                    // Find the latest model for this dictionary
+                    const latestModel = sortedModels.length > 0 ? sortedModels[0] : null;
+                    
+                    // Display latest model first
+                    if (latestModel) {
+                        // Add a visual indicator that this is the latest model
+                        const latestModelItem = createModelListItem(latestModel, true);
+                        modelsList.appendChild(latestModelItem);
+                    }
+                    
+                    // Only show older models button if there are more than 1 model
+                    if (sortedModels.length > 1) {
+                        // Create a container for older models (initially hidden)
+                        const olderModelsContainer = document.createElement('div');
+                        olderModelsContainer.id = `older-models-${dictionaryName.replace(/\s+/g, '-')}`;
+                        olderModelsContainer.className = 'older-models-container';
+                        olderModelsContainer.style.display = 'none';
+                        olderModelsContainer.style.marginLeft = '15px';
                         
-                        const modelItem = document.createElement('div');
-                        modelItem.className = 'model-item';
-                        modelItem.dataset.modelId = model.id;
-                        modelItem.dataset.modelIndex = availableModels.indexOf(model);
-                        
-                        // Format the model name for display
-                        let displayName = model.name || 'Unnamed Model';
-                        
-                        try {
-                            // Extract dictionary name and model type with fallbacks
-                            const dictionary = model.dictionary || 'Unknown';
-                            const modelType = model.type || 'unknown';
-                            const timestamp = model.timestamp || '';
-                            
-                            console.log(`📋 DEBUG: Formatting model name - Dictionary: ${dictionary}, Type: ${modelType}, Timestamp: ${timestamp}`);
-                            
-                            // Format timestamp as YYYY-MM-DD HH:MM:SS if possible
-                            if (timestamp && timestamp.length >= 14) {
-                                const year = timestamp.substring(0, 4);
-                                const month = timestamp.substring(4, 6);
-                                const day = timestamp.substring(6, 8);
-                                const hour = timestamp.substring(8, 10);
-                                const minute = timestamp.substring(10, 12);
-                                const second = timestamp.substring(12, 14);
-                                
-                                displayName = `${dictionary} ${modelType.toUpperCase()} (${year}-${month}-${day} ${hour}:${minute}:${second})`;
-                            } else if (timestamp) {
-                                // If timestamp format is different but exists
-                                displayName = `${dictionary} ${modelType.toUpperCase()} (${timestamp})`;
-                            } else {
-                                // No timestamp
-                                displayName = `${dictionary} ${modelType.toUpperCase()} Model`;
-                            }
-                            
-                            console.log(`📋 DEBUG: Formatted name: ${displayName}`);
-                        } catch (e) {
-                            console.error('Error formatting model name:', e);
-                            // Fall back to original name or a default name
-                            displayName = model.name || model.id || 'Unknown Model';
-                        }
-                        
-                        // Get learning type (CNN, RF, ENSEMBLE) with fallbacks
-                        const learningType = model.type ? model.type.toUpperCase() : 'UNKNOWN';
-                        let learningTypeClass = 'learning-type-unknown';
-                        
-                        // Set the appropriate CSS class based on model type
-                        if (model.type) {
-                            if (model.type.toLowerCase() === 'cnn') {
-                                learningTypeClass = 'learning-type-cnn';
-                            } else if (model.type.toLowerCase() === 'rf') {
-                                learningTypeClass = 'learning-type-rf';
-                            } else if (['ens', 'ensemble'].includes(model.type.toLowerCase())) {
-                                learningTypeClass = 'learning-type-ensemble';
-                            }
-                        }
-                        
-                        modelItem.innerHTML = `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>${displayName}</strong>
-                                    <span class="learning-type-badge ${learningTypeClass}">${learningType}</span>
-                                </div>
-                                <i class="bi bi-chevron-right"></i>
-                            </div>
-                        `;
-                        
-                        modelItem.addEventListener('click', function() {
-                            // Remove active class from all model items
-                            document.querySelectorAll('.model-item').forEach(item => {
-                                item.classList.remove('active');
-                            });
-                            
-                            // Add active class to selected model item
-                            this.classList.add('active');
-                            
-                            // Set selected model
-                            const modelIndex = parseInt(this.dataset.modelIndex);
-                            selectModel(modelIndex);
+                        // Add older models to container
+                        sortedModels.slice(1).forEach(model => {
+                            const modelItem = createModelListItem(model, false);
+                            olderModelsContainer.appendChild(modelItem);
                         });
                         
-                        modelsList.appendChild(modelItem);
-                    });
+                        // Create a "Show Older Models" button
+                        const showOlderButton = document.createElement('button');
+                        showOlderButton.className = 'btn btn-sm btn-outline-secondary mt-1 mb-2';
+                        showOlderButton.style.marginLeft = '15px';
+                        showOlderButton.innerHTML = `
+                            <i class="bi bi-chevron-down me-1"></i>
+                            Show Older ${dictionaryName} Models (${sortedModels.length - 1})
+                        `;
+                        
+                        // Toggle visibility of older models when button is clicked
+                        showOlderButton.addEventListener('click', function() {
+                            const olderModels = document.getElementById(`older-models-${dictionaryName.replace(/\s+/g, '-')}`);
+                            if (olderModels.style.display === 'none') {
+                                olderModels.style.display = 'block';
+                                this.innerHTML = `
+                                    <i class="bi bi-chevron-up me-1"></i>
+                                    Hide Older ${dictionaryName} Models
+                                `;
+                            } else {
+                                olderModels.style.display = 'none';
+                                this.innerHTML = `
+                                    <i class="bi bi-chevron-down me-1"></i>
+                                    Show Older ${dictionaryName} Models (${sortedModels.length - 1})
+                                `;
+                            }
+                        });
+                        
+                        // Add button and container to the models list
+                        modelsList.appendChild(showOlderButton);
+                        modelsList.appendChild(olderModelsContainer);
+                    }
                 });
             } else {
                 // Display error message with more details
@@ -769,68 +747,22 @@ function selectModel(modelIndex) {
         </div>
     `;
     
-    // First, check if the model.sounds already has valid sound classes
+    // First, check if the model.class_names is available (new primary source)
+    if (model.class_names && Array.isArray(model.class_names) && model.class_names.length > 0) {
+        console.log(`Using ${model.class_names.length} sound classes from model.class_names:`, model.class_names);
+        updateSoundClasses(model.class_names);
+        return; // Don't need to fetch if we already have them
+    }
+    
+    // Then check if model.sounds has valid sound classes
     if (model.sounds && Array.isArray(model.sounds) && model.sounds.length > 0) {
         console.log(`Using ${model.sounds.length} sounds from model data:`, model.sounds);
         updateSoundClasses(model.sounds);
         return; // Don't need to fetch if we already have them
     }
     
-    // Otherwise, load sound classes from dictionary endpoint
-    console.log(`Loading sound classes for dictionary: ${dictionaryName}`);
-    
-    // Try the dictionary-specific endpoint
-    fetch(`/api/ml/dictionary/${encodeURIComponent(dictionaryName)}/sounds`)
-        .then(response => {
-            console.log(`Sound classes API response status: ${response.status}`);
-            if (!response.ok) {
-                throw new Error('Failed to load dictionary sounds');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Sound classes API response:', data);
-            
-            if (data.success && Array.isArray(data.sounds) && data.sounds.length > 0) {
-                console.log(`Found ${data.sounds.length} sound classes:`, data.sounds);
-                updateSoundClasses(data.sounds);
-            } else {
-                // As a last resort, try the generic sounds endpoint
-                console.log('No sounds in dictionary API, trying generic endpoint');
-                return fetch('/api/ml/dictionary/sounds')
-                    .then(response => response.json())
-                    .then(genericData => {
-                        if (genericData.success && Array.isArray(genericData.sounds) && genericData.sounds.length > 0) {
-                            console.log(`Found ${genericData.sounds.length} sounds from generic endpoint:`, genericData.sounds);
-                            updateSoundClasses(genericData.sounds);
-                        } else {
-                            // If still no sounds, use some defaults based on dictionary name
-                            if (dictionaryName.toLowerCase() === 'ehoh') {
-                                updateSoundClasses(['eh', 'oh']);
-                                console.log("Using default 'eh', 'oh' classes for EhOh dictionary");
-                            } else {
-                                // If still no sounds, show error
-                                showNoSoundsWarning();
-                            }
-                        }
-                    });
-            }
-        })
-        .catch(error => {
-            console.error('Error loading sound classes:', error);
-            
-            // Try using a default
-            if (dictionaryName.toLowerCase() === 'ehoh') {
-                updateSoundClasses(['eh', 'oh']);
-                console.log("Using default 'eh', 'oh' classes for EhOh dictionary as fallback");
-            } else {
-                // Show error message
-                showNoSoundsWarning();
-            }
-        });
-    
-    // Update statistics if available
-    updateStatistics();
+    // Use our new function to get model metadata including class names
+    loadSoundClassesForModel(selectedModel);
 }
 
 // Helper function to show no sounds warning
@@ -839,7 +771,12 @@ function showNoSoundsWarning() {
     soundsList.innerHTML = `
         <div class="alert alert-warning">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            No sound classes available for this model.
+            <div>
+                <strong>Available Sound Classes for ${selectedModel}</strong><br>
+                These are the sound classes that can be recognized.
+            </div>
+            <hr>
+            <div>No sound classes available for ${selectedModel}</div>
         </div>
     `;
     
@@ -870,7 +807,12 @@ function updateSoundClasses(sounds) {
         soundsList.innerHTML = `
             <div class="alert alert-warning">
                 <i class="bi bi-exclamation-triangle me-2"></i>
-                No sound classes available for this model.
+                <div>
+                    <strong>Available Sound Classes for ${selectedModel}</strong><br>
+                    These are the sound classes that can be recognized.
+                </div>
+                <hr>
+                <div>No sound classes available for ${selectedModel}</div>
             </div>
         `;
     }
@@ -886,15 +828,7 @@ function loadSoundClassesForDictionary(dictionaryName) {
         return;
     }
     
-    // Get sound classes for a specific dictionary
     fetch(`/api/ml/dictionary/${encodeURIComponent(dictionaryName)}/sounds`)
-        .then(response => {
-            if (!response.ok) {
-                // Fall back to the generic endpoint if the specific one fails
-                return fetch('/api/ml/dictionary/sounds');
-            }
-            return response;
-        })
         .then(response => response.json())
         .then(data => {
             const soundsList = document.getElementById('soundsList');
@@ -922,7 +856,12 @@ function loadSoundClassesForDictionary(dictionaryName) {
                 soundsList.innerHTML = `
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        No sound classes available for this dictionary.
+                        <div>
+                            <strong>Available Sound Classes for ${selectedModel || dictionaryName}</strong><br>
+                            These are the sound classes that can be recognized.
+                        </div>
+                        <hr>
+                        <div>No sound classes available for ${selectedModel || dictionaryName}</div>
                     </div>
                 `;
             }
@@ -968,7 +907,12 @@ function loadSoundClasses() {
                 soundsList.innerHTML = `
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        No sound classes available for the active dictionary.
+                        <div>
+                            <strong>Available Sound Classes for ${selectedModel || 'current model'}</strong><br>
+                            These are the sound classes that can be recognized.
+                        </div>
+                        <hr>
+                        <div>No sound classes available for ${selectedModel || 'current model'}</div>
                     </div>
                 `;
             }
@@ -988,7 +932,12 @@ function loadSoundClasses() {
                 soundsList.innerHTML = `
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        No sound classes available. Please select a model with valid metadata.
+                        <div>
+                            <strong>Available Sound Classes for ${selectedModel || 'current model'}</strong><br>
+                            These are the sound classes that can be recognized.
+                        </div>
+                        <hr>
+                        <div>No sound classes available for ${selectedModel || 'current model'}</div>
                     </div>
                 `;
                 
@@ -1426,6 +1375,123 @@ function saveAnalysis() {
     .catch(error => {
         console.error('Error saving analysis:', error);
         alert('Error saving analysis. See console for details.');
+    });
+}
+
+/**
+ * Creates a model list item element
+ * @param {Object} model - The model object
+ * @param {boolean} isLatest - Whether this is the latest model for its dictionary
+ * @returns {HTMLElement} The model item element
+ */
+function createModelListItem(model, isLatest) {
+    const modelItem = document.createElement('div');
+    modelItem.className = 'model-item';
+    if (isLatest) {
+        modelItem.className += ' latest-model';
+        modelItem.style.borderLeftColor = '#198754';  // Bootstrap success color
+    }
+    modelItem.dataset.modelId = model.id;
+    modelItem.dataset.modelIndex = availableModels.indexOf(model);
+    
+    // Get learning type (CNN, RF, ENSEMBLE) with fallbacks
+    const learningType = model.type ? model.type.toUpperCase() : 'UNKNOWN';
+    let learningTypeClass = 'learning-type-unknown';
+    
+    // Set the appropriate CSS class based on model type
+    if (model.type) {
+        if (model.type.toLowerCase() === 'cnn') {
+            learningTypeClass = 'learning-type-cnn';
+        } else if (model.type.toLowerCase() === 'rf') {
+            learningTypeClass = 'learning-type-rf';
+        } else if (['ens', 'ensemble'].includes(model.type.toLowerCase())) {
+            learningTypeClass = 'learning-type-ensemble';
+        }
+    }
+    
+    // Use display_name if available, otherwise fall back to name or id
+    const displayName = model.display_name || model.name || model.id || 'Unknown Model';
+    
+    // Add latest badge if this is the latest model
+    const latestBadge = isLatest ? 
+        `<span class="badge bg-success ms-2">Latest</span>` : '';
+    
+    modelItem.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <strong>${displayName}</strong>
+                ${latestBadge}
+                <span class="learning-type-badge ${learningTypeClass}">${learningType}</span>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </div>
+    `;
+    
+    modelItem.addEventListener('click', function() {
+        // Remove active class from all model items
+        document.querySelectorAll('.model-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Add active class to selected model item
+        this.classList.add('active');
+        
+        // Set selected model
+        const modelIndex = parseInt(this.dataset.modelIndex);
+        selectModel(modelIndex);
+    });
+    
+    return modelItem;
+}
+
+function loadSoundClassesForModel(modelId) {
+    console.log(`📋 DEBUG: Loading sound classes for model: ${modelId}`);
+    // Use the direct route instead
+    fetch(`/model_metadata/${encodeURIComponent(modelId)}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📋 DEBUG: Model metadata response:', data);
+        if (data.status === 'success' && data.metadata && data.metadata.class_names) {
+            updateSoundClasses(data.metadata.class_names);
+            
+            // Show listen controls
+            document.getElementById('listenControls').style.display = 'block';
+        } else {
+            console.warn('📋 DEBUG: No class names found in metadata');
+            soundsList.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <div>
+                        <strong>Available Sound Classes for ${modelId}</strong><br>
+                        These are the sound classes that can be recognized.
+                    </div>
+                    <hr>
+                    <div>No sound classes available for ${modelId}</div>
+                </div>
+            `;
+            
+            // Show listen controls anyway
+            document.getElementById('listenControls').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('📋 DEBUG: Error loading sound classes:', error);
+        soundsList.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <div>
+                    <strong>Available Sound Classes for ${modelId}</strong><br>
+                    These are the sound classes that can be recognized.
+                </div>
+                <hr>
+                <div>Error loading sound classes for ${modelId}: ${error.message}</div>
+            </div>
+        `;
     });
 }
 </script>

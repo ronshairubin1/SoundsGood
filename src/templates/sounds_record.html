@@ -112,21 +112,41 @@
                 </h5>
                 
                 <form id="selectClassForm">
+                    <!-- Show this option for all users -->
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="classOption" id="existingClassOption" value="existing" checked>
-                        <label class="form-check-label" for="existingClassOption">
-                            Use existing class
+                        <input class="form-check-input" type="radio" name="classOption" id="allClassesOption" value="all" checked>
+                        <label class="form-check-label" for="allClassesOption">
+                            Select a class from all classes
                         </label>
                     </div>
                     
-                    <div id="existingClassSection" class="mb-4">
-                        <select class="form-select" id="existingClassSelect">
+                    <div id="allClassesSection" class="mb-4">
+                        <select class="form-select" id="allClassesSelect">
                             <option value="">-- Select a class --</option>
                             {% for class in sound_classes %}
                             <option value="{{ class.name }}">{{ class.name }} ({{ class.sample_count }} samples)</option>
                             {% endfor %}
                         </select>
                     </div>
+                    
+                    <!-- Only show this option if we're coming from a dictionary -->
+                    {% if source_dictionary %}
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="classOption" id="dictClassesOption" value="dict">
+                        <label class="form-check-label" for="dictClassesOption">
+                            Select a class from dictionary "{{ source_dictionary.name }}"
+                        </label>
+                    </div>
+                    
+                    <div id="dictClassesSection" class="mb-4" style="display: none;">
+                        <select class="form-select" id="dictClassesSelect">
+                            <option value="">-- Select a class --</option>
+                            {% for class in dict_classes %}
+                            <option value="{{ class.name }}">{{ class.name }} ({{ class.sample_count }} samples)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
                     
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="radio" name="classOption" id="newClassOption" value="new">
@@ -143,6 +163,13 @@
                         <button type="button" class="btn btn-primary btn-sm mt-2" id="createClassBtn">
                             <i class="bi bi-plus-circle me-1"></i>Create Class
                         </button>
+                        
+                        <!-- Only show this button if we're coming from a dictionary -->
+                        {% if source_dictionary %}
+                        <button type="button" class="btn btn-success btn-sm mt-2" id="addToDictionaryBtn" style="display: none;">
+                            <i class="bi bi-plus-circle me-1"></i>Create & Add to Dictionary "{{ source_dictionary.name }}"
+                        </button>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -365,116 +392,120 @@
     let isRecording = false;
     
     document.addEventListener('DOMContentLoaded', function() {
-        // Class selection form elements
-        const existingClassOption = document.getElementById('existingClassOption');
-        const newClassOption = document.getElementById('newClassOption');
-        const existingClassSection = document.getElementById('existingClassSection');
-        const newClassSection = document.getElementById('newClassSection');
-        const existingClassSelect = document.getElementById('existingClassSelect');
-        const newClassName = document.getElementById('newClassName');
-        const currentClassInfo = document.getElementById('currentClassInfo');
-        const createClassBtn = document.getElementById('createClassBtn');
+        // Get DOM elements
+        const allClassesOption = document.getElementById('allClassesOption');
+        const allClassesSection = document.getElementById('allClassesSection');
+        const allClassesSelect = document.getElementById('allClassesSelect');
         
-        // Recording elements
+        const dictClassesOption = document.getElementById('dictClassesOption');
+        const dictClassesSection = dictClassesOption ? document.getElementById('dictClassesSection') : null;
+        const dictClassesSelect = dictClassesOption ? document.getElementById('dictClassesSelect') : null;
+        
+        const newClassOption = document.getElementById('newClassOption');
+        const newClassSection = document.getElementById('newClassSection');
+        const newClassName = document.getElementById('newClassName');
+        const createClassBtn = document.getElementById('createClassBtn');
+        const addToDictionaryBtn = document.getElementById('addToDictionaryBtn');
+
         const recordButton = document.getElementById('recordButton');
         const recordingStatus = document.getElementById('recordingStatus');
-        const recordingTime = document.getElementById('recordingTime');
         const recordingInstructions = document.getElementById('recordingInstructions');
-        
-        // Processing elements
+        const currentClassInfo = document.getElementById('currentClassInfo');
         const processControls = document.getElementById('processControls');
-        const processingStatus = document.getElementById('processingStatus');
         const recentRecordings = document.getElementById('recentRecordings');
         const noRecordingsMessage = document.getElementById('noRecordingsMessage');
-        
-        // Ambient Noise Detection elements
+        const recordingTime = document.getElementById('recordingTime');
         const ambientNoiseSwitch = document.getElementById('ambientNoiseSwitch');
         const ambientNoiseStatus = document.getElementById('ambientNoiseStatus');
+
+        // Variables to track state
+        let isRecording = false;
+        let isClassConfirmed = false;
+        let selectedClass = null;
+        let recordingSeconds = 0;
+        let recordingInterval;
+        let audioRecorder = null;
+        let audioBlob = null;
         
-        // Initialize audio recorder
-        audioRecorder = new AudioRecorder({
-            onStart: function() {
-                isRecording = true;
-                recordButton.classList.add('recording');
-                
-                // Update UI
-                recordingStatus.textContent = 'Recording in progress...';
-                recordingInstructions.innerHTML = `
-                    <i class="bi bi-info-circle me-2"></i>
-                    Please repeat the sound "<strong>${selectedClass}</strong>" separated by brief one to two second silences. 
-                    Click the microphone again when finished.
-                `;
-                
-                // Start recording timer
-                recordingSeconds = 0;
-                recordingTime.style.display = 'inline-block';
-                recordingInterval = setInterval(() => {
-                    recordingSeconds++;
-                    const minutes = Math.floor(recordingSeconds / 60);
-                    const seconds = recordingSeconds % 60;
-                    recordingTime.textContent = 
-                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }, 1000);
-            },
-            onStop: function(blob) {
-                isRecording = false;
-                recordButton.classList.remove('recording');
-                
-                // Update UI
-                recordingStatus.textContent = 'Processing recording...';
-                recordingInstructions.innerHTML = `
-                    <i class="bi bi-info-circle me-2"></i>
-                    Processing your recording of "<strong>${selectedClass}</strong>". Please wait...
-                `;
-                
-                // Clear recording timer
-                clearInterval(recordingInterval);
-                recordingTime.style.display = 'none';
-                
-                // Hide record button, show processing UI
-                recordButton.style.display = 'none';
-                processControls.style.display = 'block';
-                
-                // Automatically send the recording for processing
-                processRecording(blob);
-            },
-            onError: function(error) {
-                console.error('Recording error:', error);
-                showToast('Error accessing microphone: ' + error.message, 'danger');
-                
-                resetRecording();
-            }
-        });
+        // Get source dictionary information from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const sourceDictName = urlParams.get('dict_name');
         
-        // Toggle between existing and new class options
-        existingClassOption.addEventListener('change', function() {
+        // Toggle between class selection options
+        allClassesOption.addEventListener('change', function() {
             if (this.checked) {
-                existingClassSection.style.display = 'block';
+                allClassesSection.style.display = 'block';
+                if (dictClassesSection) dictClassesSection.style.display = 'none';
                 newClassSection.style.display = 'none';
+                
                 // If a class is already selected, confirm it automatically
-                if (existingClassSelect.value) {
-                    selectedClass = existingClassSelect.value;
+                if (allClassesSelect.value) {
+                    selectedClass = allClassesSelect.value;
                     confirmClassSelection(selectedClass);
+                } else {
+                    // Reset confirmed state 
+                    isClassConfirmed = false;
+                    updateRecordingUI();
                 }
             }
         });
         
+        // Dictionary-specific class option (if available)
+        if (dictClassesOption) {
+            dictClassesOption.addEventListener('change', function() {
+                if (this.checked) {
+                    allClassesSection.style.display = 'none';
+                    dictClassesSection.style.display = 'block';
+                    newClassSection.style.display = 'none';
+                    
+                    // If a class is already selected, confirm it automatically
+                    if (dictClassesSelect.value) {
+                        selectedClass = dictClassesSelect.value;
+                        confirmClassSelection(selectedClass);
+                    } else {
+                        // Reset confirmed state
+                        isClassConfirmed = false;
+                        updateRecordingUI();
+                    }
+                }
+            });
+            
+            // Auto-confirm class when selected from dictionary dropdown
+            dictClassesSelect.addEventListener('change', function() {
+                if (this.value && dictClassesOption.checked) {
+                    selectedClass = this.value;
+                    confirmClassSelection(selectedClass);
+                } else if (dictClassesOption.checked) {
+                    // Reset if "Select a class" is chosen
+                    isClassConfirmed = false;
+                    updateRecordingUI();
+                }
+            });
+        }
+        
         newClassOption.addEventListener('change', function() {
             if (this.checked) {
-                existingClassSection.style.display = 'none';
+                allClassesSection.style.display = 'none';
+                if (dictClassesSection) dictClassesSection.style.display = 'none';
                 newClassSection.style.display = 'block';
+                
+                // Show the "Add to Dictionary" button if we're coming from a dictionary
+                if (addToDictionaryBtn) {
+                    addToDictionaryBtn.style.display = 'inline-block';
+                }
+                
                 // Reset confirmed state when switching to new class option
                 isClassConfirmed = false;
                 updateRecordingUI();
             }
         });
         
-        // Auto-confirm class when selected from dropdown
-        existingClassSelect.addEventListener('change', function() {
-            if (this.value) {
+        // Auto-confirm class when selected from all classes dropdown
+        allClassesSelect.addEventListener('change', function() {
+            if (this.value && allClassesOption.checked) {
                 selectedClass = this.value;
                 confirmClassSelection(selectedClass);
-            } else {
+            } else if (allClassesOption.checked) {
                 // Reset if "Select a class" is chosen
                 isClassConfirmed = false;
                 updateRecordingUI();
@@ -498,6 +529,14 @@
                     if (newClassName) {
                         selectedClass = newClassName;
                         confirmClassSelection(newClassName);
+                        
+                        // Show success message
+                        showToast(`Class "${newClassName}" created successfully`, 'success');
+                        
+                        // If we have an "Add to Dictionary" button, enable it
+                        if (addToDictionaryBtn) {
+                            addToDictionaryBtn.disabled = false;
+                        }
                     }
                 })
                 .finally(() => {
@@ -506,6 +545,60 @@
                     this.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Create Class';
                 });
         });
+        
+        // Add to Dictionary button click event (if present)
+        if (addToDictionaryBtn) {
+            addToDictionaryBtn.addEventListener('click', function() {
+                const className = newClassName.value.trim();
+                if (!className) {
+                    alert('Please enter a name for the new sound class');
+                    return;
+                }
+                
+                // Disable button while processing
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                // First, create the class
+                createNewClass(className)
+                    .then(newClassName => {
+                        if (!newClassName) {
+                            // Failed to create class
+                            throw new Error('Failed to create class');
+                        }
+                        
+                        selectedClass = newClassName;
+                        // Now add the class to the dictionary
+                        return fetch(`/api/dictionary/${encodeURIComponent(sourceDictName)}/add_class`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                class_name: selectedClass
+                            })
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(`Class "${selectedClass}" created and added to dictionary "${sourceDictName}"`, 'success');
+                            confirmClassSelection(selectedClass);
+                        } else {
+                            showToast(`Class created but error adding to dictionary: ${data.error}`, 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error creating class and adding to dictionary:', error);
+                        showToast('Error processing request', 'danger');
+                    })
+                    .finally(() => {
+                        // Re-enable button
+                        this.disabled = false;
+                        this.innerHTML = `<i class="bi bi-plus-circle me-1"></i>Create & Add to Dictionary "${sourceDictName}"`;
+                    });
+            });
+        }
         
         // Record button functionality
         recordButton.addEventListener('click', function() {
@@ -728,14 +821,14 @@
                     const option = document.createElement('option');
                     option.value = data.class.name;
                     option.textContent = `${data.class.name} (0 samples)`;
-                    existingClassSelect.appendChild(option);
+                    allClassesSelect.appendChild(option);
                     
                     // Select the new class in the dropdown
-                    existingClassSelect.value = data.class.name;
+                    allClassesSelect.value = data.class.name;
                     
                     // Switch to existing class option
-                    existingClassOption.checked = true;
-                    existingClassSection.style.display = 'block';
+                    allClassesOption.checked = true;
+                    allClassesSection.style.display = 'block';
                     newClassSection.style.display = 'none';
                     
                     // Clear the new class input
@@ -864,6 +957,61 @@
             } else {
                 ambientNoiseStatus.textContent = 'Off';
                 ambientNoiseStatus.className = 'ms-2 badge bg-secondary';
+            }
+        });
+
+        // Initialize audio recorder
+        audioRecorder = new AudioRecorder({
+            onStart: function() {
+                isRecording = true;
+                recordButton.classList.add('recording');
+                
+                // Update UI
+                recordingStatus.textContent = 'Recording in progress...';
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Please repeat the sound "<strong>${selectedClass}</strong>" separated by brief one to two second silences. 
+                    Click the microphone again when finished.
+                `;
+                
+                // Start recording timer
+                recordingSeconds = 0;
+                recordingTime.style.display = 'inline-block';
+                recordingInterval = setInterval(() => {
+                    recordingSeconds++;
+                    const minutes = Math.floor(recordingSeconds / 60);
+                    const seconds = recordingSeconds % 60;
+                    recordingTime.textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            },
+            onStop: function(blob) {
+                isRecording = false;
+                recordButton.classList.remove('recording');
+                
+                // Update UI
+                recordingStatus.textContent = 'Processing recording...';
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Processing your recording of "<strong>${selectedClass}</strong>". Please wait...
+                `;
+                
+                // Clear recording timer
+                clearInterval(recordingInterval);
+                recordingTime.style.display = 'none';
+                
+                // Hide record button, show processing UI
+                recordButton.style.display = 'none';
+                processControls.style.display = 'block';
+                
+                // Automatically send the recording for processing
+                processRecording(blob);
+            },
+            onError: function(error) {
+                console.error('Recording error:', error);
+                showToast('Error accessing microphone: ' + error.message, 'danger');
+                
+                resetRecording();
             }
         });
     });

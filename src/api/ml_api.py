@@ -2,6 +2,7 @@ import os
 import logging
 import json
 from flask import request, jsonify, send_file
+import datetime
 
 from src.services.training_service import TrainingService
 from src.services.inference_service import InferenceService
@@ -328,14 +329,158 @@ class MlApi:
     def handle_list_models(self):
         """Handle the list models request."""
         try:
-            models = self.inference_service.get_available_models()
+            # Debug the models.json file and directory structure
+            self.inference_service.debug_models_json()
+            
+            # Get available models from InferenceService
+            models_by_type = self.inference_service.get_available_models()
+            logging.info(f"Retrieved models from inference service: {models_by_type}")
+            
+            # Get current dictionary using DictionaryService
+            from src.services.dictionary_service import DictionaryService
+            dictionary_service = DictionaryService()
+            
+            # Get the active dictionary name from the dictionaries object
+            active_dict_name = dictionary_service.dictionaries.get('active_dictionary')
+            logging.info(f"Active dictionary from dictionary_service: {active_dict_name}")
+            
+            if not active_dict_name:
+                logging.warning("No active dictionary found, defaulting to first available")
+                # Fallback: use the first dictionary if no active one
+                dictionaries = dictionary_service.dictionaries.get('dictionaries', {})
+                if dictionaries:
+                    active_dict_name = next(iter(dictionaries.keys()))
+                    logging.info(f"Using fallback dictionary: {active_dict_name}")
+                else:
+                    active_dict_name = "Unknown"
+                    logging.warning("No dictionaries found, using 'Unknown'")
+            
+            # Get the dictionary details
+            active_dict = dictionary_service.get_dictionary(active_dict_name)
+            if not active_dict:
+                logging.warning(f"Could not find dictionary details for '{active_dict_name}'")
+                active_dict = {"name": active_dict_name}
+            
+            dict_name = active_dict.get('name', 'Unknown')
+            dict_name_normalized = dict_name.replace(' ', '_')
+            
+            logging.info(f"Using dictionary: {dict_name} (normalized: {dict_name_normalized})")
+            
+            # Transform the model data to match what the predict page expects
+            # Include ALL models regardless of dictionary
+            transformed_models = {}
+            
+            # Find the original models.json file to get class names for each model
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            models_json_path = os.path.join(base_dir, 'data', 'models', 'models.json')
+            models_registry = None
+            
+            if os.path.exists(models_json_path):
+                try:
+                    with open(models_json_path, 'r') as f:
+                        models_registry = json.load(f)
+                    logging.info(f"Successfully loaded models registry from {models_json_path}")
+                except Exception as e:
+                    logging.error(f"Error reading models.json: {e}", exc_info=True)
+            
+            # Create a dictionary to organize models by dictionary name
+            models_by_dict = {}
+            
+            # Process CNN models - Include ALL models
+            if 'cnn' in models_by_type and models_by_type['cnn']:
+                transformed_models['cnn'] = []
+                
+                for model_name in models_by_type['cnn']:
+                    logging.info(f"Processing model {model_name}")
+                    
+                    # Get dictionary name and timestamp from model name
+                    parts = model_name.split('_')
+                    if len(parts) >= 3:
+                        model_dict_name = parts[0]
+                        timestamp = parts[-1]
+                    else:
+                        model_dict_name = "Unknown"
+                        timestamp = ""
+                    
+                    # Get model data (including class_names) from models registry if available
+                    model_class_names = None
+                    created_at = None
+                    
+                    if models_registry and 'models' in models_registry and 'cnn' in models_registry['models'] and model_name in models_registry['models']['cnn']:
+                        model_data = models_registry['models']['cnn'][model_name]
+                        model_dict_name = model_data.get('dictionary', model_dict_name)
+                        model_class_names = model_data.get('class_names', None)
+                        created_at = model_data.get('created_at', None)
+                        logging.info(f"Found class names for model {model_name}: {model_class_names}")
+                    
+                    # Format timestamp for display
+                    formatted_date = "Unknown date"
+                    if created_at:
+                        try:
+                            # Parse ISO format datetime 
+                            dt = datetime.datetime.fromisoformat(created_at)
+                            formatted_date = dt.strftime("%B %d, %Y %I:%M%p")
+                        except Exception as e:
+                            logging.error(f"Error parsing created_at date: {e}")
+                    elif timestamp and len(timestamp) >= 14:
+                        try:
+                            # Parse YYYYMMDDHHMMSS format
+                            year = timestamp[0:4]
+                            month = timestamp[4:6]
+                            day = timestamp[6:8]
+                            hour = timestamp[8:10] 
+                            minute = timestamp[10:12]
+                            second = timestamp[12:14]
+                            
+                            # Convert to datetime object
+                            dt = datetime.datetime(int(year), int(month), int(day), 
+                                                int(hour), int(minute), int(second))
+                            formatted_date = dt.strftime("%B %d, %Y %I:%M%p")
+                        except Exception as e:
+                            logging.error(f"Error parsing timestamp: {e}")
+                            formatted_date = timestamp
+                    
+                    model_obj = {
+                        'id': model_name,
+                        'name': f"{model_dict_name} CNN Model",
+                        'display_name': f"{model_dict_name} CNN Model - {formatted_date}",
+                        'type': 'cnn',
+                        'dictionary': model_dict_name,
+                        'class_names': model_class_names,
+                        'timestamp': timestamp,
+                        'created_at': created_at,
+                        'formatted_date': formatted_date
+                    }
+                    
+                    # Add to transformed_models list
+                    transformed_models['cnn'].append(model_obj)
+                    
+                    # Group by dictionary for later filtering
+                    if model_dict_name not in models_by_dict:
+                        models_by_dict[model_dict_name] = []
+                    models_by_dict[model_dict_name].append(model_obj)
+            
+            # For each dictionary, mark the latest model
+            for dict_name, dict_models in models_by_dict.items():
+                # Sort models by timestamp (descending)
+                dict_models.sort(key=lambda x: x['timestamp'] if x['timestamp'] else '', reverse=True)
+                
+                # Mark the latest model
+                if dict_models:
+                    dict_models[0]['is_latest'] = True
+                    logging.info(f"Latest model for {dict_name}: {dict_models[0]['id']}")
+            
+            # Debug the transformed models
+            logging.info(f"Transformed models for predict page: {transformed_models}")
+            
             return jsonify({
                 'success': True,
-                'models': models
+                'models': transformed_models,
+                'models_by_dict': models_by_dict
             })
         
         except Exception as e:
-            logging.error(f"Error in list_models: {e}")
+            logging.error(f"Error in list_models: {e}", exc_info=True)
             return jsonify({
                 'success': False,
                 'error': str(e)

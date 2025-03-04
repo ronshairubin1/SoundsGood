@@ -10,7 +10,7 @@ import wave
 import tempfile
 import time
 from threading import Thread, Lock
-from .sound_processor import SoundProcessor
+from .audio_processing import SoundProcessor
 from .audio_feature_extractor import AudioFeatureExtractor
 
 class SoundDetectorEnsemble:

@@ -204,9 +204,9 @@
                             <i class="bi bi-folder-plus me-1"></i> Add Existing Class
                         </button>
                         
-                        <button class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#recordAudioModal">
-                            <i class="bi bi-mic-fill me-1"></i>Record New Sample
-                        </button>
+                        <a href="/sounds/record?dict_name={{ dictionary.name | urlencode }}" class="btn btn-primary btn-lg me-2">
+                            <i class="bi bi-mic-fill me-1"></i> Record New Sample
+                        </a>
                         
                         <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#uploadAudioModal">
                             <i class="bi bi-upload me-1"></i>Upload Audio Files
@@ -359,9 +359,9 @@
                         <div class="card-body">
                             <h5 class="card-title mb-3">Sound Sample Actions</h5>
                             <div class="d-flex gap-3 flex-wrap">
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#recordAudioModal">
-                                    <i class="bi bi-mic-fill me-1"></i>Record New Sample
-                                </button>
+                                <a href="/sounds/record?dict_name={{ dictionary.name | urlencode }}" class="btn btn-primary me-2">
+                                    <i class="bi bi-mic-fill me-1"></i> Record New Sample
+                                </a>
                                 <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#uploadAudioModal">
                                     <i class="bi bi-upload me-1"></i>Upload Audio Files
                                 </button>

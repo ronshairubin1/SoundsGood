@@ -1,14 +1,18 @@
 import os
-import logging
+import uuid
 import json
-from flask import request, jsonify, Blueprint, current_app, session
+import logging
+import shutil
 from datetime import datetime
+from flask import Blueprint, request, jsonify, redirect
+from config import Config
 
 from src.services.dictionary_service import DictionaryService
-from config import Config
 
 # Create blueprint
 dictionary_bp = Blueprint('dictionary', __name__, url_prefix='/api/dictionary')
+
+# Create an instance of the DictionaryService
 dictionary_service = DictionaryService()
 
 @dictionary_bp.route('/list', methods=['GET'])
@@ -169,32 +173,68 @@ def create_dictionary():
         }), 500
 
 @dictionary_bp.route('/<dict_name>/add_class', methods=['POST'])
-def add_class(dict_name):
+def add_class_to_dictionary(dict_name):
     """Add a class to a dictionary."""
-    logging.debug(f"add_class called with dict_name: {dict_name}")
+    logging.info(f"Adding class to dictionary '{dict_name}'")
     data = request.get_json()
-    logging.debug(f"add_class request data: {data}")
     
     if not data or 'class_name' not in data:
-        logging.error("Missing class_name in request data")
         return jsonify({
             'success': False,
-            'error': 'Missing class name'
+            'error': 'Class name is required'
         }), 400
     
     try:
         result = dictionary_service.add_class(dict_name, data['class_name'])
-        logging.debug(f"add_class result: {result}")
         
         if result['success']:
+            # Update classes.json if it exists
+            classes_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'classes')
+            classes_json_path = os.path.join(classes_dir, 'classes.json')
+            
+            if os.path.exists(classes_dir) and os.path.exists(classes_json_path):
+                try:
+                    with open(classes_json_path, 'r') as f:
+                        classes_data = json.load(f)
+                    
+                    class_name = data['class_name'].replace(' ', '_').lower()
+                    # Check if the class exists in the JSON
+                    if class_name in classes_data['classes']:
+                        # If the dictionary isn't already in the list, add it
+                        if dict_name not in classes_data['classes'][class_name].get('in_dictionaries', []):
+                            if 'in_dictionaries' not in classes_data['classes'][class_name]:
+                                classes_data['classes'][class_name]['in_dictionaries'] = []
+                            classes_data['classes'][class_name]['in_dictionaries'].append(dict_name)
+                            
+                            # Save the updated file
+                            with open(classes_json_path, 'w') as f:
+                                json.dump(classes_data, f, indent=4)
+                            logging.info(f"Updated classes.json with dictionary association for {class_name}")
+                    else:
+                        # Create the class entry if it doesn't exist
+                        classes_data['classes'][class_name] = {
+                            "name": class_name,
+                            "samples": [],
+                            "sample_count": 0,
+                            "created_at": datetime.now().isoformat(),
+                            "in_dictionaries": [dict_name]
+                        }
+                        
+                        # Save the updated file
+                        with open(classes_json_path, 'w') as f:
+                            json.dump(classes_data, f, indent=4)
+                        logging.info(f"Created new class entry in classes.json for {class_name}")
+                except Exception as e:
+                    logging.error(f"Error updating classes.json: {e}")
+            
             return jsonify(result)
         else:
             return jsonify(result), 400
     except Exception as e:
-        logging.error(f"Error in add_class: {e}")
+        logging.exception(f"Error adding class to dictionary: {e}")
         return jsonify({
             'success': False,
-            'error': f"Server error: {str(e)}"
+            'error': str(e)
         }), 500
 
 @dictionary_bp.route('/<dict_name>/<class_name>/add_sample', methods=['POST'])

@@ -5,9 +5,16 @@ from threading import Thread
 from datetime import datetime
 import copy
 import time
+import json
+import traceback
+import librosa
+import tensorflow as tf
+from collections import Counter
 
-from src.core.models import create_model
+from src.core.ml_algorithms import create_model
 from src.core.audio.processor import AudioProcessor
+from src.core.data.dataset_preparation import DatasetPreparation
+from src.services.training_analysis_service import TrainingAnalysisService
 from config import Config
 
 class TrainingService:
@@ -25,6 +32,10 @@ class TrainingService:
             model_dir (str): Directory for model storage
         """
         self.model_dir = model_dir
+        # Initialize dataset preparation service
+        self.dataset_preparation = DatasetPreparation(sample_rate=8000)
+        # Initialize training analysis service
+        self.analysis_service = TrainingAnalysisService()
         # Initialize with loudness normalization disabled and MFCC normalization enabled
         self.audio_processor = AudioProcessor(
             sample_rate=8000,  # Lower sample rate for better handling of short files
@@ -330,7 +341,6 @@ class TrainingService:
             
         # Ensure all features have the same shape
         # Find the most common number of time steps to standardize on
-        from collections import Counter
         time_steps_counts = Counter([x.shape[0] for x in X])
         if len(time_steps_counts) > 1:
             # Use the most common number of time steps as our standard
@@ -372,13 +382,14 @@ class TrainingService:
     def prepare_dataset_for_rf(self, audio_dir, classes=None):
         """
         Prepare a dataset of classical audio features for RandomForest training.
+        Includes data augmentation to expand the training set.
         
         Args:
             audio_dir (str): Directory containing class-specific audio folders
             classes (list): List of class names to include (optional)
             
         Returns:
-            tuple: (X, y, class_names, stats)
+            tuple: (X, y, class_names, stats, feature_names)
         """
         X = []
         y = []
@@ -391,7 +402,7 @@ class TrainingService:
         # Check if the directory exists
         if not os.path.exists(audio_dir):
             logging.error(f"Audio directory {audio_dir} does not exist")
-            return None, None, [], stats
+            return None, None, [], stats, []
         
         # Get class directories - either use provided classes or scan directory
         if classes:
@@ -408,7 +419,7 @@ class TrainingService:
             
             if not class_dirs:
                 logging.error(f"No class subdirectories found in {audio_dir}")
-                return None, None, [], stats
+                return None, None, [], stats, []
         
         # Sort for consistent class indices
         class_dirs.sort()
@@ -429,11 +440,18 @@ class TrainingService:
             # Track original file count
             stats['original_counts'][class_dir] = len(wav_files)
             
+            # Counter for augmented files
+            augmented_count = 0
+            
+            # Process original files
             for wav_file in wav_files:
                 file_path = os.path.join(class_path, wav_file)
                 
                 try:
-                    # Process audio for RF (classical features)
+                    # First, load the audio file for both original and augmentation
+                    y_audio, sr = librosa.load(file_path, sr=self.audio_processor.sr)
+                    
+                    # Process original audio for RF (classical features)
                     features_dict = self.audio_processor.process_audio_for_rf(file_path)
                     
                     # Convert dictionary to feature vector in the right order
@@ -441,21 +459,68 @@ class TrainingService:
                     
                     X.append(feature_vector)
                     y.append(class_idx)
+                    
+                    # Apply data augmentation
+                    # Use the augment_audio_with_repetitions function from augmentation_manager
+                    from src.ml.augmentation_manager import augment_audio_with_repetitions
+                    from src.ml.constants import (
+                        AUG_DO_TIME_SHIFT, AUG_TIME_SHIFT_COUNT, AUG_SHIFT_MAX,
+                        AUG_DO_PITCH_SHIFT, AUG_PITCH_SHIFT_COUNT, AUG_PITCH_RANGE,
+                        AUG_DO_SPEED_CHANGE, AUG_SPEED_CHANGE_COUNT, AUG_SPEED_RANGE,
+                        AUG_DO_NOISE, AUG_NOISE_COUNT, AUG_NOISE_TYPE, AUG_NOISE_FACTOR
+                    )
+                    
+                    augmented_audios = augment_audio_with_repetitions(
+                        audio=y_audio,
+                        sr=sr,
+                        do_time_shift=AUG_DO_TIME_SHIFT,
+                        time_shift_count=AUG_TIME_SHIFT_COUNT,
+                        shift_max=AUG_SHIFT_MAX,
+                        do_pitch_shift=AUG_DO_PITCH_SHIFT,
+                        pitch_shift_count=AUG_PITCH_SHIFT_COUNT,
+                        pitch_range=AUG_PITCH_RANGE,
+                        do_speed_change=AUG_DO_SPEED_CHANGE,
+                        speed_change_count=AUG_SPEED_CHANGE_COUNT,
+                        speed_range=AUG_SPEED_RANGE,
+                        do_noise=AUG_DO_NOISE,
+                        noise_count=AUG_NOISE_COUNT,
+                        noise_type=AUG_NOISE_TYPE,
+                        noise_factor=AUG_NOISE_FACTOR
+                    )
+                    
+                    # Process each augmented audio
+                    for aug_audio in augmented_audios:
+                        try:
+                            # Extract features from the augmented audio
+                            aug_features_dict = self.audio_processor.extract_classical_features(aug_audio)
+                            
+                            # Convert to feature vector
+                            aug_feature_vector = [aug_features_dict[name] for name in feature_names]
+                            
+                            X.append(aug_feature_vector)
+                            y.append(class_idx)
+                            augmented_count += 1
+                        except Exception as e:
+                            logging.error(f"Error processing augmented audio for {file_path}: {e}")
+                            
                 except Exception as e:
                     logging.error(f"Error processing {file_path}: {e}")
             
-            # No augmentation applied here - that will be in a separate method
-            stats['augmented_counts'][class_dir] = 0
+            # Update augmented counts
+            stats['augmented_counts'][class_dir] = augmented_count
         
         if not X:
             logging.error("No features extracted from audio files")
-            return None, None, [], stats
+            return None, None, [], stats, []
         
         # Convert to numpy arrays
         X = np.array(X)
         y = np.array(y)
         
         logging.info(f"RF dataset prepared: X shape {X.shape}, y shape {y.shape}")
+        logging.info(f"Original samples: {sum(stats['original_counts'].values())}, "
+                    f"Augmented samples: {sum(stats['augmented_counts'].values())}")
+        
         return X, y, class_names, stats, feature_names
     
     def train_model(self, model_type, audio_dir, save=True, **kwargs):
@@ -484,219 +549,282 @@ class TrainingService:
         else:
             raise ValueError(f"Unknown model type: {model_type}")
     
-    def _train_cnn_model(self, model, audio_dir, save=True, **kwargs):
-        """
-        Train a CNN model on audio data.
-        """
-        # Track start time for training duration measurement
+    def _train_cnn_model(self, data, num_classes, class_names, save=True, **kwargs):
+        """Train a CNN model on the provided data"""
         start_time = time.time()
         
-        # Prepare dataset
-        classes = kwargs.get('classes', None)
-        X, y, class_names, stats = self.prepare_dataset_for_cnn(audio_dir, classes=classes)
+        # Extract data
+        X_train, y_train = data['train']
+        X_val, y_val = data['val']
         
-        if X is None or y is None:
-            return {
-                'success': False,
-                'error': 'Failed to prepare dataset'
-            }
+        # Get some stats about our data
+        train_per_class = np.bincount(np.argmax(y_train, axis=1))
+        val_per_class = np.bincount(np.argmax(y_val, axis=1))
         
-        # Set class names
-        model.set_class_names(class_names)
+        self.logger.info(f"Training CNN with {X_train.shape[0]} samples, {X_val.shape[0]} validation samples")
+        self.logger.info(f"Samples per class (train): {train_per_class}")
+        self.logger.info(f"Samples per class (val): {val_per_class}")
         
-        # Split data
-        from sklearn.model_selection import train_test_split
-        X_train, X_val, y_train, y_val = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        # Get input shape from the data
+        input_shape = X_train.shape[1:]
+        self.logger.info(f"Input shape: {input_shape}")
+        
+        # Select model architecture
+        model_architecture = kwargs.get('architecture', 'default')
+        
+        if model_architecture == 'mobilenet':
+            self.logger.info("Using MobileNetV2 architecture")
+            from src.core.ml_algorithms.cnn_mobilenet import CNNMobileNet
+            model = CNNMobileNet()
+        else:
+            self.logger.info("Using default CNN architecture")
+            from src.core.ml_algorithms.cnn import CNN
+            model = CNN()
         
         # Build model
-        input_shape = X_train.shape[1:]
-        num_classes = len(class_names)
         model.build(input_shape=input_shape, num_classes=num_classes)
         
-        # Calculate class weights for imbalanced data
-        class_weights = {}
+        # Calculate class weights if needed
+        class_weights = None
         if kwargs.get('use_class_weights', True):
-            classes, counts = np.unique(y_train, return_counts=True)
-            total_samples = len(y_train)
-            for i, c in enumerate(classes):
-                class_weights[int(c)] = total_samples / (len(classes) * counts[i])
+            # Calculate inverse frequency for each class
+            total_samples = np.sum(train_per_class)
+            class_freq = train_per_class / total_samples
+            class_weights = {i: 1.0 / (freq + 1e-5) for i, freq in enumerate(class_freq)}
+            
+            # Normalize weights
+            weight_sum = sum(class_weights.values())
+            class_weights = {i: (weight * len(class_weights) / weight_sum) for i, weight in class_weights.items()}
+            
+            self.logger.info(f"Using class weights: {class_weights}")
         
-        # Train model
-        epochs = kwargs.get('epochs', 50)
-        batch_size = kwargs.get('batch_size', 32)
-        
+        # Train the model
         history = model.train(
-            X_train, y_train,
+            X_train, y_train, 
             X_val, y_val,
-            epochs=epochs,
-            batch_size=batch_size,
+            epochs=kwargs.get('epochs', 10),
+            batch_size=kwargs.get('batch_size', 32),
             class_weights=class_weights,
-            save_best=True
+            verbose=1
         )
         
-        # Evaluate on validation set
+        # Evaluate the model
         metrics = model.evaluate(X_val, y_val)
+        self.logger.info(f"Validation metrics: {metrics}")
         
         # Save the model if requested
         if save:
             dict_name = kwargs.get('dict_name', 'unknown')
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            filename = f"{dict_name.replace(' ', '_')}_cnn_{timestamp}.h5"
-            model.save(filename)
-        
+            model_id = f"{dict_name.replace(' ', '_')}_cnn_{timestamp}"
+            
+            # Create model directory
+            model_dir = os.path.join(self.config.BASE_DIR, 'data', 'models', 'cnn', model_id)
+            os.makedirs(model_dir, exist_ok=True)
+            
+            # Save the model file
+            model_file = os.path.join(model_dir, f"{model_id}.h5")
+            model.save(model_file)
+            
+            # Prepare metadata
+            metadata = {
+                "class_names": class_names,
+                "num_classes": num_classes,
+                "input_shape": list(input_shape),
+                "accuracy": float(metrics.get('accuracy', 0)),
+                "created_at": datetime.now().isoformat(),
+                "dictionary": dict_name,
+                "architecture": model_architecture
+            }
+            
+            # Save metadata file
+            from src.ml.model_paths import save_model_metadata, update_model_registry
+            metadata_file = save_model_metadata(model_dir, metadata)
+            
+            # Update models.json registry
+            is_best = kwargs.get('is_best', False)
+            update_model_registry(model_id, 'cnn', dict_name, metadata, is_best)
+            
+            self.logger.info(f"Model saved to {model_file}")
+            self.logger.info(f"Metadata saved to {metadata_file}")
+            
         # Calculate training time in seconds
         training_time = int(time.time() - start_time)
         
-        # Store training stats
-        self.training_stats = {
+        # Gather training statistics
+        training_stats = {
             'model_type': 'cnn',
-            'input_shape': str(input_shape),
+            'input_shape': input_shape,
             'num_classes': num_classes,
-            'class_names': class_names,
-            'train_samples': len(X_train),
-            'val_samples': len(X_val),
-            'total_samples': len(X),
+            'training_samples': X_train.shape[0],
+            'validation_samples': X_val.shape[0],
             'metrics': metrics,
-            'training_time': training_time,  # Add training time
-            'original_counts': stats['original_counts'],
-            'processed_counts': stats['processed_counts'],
-            'skipped_counts': stats['skipped_counts'],
-            'stretched_counts': stats['stretched_counts'],
-            'total_processed': stats['total_processed'],
-            'total_skipped': stats['total_skipped'],
-            'total_stretched': stats['total_stretched'],
-            'augmented_counts': stats['augmented_counts'],
-            'model_summary': model.get_model_summary(),
-            'cnn_params': {
-                'epochs': epochs,
-                'batch_size': batch_size,
-                'learning_rate': kwargs.get('learning_rate', 0.001)
-            }
+            'training_time': training_time
         }
         
-        # Add history to stats if available
-        if hasattr(history, 'history'):
-            # More detailed epoch history
-            epochs_completed = len(history.history['loss'])
+        # Add training history if available
+        if history:
+            # Convert to regular Python types for JSON compatibility
             epoch_details = []
+            best_val_acc = 0
+            best_epoch = 0
             
-            for i in range(epochs_completed):
+            for epoch in range(len(history.history['accuracy'])):
                 epoch_info = {
-                    'epoch': i + 1,
-                    'accuracy': float(history.history['accuracy'][i]),
-                    'loss': float(history.history['loss'][i]),
+                    'epoch': epoch + 1,
+                    'accuracy': float(history.history['accuracy'][epoch]),
+                    'loss': float(history.history['loss'][epoch]),
+                    'val_accuracy': float(history.history['val_accuracy'][epoch]),
+                    'val_loss': float(history.history['val_loss'][epoch])
                 }
                 
-                if 'val_accuracy' in history.history:
-                    epoch_info['val_accuracy'] = float(history.history['val_accuracy'][i])
-                    
-                if 'val_loss' in history.history:
-                    epoch_info['val_loss'] = float(history.history['val_loss'][i])
-                    
-                # Calculate improvement
-                if i > 0 and 'val_accuracy' in history.history:
-                    epoch_info['improved'] = history.history['val_accuracy'][i] > history.history['val_accuracy'][i-1]
-                else:
-                    epoch_info['improved'] = True
+                # Track best epoch
+                if epoch_info['val_accuracy'] > best_val_acc:
+                    best_val_acc = epoch_info['val_accuracy']
+                    best_epoch = epoch + 1
                     
                 epoch_details.append(epoch_info)
             
-            self.training_stats['history'] = {
-                'epochs': epochs_completed,
-                'accuracy': history.history['accuracy'],
-                'loss': history.history['loss'],
-                'val_accuracy': history.history['val_accuracy'] if 'val_accuracy' in history.history else None,
-                'val_loss': history.history['val_loss'] if 'val_loss' in history.history else None,
+            training_stats['history'] = {
+                'epochs': len(history.history['accuracy']),
+                'accuracy': float(history.history['accuracy'][-1]),
+                'loss': float(history.history['loss'][-1]),
+                'val_accuracy': float(history.history['val_accuracy'][-1]),
+                'val_loss': float(history.history['val_loss'][-1]),
+                'best_epoch': best_epoch,
+                'best_val_accuracy': best_val_acc,
                 'epoch_details': epoch_details
             }
-            
-            # Check if early stopping occurred
-            self.training_stats['early_stopped'] = epochs_completed < epochs
         
-        return {
-            'success': True,
-            'model': model,
-            'metrics': metrics,
-            'stats': self.training_stats
-        }
+        # Check if early stopping was triggered
+        if history and len(history.history['accuracy']) < kwargs.get('epochs', 10):
+            training_stats['early_stopping'] = True
+            training_stats['stopped_epoch'] = len(history.history['accuracy'])
+        
+        # Register the training results for later analysis
+        self.analysis_service.register_training_results(
+            'cnn', training_stats, metrics, class_names, X_train, X_val, y_train, y_val
+        )
+        
+        return True, model, metrics, training_stats
     
     def _train_rf_model(self, model, audio_dir, save=True, **kwargs):
         """
-        Train a RandomForest model.
+        Train a Random Forest model on sound data.
         
         Args:
-            model: The RF model to train
-            audio_dir (str): Directory containing class-specific audio folders
+            data_dir (str): Directory containing sound data
             save (bool): Whether to save the model after training
             **kwargs: Additional training parameters
             
         Returns:
             dict: Training results
         """
-        # Prepare dataset
-        classes = kwargs.get('classes', None)
-        X, y, class_names, stats, feature_names = self.prepare_dataset_for_rf(audio_dir, classes=classes)
+        start_time = time.time()
         
-        if X is None or y is None:
-            return {
-                'success': False,
-                'error': 'Failed to prepare dataset'
-            }
-        
-        # Set class names
-        model.set_class_names(class_names)
+        # Prepare data
+        X, y, feature_names, class_names, stats = self.dataset_preparation.prepare_dataset_for_rf(audio_dir, classes=kwargs.get('classes', None))
         
         # Split data
-        from sklearn.model_selection import train_test_split
-        X_train, X_val, y_train, y_val = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        train_idx = stats['train_idx']
+        val_idx = stats['val_idx']
         
-        # Build model
+        X_train, y_train = X[train_idx], y[train_idx]
+        X_val, y_val = X[val_idx], y[val_idx]
+        
+        # Number of classes
+        num_classes = len(class_names)
+        
+        # Create model
+        rf_model = RandomForestModel(model_dir=os.path.join(Config.BASE_DIR, 'data', 'models'))
+        rf_model.set_class_names(class_names)
+        
+        # Set hyperparameters
         n_estimators = kwargs.get('n_estimators', 100)
         max_depth = kwargs.get('max_depth', None)
-        model.build(n_estimators=n_estimators, max_depth=max_depth)
+        min_samples_split = kwargs.get('min_samples_split', 2)
         
-        # Train model
-        metrics = model.train(
-            X_train, y_train,
-            X_val, y_val,
+        # Build and train the model
+        rf_model.build(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            random_state=kwargs.get('random_state', 42),
             feature_names=feature_names
         )
         
+        rf_model.train(X_train, y_train)
+        
+        # Evaluate on validation set
+        metrics = rf_model.evaluate(X_val, y_val)
+        
         # Save the model if requested
+        model_filename = None
         if save:
             dict_name = kwargs.get('dict_name', 'unknown')
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            filename = f"{dict_name.replace(' ', '_')}_rf_{timestamp}.joblib"
-            model.save(filename)
+            model_filename = f"{dict_name.replace(' ', '_')}_rf_{timestamp}.joblib"
+            rf_model.save(model_filename)
+            
+            # Update the models.json registry file with the newly saved model
+            self.update_model_registry(
+                model_type='rf',
+                model_filename=model_filename,
+                metadata={
+                    'num_classes': num_classes,
+                    'accuracy': metrics.get('accuracy', 0),
+                    'feature_names': feature_names
+                }
+            )
+        
+        # Calculate training time in seconds
+        training_time = int(time.time() - start_time)
         
         # Store training stats
         self.training_stats = {
             'model_type': 'rf',
-            'num_classes': len(class_names),
+            'num_classes': num_classes,
             'class_names': class_names,
+            'feature_names': feature_names,
             'train_samples': len(X_train),
             'val_samples': len(X_val),
             'total_samples': len(X),
             'metrics': metrics,
+            'training_time': training_time,
+            'feature_importance': rf_model.feature_importance if hasattr(rf_model, 'feature_importance') else None,
             'original_counts': stats['original_counts'],
-            'augmented_counts': stats['augmented_counts'],
-            'feature_importance': metrics.get('feature_importance', {})
+            'skipped_counts': stats['skipped_counts'],
+            'total_processed': stats['total_processed'],
+            'total_skipped': stats['total_skipped'],
+            'rf_params': {
+                'n_estimators': n_estimators,
+                'max_depth': str(max_depth),
+                'min_samples_split': min_samples_split
+            }
         }
+        
+        # Register training results with the analysis service
+        self.analysis_service.register_training_results(
+            model_type='rf',
+            stats=self.training_stats,
+            metrics=metrics,
+            class_names=class_names,
+            X_train=X_train,
+            X_val=X_val,
+            y_train=y_train,
+            y_val=y_val
+        )
         
         return {
             'success': True,
-            'model': model,
+            'model': rf_model,
             'metrics': metrics,
             'stats': self.training_stats
         }
     
     def _train_ensemble_model(self, model, audio_dir, save=True, **kwargs):
         """
-        Train an Ensemble model.
+        Train an ensemble model that combines CNN and RF models.
         
         Args:
             model: The Ensemble model to train
@@ -707,132 +835,107 @@ class TrainingService:
         Returns:
             dict: Training results
         """
-        # Prepare datasets for both CNN and RF
-        classes = kwargs.get('classes', None)
-        cnn_data = self.prepare_dataset_for_cnn(audio_dir, classes=classes)
-        rf_data = self.prepare_dataset_for_rf(audio_dir, classes=classes)
+        start_time = time.time()
         
-        X_cnn, y_cnn, class_names_cnn, stats_cnn = cnn_data
-        X_rf, y_rf, class_names_rf, stats_rf, feature_names = rf_data
-        
-        if X_cnn is None or y_cnn is None or X_rf is None or y_rf is None:
+        # First train a CNN model
+        cnn_results = self._train_cnn_model(model, audio_dir, save=True, **kwargs)
+        if not cnn_results.get('success', False):
             return {
                 'success': False,
-                'error': 'Failed to prepare datasets'
+                'error': 'Failed to train CNN model for ensemble'
             }
         
-        # Ensure consistent class names
-        if class_names_cnn != class_names_rf:
-            logging.warning("Class names differ between CNN and RF datasets")
+        # Then train a RF model
+        rf_results = self._train_rf_model(model, audio_dir, save=True, **kwargs)
+        if not rf_results.get('success', False):
+            return {
+                'success': False,
+                'error': 'Failed to train RF model for ensemble'
+            }
+        
+        # Get models from results
+        cnn_model = cnn_results['model']
+        rf_model = rf_results['model']
+        
+        # Get class names from both models, ensuring they're consistent
+        cnn_class_names = cnn_model.get_class_names()
+        rf_class_names = rf_model.get_class_names()
+        
+        # Verify class names match between models
+        if set(cnn_class_names) != set(rf_class_names):
+            logging.warning(f"Class names mismatch between CNN and RF models: {cnn_class_names} vs {rf_class_names}")
         
         # Use CNN class names as the canonical set
-        class_names = class_names_cnn
-        
-        # Set class names
-        model.set_class_names(class_names)
-        
-        # Split data consistently
-        from sklearn.model_selection import train_test_split
-        X_cnn_train, X_cnn_val, y_train, y_val = train_test_split(
-            X_cnn, y_cnn, test_size=0.2, random_state=42, stratify=y_cnn
-        )
-        
-        # Use the same indices for RF split
-        X_rf_train, X_rf_val, _, _ = train_test_split(
-            X_rf, y_rf, test_size=0.2, random_state=42, stratify=y_rf
-        )
-        
-        # Build CNN part of ensemble
-        input_shape = X_cnn_train.shape[1:]
+        class_names = cnn_class_names
         num_classes = len(class_names)
-        cnn_params = {
-            'input_shape': input_shape,
-            'num_classes': num_classes
-        }
         
-        # Build RF part of ensemble
-        n_estimators = kwargs.get('n_estimators', 100)
-        max_depth = kwargs.get('max_depth', None)
-        rf_params = {
-            'n_estimators': n_estimators,
-            'max_depth': max_depth
-        }
+        # Create ensemble model
+        ensemble_model = EnsembleModel(model_dir=os.path.join(Config.BASE_DIR, 'data', 'models'))
+        ensemble_model.set_class_names(class_names)
         
-        # Build ensemble model
-        rf_weight = kwargs.get('rf_weight', 0.5)
-        model.build(cnn_params=cnn_params, rf_params=rf_params, rf_weight=rf_weight)
+        # Build and combine the models
+        ensemble_model.build(cnn_model=cnn_model, rf_model=rf_model, rf_weight=kwargs.get('rf_weight', 0.5))
         
-        # Prepare data for training
-        X_train = {
-            'cnn': X_cnn_train,
-            'rf': X_rf_train
-        }
+        # Get the validation datasets from the individual models for evaluation
+        X_val_cnn = cnn_results.get('stats', {}).get('training_data', {}).get('X_val')
+        y_val_cnn = cnn_results.get('stats', {}).get('training_data', {}).get('y_val')
+        X_val_rf = rf_results.get('stats', {}).get('training_data', {}).get('X_val')
+        y_val_rf = rf_results.get('stats', {}).get('training_data', {}).get('y_val')
         
-        X_val = {
-            'cnn': X_cnn_val,
-            'rf': X_rf_val
-        }
-        
-        # Calculate class weights for CNN
-        class_weights = {}
-        if kwargs.get('use_class_weights', True):
-            classes, counts = np.unique(y_train, return_counts=True)
-            total_samples = len(y_train)
-            for i, c in enumerate(classes):
-                class_weights[int(c)] = total_samples / (len(classes) * counts[i])
-        
-        # Train ensemble model
-        epochs = kwargs.get('epochs', 50)
-        batch_size = kwargs.get('batch_size', 32)
-        
-        cnn_params = {
-            'epochs': epochs,
-            'batch_size': batch_size,
-            'class_weights': class_weights,
-            'save_best': True
-        }
-        
-        rf_params = {
-            'feature_names': feature_names
-        }
-        
-        metrics = model.train(
-            X_train, y_train,
-            X_val, y_val,
-            cnn_params=cnn_params,
-            rf_params=rf_params
-        )
-        
-        # Evaluate on validation set
-        eval_metrics = model.evaluate(X_val, y_val)
+        # Evaluate the ensemble model
+        metrics = ensemble_model.evaluate(X_val_cnn, X_val_rf, y_val_cnn)
         
         # Save the model if requested
+        model_filename = None
         if save:
             dict_name = kwargs.get('dict_name', 'unknown')
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            filename = f"{dict_name.replace(' ', '_')}_ensemble_{timestamp}.pkl"
-            model.save(filename)
+            model_filename = f"{dict_name.replace(' ', '_')}_ensemble_{timestamp}.model"
+            ensemble_model.save(model_filename)
+            
+            # Update the models.json registry file with the newly saved model
+            self.update_model_registry(
+                model_type='ensemble',
+                model_filename=model_filename,
+                metadata={
+                    'num_classes': num_classes,
+                    'accuracy': metrics.get('accuracy', 0),
+                    'rf_weight': kwargs.get('rf_weight', 0.5),
+                    'cnn_model_id': cnn_model.get_model_path().split('/')[-1].replace('.h5', ''),
+                    'rf_model_id': rf_model.get_model_path().split('/')[-1].replace('.joblib', '')
+                }
+            )
+        
+        # Calculate training time in seconds
+        training_time = int(time.time() - start_time)
         
         # Store training stats
         self.training_stats = {
             'model_type': 'ensemble',
-            'rf_weight': rf_weight,
             'num_classes': num_classes,
             'class_names': class_names,
-            'train_samples': len(y_train),
-            'val_samples': len(y_val),
-            'total_samples': len(y_cnn),
-            'metrics': eval_metrics,
-            'cnn_metrics': metrics.get('cnn_metrics', {}),
-            'rf_metrics': metrics.get('rf_metrics', {}),
-            'original_counts': stats_cnn['original_counts'],
-            'augmented_counts': stats_cnn['augmented_counts']
+            'metrics': metrics,
+            'training_time': training_time,
+            'cnn_accuracy': cnn_results.get('metrics', {}).get('accuracy', 0),
+            'rf_accuracy': rf_results.get('metrics', {}).get('accuracy', 0),
+            'ensemble_accuracy': metrics.get('accuracy', 0),
+            'ensemble_params': {
+                'rf_weight': kwargs.get('rf_weight', 0.5)
+            }
         }
+        
+        # Register training results with the analysis service
+        self.analysis_service.register_training_results(
+            model_type='ensemble',
+            stats=self.training_stats,
+            metrics=metrics,
+            class_names=class_names
+        )
         
         return {
             'success': True,
-            'model': model,
-            'metrics': eval_metrics,
+            'model': ensemble_model,
+            'metrics': metrics,
             'stats': self.training_stats
         }
     
@@ -1010,3 +1113,90 @@ class TrainingService:
             bool: True if training is in progress, False otherwise
         """
         return self.is_training 
+
+    def update_model_registry(self, model_type, model_filename, metadata=None):
+        """
+        Update the models.json registry file with the newly trained model.
+        
+        Args:
+            model_type (str): Type of model ('cnn', 'rf', 'ensemble')
+            model_filename (str): Filename of the saved model
+            metadata (dict, optional): Additional metadata about the model
+            
+        Returns:
+            bool: True if the registry was updated successfully, False otherwise
+        """
+        try:
+            # Path to the models.json registry file
+            registry_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'models.json')
+            
+            # Build the model information
+            model_id = os.path.splitext(model_filename)[0]  # Remove file extension
+            
+            # Extract dictionary name from filename (format: DictName_type_timestamp.ext)
+            parts = model_id.split('_')
+            if len(parts) < 3:
+                logging.warning(f"Model filename doesn't match expected format: {model_filename}")
+                dict_name = "Unknown"
+            else:
+                # If there are underscores in the dictionary name, reconstruct it
+                if model_type in parts:
+                    type_index = parts.index(model_type)
+                    dict_name = '_'.join(parts[:type_index])
+                else:
+                    dict_name = parts[0]
+            
+            # Determine file path in the registry (format: 'type/model_id/model_id.ext')
+            if model_type == 'cnn':
+                ext = '.h5'
+            elif model_type == 'rf':
+                ext = '.joblib'
+            else:
+                ext = '.model'
+                
+            file_path = f"{model_type}/{model_id}/{model_id}{ext}"
+            
+            # Create model entry
+            model_entry = {
+                'id': model_id,
+                'name': f"{dict_name} {model_type.upper()} Model ({model_id.split('_')[-1]})",
+                'type': model_type,
+                'dictionary': dict_name,
+                'file_path': file_path,
+                'created_at': datetime.now().isoformat()
+            }
+            
+            # Add any additional metadata
+            if metadata:
+                model_entry.update(metadata)
+            
+            # Load existing registry or create a new one
+            registry = {'models': {}}
+            if os.path.exists(registry_path):
+                try:
+                    with open(registry_path, 'r') as f:
+                        registry = json.load(f)
+                except Exception as e:
+                    logging.error(f"Error reading models.json, creating a new one: {e}")
+                    registry = {'models': {}}
+            
+            # Initialize model type in registry if needed
+            if 'models' not in registry:
+                registry['models'] = {}
+                
+            if model_type not in registry['models']:
+                registry['models'][model_type] = {}
+            
+            # Add the model to the registry
+            registry['models'][model_type][model_id] = model_entry
+            
+            # Save the updated registry
+            with open(registry_path, 'w') as f:
+                json.dump(registry, f, indent=2)
+                
+            logging.info(f"Added model {model_id} to models.json registry")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Error updating model registry: {e}", exc_info=True)
+            return False 

@@ -19,7 +19,7 @@ class DictionaryService:
         logging.debug(f"Dictionary service using training sounds directory: {self.training_sounds_dir}")
         
         # Directory for dictionary metadata is data/dictionaries
-        self.dictionaries_dir = os.path.join(Config.DATA_DIR, 'dictionaries')
+        self.dictionaries_dir = Config.DICTIONARIES_DIR  # Use the centralized path from Config
         logging.debug(f"Dictionary service using metadata directory: {self.dictionaries_dir}")
         
         # Ensure both directories exist
@@ -914,3 +914,19 @@ class DictionaryService:
             "success": True,
             "samples": samples
         }
+
+    # Add a delete_class method that calls remove_class for compatibility
+    def delete_class(self, dict_name, class_name):
+        """
+        Delete a class from a dictionary.
+        This is an alias for remove_class for API compatibility.
+        
+        Args:
+            dict_name (str): Dictionary name
+            class_name (str): Class name
+            
+        Returns:
+            dict: Result with success flag and message
+        """
+        logging.info(f"delete_class called for '{class_name}' in '{dict_name}' (alias for remove_class)")
+        return self.remove_class(dict_name, class_name)

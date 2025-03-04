@@ -23,115 +23,34 @@
                 "lee",
                 "loh",
                 "loo"
+            ]
+        },
+        "EhOh": {
+            "name": "EhOh",
+            "sounds": [
+                "eh",
+                "oh",
+                "jo"
             ],
             "active": false,
-            "created_at": "2025-03-02T20:11:12.523337",
-            "updated_at": "2025-03-02T22:28:30.549542",
+            "created_at": "2025-03-03T12:00:00.000000",
+            "updated_at": "2025-03-03T12:25:55.239850",
             "created_by": "admin",
-            "description": "",
-            "sample_count": 481,
+            "description": "Dictionary for EhOh models with just 'eh' and 'oh' sounds",
+            "sample_count": 46,
             "classes": [
-                "ah",
                 "eh",
-                "ee",
                 "oh",
-                "oo",
-                "bah",
-                "beh",
-                "bee",
-                "boh",
-                "boo",
-                "mah",
-                "meh",
-                "mee",
-                "moh",
-                "moo",
-                "lah",
-                "leh",
-                "lee",
-                "loh",
-                "loo"
+                "jo"
             ],
             "class_details": [
-                {
-                    "name": "ah",
-                    "sample_count": 22
-                },
                 {
                     "name": "eh",
                     "sample_count": 25
                 },
                 {
-                    "name": "ee",
-                    "sample_count": 21
-                },
-                {
                     "name": "oh",
                     "sample_count": 21
-                },
-                {
-                    "name": "oo",
-                    "sample_count": 29
-                },
-                {
-                    "name": "bah",
-                    "sample_count": 21
-                },
-                {
-                    "name": "beh",
-                    "sample_count": 27
-                },
-                {
-                    "name": "bee",
-                    "sample_count": 23
-                },
-                {
-                    "name": "boh",
-                    "sample_count": 24
-                },
-                {
-                    "name": "boo",
-                    "sample_count": 18
-                },
-                {
-                    "name": "mah",
-                    "sample_count": 21
-                },
-                {
-                    "name": "meh",
-                    "sample_count": 32
-                },
-                {
-                    "name": "mee",
-                    "sample_count": 27
-                },
-                {
-                    "name": "moh",
-                    "sample_count": 20
-                },
-                {
-                    "name": "moo",
-                    "sample_count": 32
-                },
-                {
-                    "name": "lah",
-                    "sample_count": 30
-                },
-                {
-                    "name": "leh",
-                    "sample_count": 22
-                },
-                {
-                    "name": "lee",
-                    "sample_count": 24
-                },
-                {
-                    "name": "loh",
-                    "sample_count": 19
-                },
-                {
-                    "name": "loo",
-                    "sample_count": 23
                 }
             ]
         },
@@ -158,116 +77,6 @@
                 "lee",
                 "loh",
                 "loo"
-            ],
-            "active": false,
-            "created_at": "2025-03-02T20:11:12.523353",
-            "updated_at": "2025-03-02T22:28:30.551807",
-            "created_by": "admin",
-            "description": "",
-            "sample_count": 481,
-            "classes": [
-                "ah",
-                "eh",
-                "ee",
-                "oh",
-                "oo",
-                "bah",
-                "beh",
-                "bee",
-                "boh",
-                "boo",
-                "mah",
-                "meh",
-                "mee",
-                "moh",
-                "moo",
-                "lah",
-                "leh",
-                "lee",
-                "loh",
-                "loo"
-            ],
-            "class_details": [
-                {
-                    "name": "ah",
-                    "sample_count": 22
-                },
-                {
-                    "name": "eh",
-                    "sample_count": 25
-                },
-                {
-                    "name": "ee",
-                    "sample_count": 21
-                },
-                {
-                    "name": "oh",
-                    "sample_count": 21
-                },
-                {
-                    "name": "oo",
-                    "sample_count": 29
-                },
-                {
-                    "name": "bah",
-                    "sample_count": 21
-                },
-                {
-                    "name": "beh",
-                    "sample_count": 27
-                },
-                {
-                    "name": "bee",
-                    "sample_count": 23
-                },
-                {
-                    "name": "boh",
-                    "sample_count": 24
-                },
-                {
-                    "name": "boo",
-                    "sample_count": 18
-                },
-                {
-                    "name": "mah",
-                    "sample_count": 21
-                },
-                {
-                    "name": "meh",
-                    "sample_count": 32
-                },
-                {
-                    "name": "mee",
-                    "sample_count": 27
-                },
-                {
-                    "name": "moh",
-                    "sample_count": 20
-                },
-                {
-                    "name": "moo",
-                    "sample_count": 32
-                },
-                {
-                    "name": "lah",
-                    "sample_count": 30
-                },
-                {
-                    "name": "leh",
-                    "sample_count": 22
-                },
-                {
-                    "name": "lee",
-                    "sample_count": 24
-                },
-                {
-                    "name": "loh",
-                    "sample_count": 19
-                },
-                {
-                    "name": "loo",
-                    "sample_count": 23
-                }
             ]
         },
         "Michal Plus Ooah": {
@@ -294,121 +103,6 @@
                 "loh",
                 "loo",
                 "ooah"
-            ],
-            "active": true,
-            "created_at": "2025-03-02T20:11:12.523358",
-            "updated_at": "2025-03-02T22:28:30.553056",
-            "created_by": "admin",
-            "description": "",
-            "sample_count": 504,
-            "classes": [
-                "ah",
-                "eh",
-                "ee",
-                "oh",
-                "oo",
-                "bah",
-                "beh",
-                "bee",
-                "boh",
-                "boo",
-                "mah",
-                "meh",
-                "mee",
-                "moh",
-                "moo",
-                "lah",
-                "leh",
-                "lee",
-                "loh",
-                "loo",
-                "ooah"
-            ],
-            "class_details": [
-                {
-                    "name": "ah",
-                    "sample_count": 22
-                },
-                {
-                    "name": "eh",
-                    "sample_count": 25
-                },
-                {
-                    "name": "ee",
-                    "sample_count": 21
-                },
-                {
-                    "name": "oh",
-                    "sample_count": 21
-                },
-                {
-                    "name": "oo",
-                    "sample_count": 29
-                },
-                {
-                    "name": "bah",
-                    "sample_count": 21
-                },
-                {
-                    "name": "beh",
-                    "sample_count": 27
-                },
-                {
-                    "name": "bee",
-                    "sample_count": 23
-                },
-                {
-                    "name": "boh",
-                    "sample_count": 24
-                },
-                {
-                    "name": "boo",
-                    "sample_count": 18
-                },
-                {
-                    "name": "mah",
-                    "sample_count": 21
-                },
-                {
-                    "name": "meh",
-                    "sample_count": 32
-                },
-                {
-                    "name": "mee",
-                    "sample_count": 27
-                },
-                {
-                    "name": "moh",
-                    "sample_count": 20
-                },
-                {
-                    "name": "moo",
-                    "sample_count": 32
-                },
-                {
-                    "name": "lah",
-                    "sample_count": 30
-                },
-                {
-                    "name": "leh",
-                    "sample_count": 22
-                },
-                {
-                    "name": "lee",
-                    "sample_count": 24
-                },
-                {
-                    "name": "loh",
-                    "sample_count": 19
-                },
-                {
-                    "name": "loo",
-                    "sample_count": 23
-                },
-                {
-                    "name": "ooah",
-                    "sample_count": 23
-                }
             ]
         },
         "Two words": {
@@ -416,13 +110,7 @@
             "sounds": [
                 "oh",
                 "eh"
-            ],
-            "active": false,
-            "created_at": "2025-03-02T20:11:12.523362",
-            "updated_at": "2025-03-02T20:11:12.523363",
-            "created_by": "admin",
-            "description": "",
-            "sample_count": 46
+            ]
         }
     },
     "active_dictionary": "Michal Plus Ooah"

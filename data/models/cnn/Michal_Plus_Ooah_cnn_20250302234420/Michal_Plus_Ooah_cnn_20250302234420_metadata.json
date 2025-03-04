@@ -1,0 +1,31 @@
+{
+  "class_names": [
+    "ah",
+    "eh",
+    "ee",
+    "oh",
+    "oo",
+    "bah",
+    "beh",
+    "bee",
+    "boh",
+    "boo",
+    "mah",
+    "meh",
+    "mee",
+    "moh",
+    "moo",
+    "lah",
+    "leh",
+    "lee",
+    "loh",
+    "loo",
+    "ooah"
+  ],
+  "input_shape": [
+    24,
+    64,
+    1
+  ],
+  "num_classes": 21
+}
