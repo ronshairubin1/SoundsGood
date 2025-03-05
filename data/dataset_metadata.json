@@ -1,0 +1,4168 @@
+{
+  "files": {
+    "mah/mah_admin_18.wav": {
+      "class": "mah",
+      "filename": "mah_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887684"
+    },
+    "mah/mah_admin_19.wav": {
+      "class": "mah",
+      "filename": "mah_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887689"
+    },
+    "mah/mah_admin_8.wav": {
+      "class": "mah",
+      "filename": "mah_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887691"
+    },
+    "mah/mah_admin_9.wav": {
+      "class": "mah",
+      "filename": "mah_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887693"
+    },
+    "mah/mah_admin_21.wav": {
+      "class": "mah",
+      "filename": "mah_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887695"
+    },
+    "mah/mah_admin_20.wav": {
+      "class": "mah",
+      "filename": "mah_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887696"
+    },
+    "mah/mah_admin_11.wav": {
+      "class": "mah",
+      "filename": "mah_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887698"
+    },
+    "mah/mah_admin_2.wav": {
+      "class": "mah",
+      "filename": "mah_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887700"
+    },
+    "mah/mah_admin_3.wav": {
+      "class": "mah",
+      "filename": "mah_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887702"
+    },
+    "mah/mah_admin_10.wav": {
+      "class": "mah",
+      "filename": "mah_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887704"
+    },
+    "mah/mah_admin_12.wav": {
+      "class": "mah",
+      "filename": "mah_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887705"
+    },
+    "mah/mah_admin_1.wav": {
+      "class": "mah",
+      "filename": "mah_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887708"
+    },
+    "mah/mah_admin_13.wav": {
+      "class": "mah",
+      "filename": "mah_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887709"
+    },
+    "mah/mah_admin_17.wav": {
+      "class": "mah",
+      "filename": "mah_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887711"
+    },
+    "mah/mah_admin_4.wav": {
+      "class": "mah",
+      "filename": "mah_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887713"
+    },
+    "mah/mah_admin_5.wav": {
+      "class": "mah",
+      "filename": "mah_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887714"
+    },
+    "mah/mah_admin_16.wav": {
+      "class": "mah",
+      "filename": "mah_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887716"
+    },
+    "mah/mah_admin_14.wav": {
+      "class": "mah",
+      "filename": "mah_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887718"
+    },
+    "mah/mah_admin_7.wav": {
+      "class": "mah",
+      "filename": "mah_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887720"
+    },
+    "mah/mah_admin_6.wav": {
+      "class": "mah",
+      "filename": "mah_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887721"
+    },
+    "mah/mah_admin_15.wav": {
+      "class": "mah",
+      "filename": "mah_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887723"
+    },
+    "lee/lee_admin_6.wav": {
+      "class": "lee",
+      "filename": "lee_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887764"
+    },
+    "lee/lee_admin_19.wav": {
+      "class": "lee",
+      "filename": "lee_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887767"
+    },
+    "lee/lee_admin_18.wav": {
+      "class": "lee",
+      "filename": "lee_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887768"
+    },
+    "lee/lee_admin_24.wav": {
+      "class": "lee",
+      "filename": "lee_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887770"
+    },
+    "lee/lee_admin_7.wav": {
+      "class": "lee",
+      "filename": "lee_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887772"
+    },
+    "lee/lee_admin_5.wav": {
+      "class": "lee",
+      "filename": "lee_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887774"
+    },
+    "lee/lee_admin_4.wav": {
+      "class": "lee",
+      "filename": "lee_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887775"
+    },
+    "lee/lee_admin_23.wav": {
+      "class": "lee",
+      "filename": "lee_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887777"
+    },
+    "lee/lee_admin_22.wav": {
+      "class": "lee",
+      "filename": "lee_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887779"
+    },
+    "lee/lee_admin_1.wav": {
+      "class": "lee",
+      "filename": "lee_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887781"
+    },
+    "lee/lee_admin_3.wav": {
+      "class": "lee",
+      "filename": "lee_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887782"
+    },
+    "lee/lee_admin_20.wav": {
+      "class": "lee",
+      "filename": "lee_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887784"
+    },
+    "lee/lee_admin_21.wav": {
+      "class": "lee",
+      "filename": "lee_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887786"
+    },
+    "lee/lee_admin_2.wav": {
+      "class": "lee",
+      "filename": "lee_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887788"
+    },
+    "lee/lee_admin_10.wav": {
+      "class": "lee",
+      "filename": "lee_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887789"
+    },
+    "lee/lee_admin_11.wav": {
+      "class": "lee",
+      "filename": "lee_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887791"
+    },
+    "lee/lee_admin_13.wav": {
+      "class": "lee",
+      "filename": "lee_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887793"
+    },
+    "lee/lee_admin_12.wav": {
+      "class": "lee",
+      "filename": "lee_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887795"
+    },
+    "lee/lee_admin_9.wav": {
+      "class": "lee",
+      "filename": "lee_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887796"
+    },
+    "lee/lee_admin_16.wav": {
+      "class": "lee",
+      "filename": "lee_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887798"
+    },
+    "lee/lee_admin_17.wav": {
+      "class": "lee",
+      "filename": "lee_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887800"
+    },
+    "lee/lee_admin_8.wav": {
+      "class": "lee",
+      "filename": "lee_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887802"
+    },
+    "lee/lee_admin_15.wav": {
+      "class": "lee",
+      "filename": "lee_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887805"
+    },
+    "lee/lee_admin_14.wav": {
+      "class": "lee",
+      "filename": "lee_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887807"
+    },
+    "bee/bee_da9d52bd.wav": {
+      "class": "bee",
+      "filename": "bee_da9d52bd.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887839"
+    },
+    "bee/bee_admin_19.wav": {
+      "class": "bee",
+      "filename": "bee_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887841"
+    },
+    "bee/bee_admin_18.wav": {
+      "class": "bee",
+      "filename": "bee_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887843"
+    },
+    "bee/bee_admin_3.wav": {
+      "class": "bee",
+      "filename": "bee_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887845"
+    },
+    "bee/bee_admin_2.wav": {
+      "class": "bee",
+      "filename": "bee_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887847"
+    },
+    "bee/bee_6db0817f.wav": {
+      "class": "bee",
+      "filename": "bee_6db0817f.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887848"
+    },
+    "bee/bee_admin_1.wav": {
+      "class": "bee",
+      "filename": "bee_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887850"
+    },
+    "bee/bee_30faebf3.wav": {
+      "class": "bee",
+      "filename": "bee_30faebf3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887852"
+    },
+    "bee/bee_admin_5.wav": {
+      "class": "bee",
+      "filename": "bee_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887854"
+    },
+    "bee/bee_admin_4.wav": {
+      "class": "bee",
+      "filename": "bee_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887855"
+    },
+    "bee/bee_admin_6.wav": {
+      "class": "bee",
+      "filename": "bee_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887857"
+    },
+    "bee/bee_dbe0f409.wav": {
+      "class": "bee",
+      "filename": "bee_dbe0f409.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887859"
+    },
+    "bee/bee_admin_7.wav": {
+      "class": "bee",
+      "filename": "bee_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887861"
+    },
+    "bee/bee_admin_9.wav": {
+      "class": "bee",
+      "filename": "bee_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887862"
+    },
+    "bee/bee_admin_8.wav": {
+      "class": "bee",
+      "filename": "bee_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887864"
+    },
+    "bee/bee_admin_16.wav": {
+      "class": "bee",
+      "filename": "bee_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887866"
+    },
+    "bee/bee_admin_17.wav": {
+      "class": "bee",
+      "filename": "bee_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887868"
+    },
+    "bee/bee_admin_15.wav": {
+      "class": "bee",
+      "filename": "bee_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887869"
+    },
+    "bee/bee_admin_14.wav": {
+      "class": "bee",
+      "filename": "bee_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887871"
+    },
+    "bee/bee_admin_10.wav": {
+      "class": "bee",
+      "filename": "bee_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887873"
+    },
+    "bee/bee_admin_11.wav": {
+      "class": "bee",
+      "filename": "bee_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887875"
+    },
+    "bee/bee_admin_13.wav": {
+      "class": "bee",
+      "filename": "bee_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887877"
+    },
+    "bee/bee_admin_12.wav": {
+      "class": "bee",
+      "filename": "bee_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887879"
+    },
+    "ee/ee_admin_18.wav": {
+      "class": "ee",
+      "filename": "ee_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887910"
+    },
+    "ee/ee_admin_1.wav": {
+      "class": "ee",
+      "filename": "ee_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887912"
+    },
+    "ee/ee_admin_19.wav": {
+      "class": "ee",
+      "filename": "ee_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887914"
+    },
+    "ee/ee_admin_3.wav": {
+      "class": "ee",
+      "filename": "ee_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887916"
+    },
+    "ee/ee_admin_2.wav": {
+      "class": "ee",
+      "filename": "ee_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887918"
+    },
+    "ee/ee_admin_6.wav": {
+      "class": "ee",
+      "filename": "ee_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887920"
+    },
+    "ee/ee_admin_7.wav": {
+      "class": "ee",
+      "filename": "ee_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887922"
+    },
+    "ee/ee_admin_21.wav": {
+      "class": "ee",
+      "filename": "ee_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887923"
+    },
+    "ee/ee_admin_5.wav": {
+      "class": "ee",
+      "filename": "ee_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887925"
+    },
+    "ee/ee_admin_4.wav": {
+      "class": "ee",
+      "filename": "ee_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887927"
+    },
+    "ee/ee_admin_20.wav": {
+      "class": "ee",
+      "filename": "ee_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887929"
+    },
+    "ee/ee_admin_11.wav": {
+      "class": "ee",
+      "filename": "ee_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887930"
+    },
+    "ee/ee_admin_9.wav": {
+      "class": "ee",
+      "filename": "ee_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887932"
+    },
+    "ee/ee_admin_8.wav": {
+      "class": "ee",
+      "filename": "ee_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887935"
+    },
+    "ee/ee_admin_10.wav": {
+      "class": "ee",
+      "filename": "ee_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887937"
+    },
+    "ee/ee_admin_12.wav": {
+      "class": "ee",
+      "filename": "ee_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887939"
+    },
+    "ee/ee_admin_13.wav": {
+      "class": "ee",
+      "filename": "ee_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887941"
+    },
+    "ee/ee_admin_17.wav": {
+      "class": "ee",
+      "filename": "ee_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887943"
+    },
+    "ee/ee_admin_16.wav": {
+      "class": "ee",
+      "filename": "ee_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887946"
+    },
+    "ee/ee_admin_14.wav": {
+      "class": "ee",
+      "filename": "ee_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887948"
+    },
+    "ee/ee_admin_15.wav": {
+      "class": "ee",
+      "filename": "ee_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.887950"
+    },
+    "meh/meh_admin_3.wav": {
+      "class": "meh",
+      "filename": "meh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888001"
+    },
+    "meh/meh_admin_25.wav": {
+      "class": "meh",
+      "filename": "meh_admin_25.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888004"
+    },
+    "meh/meh_admin_31.wav": {
+      "class": "meh",
+      "filename": "meh_admin_31.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888006"
+    },
+    "meh/meh_admin_19.wav": {
+      "class": "meh",
+      "filename": "meh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888008"
+    },
+    "meh/meh_admin_18.wav": {
+      "class": "meh",
+      "filename": "meh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888009"
+    },
+    "meh/meh_admin_30.wav": {
+      "class": "meh",
+      "filename": "meh_admin_30.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888011"
+    },
+    "meh/meh_admin_24.wav": {
+      "class": "meh",
+      "filename": "meh_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888013"
+    },
+    "meh/meh_admin_2.wav": {
+      "class": "meh",
+      "filename": "meh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888015"
+    },
+    "meh/meh_admin_32.wav": {
+      "class": "meh",
+      "filename": "meh_admin_32.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888019"
+    },
+    "meh/meh_admin_26.wav": {
+      "class": "meh",
+      "filename": "meh_admin_26.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888021"
+    },
+    "meh/meh_admin_27.wav": {
+      "class": "meh",
+      "filename": "meh_admin_27.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888023"
+    },
+    "meh/meh_admin_1.wav": {
+      "class": "meh",
+      "filename": "meh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888024"
+    },
+    "meh/meh_admin_5.wav": {
+      "class": "meh",
+      "filename": "meh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888026"
+    },
+    "meh/meh_admin_23.wav": {
+      "class": "meh",
+      "filename": "meh_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888028"
+    },
+    "meh/meh_admin_22.wav": {
+      "class": "meh",
+      "filename": "meh_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888030"
+    },
+    "meh/meh_admin_4.wav": {
+      "class": "meh",
+      "filename": "meh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888032"
+    },
+    "meh/meh_admin_6.wav": {
+      "class": "meh",
+      "filename": "meh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888033"
+    },
+    "meh/meh_admin_20.wav": {
+      "class": "meh",
+      "filename": "meh_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888035"
+    },
+    "meh/meh_admin_21.wav": {
+      "class": "meh",
+      "filename": "meh_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888037"
+    },
+    "meh/meh_admin_7.wav": {
+      "class": "meh",
+      "filename": "meh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888039"
+    },
+    "meh/meh_admin_10.wav": {
+      "class": "meh",
+      "filename": "meh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888041"
+    },
+    "meh/meh_admin_11.wav": {
+      "class": "meh",
+      "filename": "meh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888042"
+    },
+    "meh/meh_admin_9.wav": {
+      "class": "meh",
+      "filename": "meh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888044"
+    },
+    "meh/meh_admin_13.wav": {
+      "class": "meh",
+      "filename": "meh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888046"
+    },
+    "meh/meh_admin_12.wav": {
+      "class": "meh",
+      "filename": "meh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888048"
+    },
+    "meh/meh_admin_8.wav": {
+      "class": "meh",
+      "filename": "meh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888050"
+    },
+    "meh/meh_admin_16.wav": {
+      "class": "meh",
+      "filename": "meh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888051"
+    },
+    "meh/meh_admin_17.wav": {
+      "class": "meh",
+      "filename": "meh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888053"
+    },
+    "meh/meh_admin_29.wav": {
+      "class": "meh",
+      "filename": "meh_admin_29.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888055"
+    },
+    "meh/meh_admin_15.wav": {
+      "class": "meh",
+      "filename": "meh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888057"
+    },
+    "meh/meh_admin_14.wav": {
+      "class": "meh",
+      "filename": "meh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888058"
+    },
+    "meh/meh_admin_28.wav": {
+      "class": "meh",
+      "filename": "meh_admin_28.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888060"
+    },
+    "moh/moh_admin_7.wav": {
+      "class": "moh",
+      "filename": "moh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888085"
+    },
+    "moh/moh_admin_6.wav": {
+      "class": "moh",
+      "filename": "moh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888087"
+    },
+    "moh/moh_admin_20.wav": {
+      "class": "moh",
+      "filename": "moh_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888089"
+    },
+    "moh/moh_admin_4.wav": {
+      "class": "moh",
+      "filename": "moh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888091"
+    },
+    "moh/moh_admin_5.wav": {
+      "class": "moh",
+      "filename": "moh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888092"
+    },
+    "moh/moh_admin_1.wav": {
+      "class": "moh",
+      "filename": "moh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888094"
+    },
+    "moh/moh_admin_18.wav": {
+      "class": "moh",
+      "filename": "moh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888096"
+    },
+    "moh/moh_admin_2.wav": {
+      "class": "moh",
+      "filename": "moh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888098"
+    },
+    "moh/moh_admin_3.wav": {
+      "class": "moh",
+      "filename": "moh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888099"
+    },
+    "moh/moh_admin_19.wav": {
+      "class": "moh",
+      "filename": "moh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888101"
+    },
+    "moh/moh_admin_14.wav": {
+      "class": "moh",
+      "filename": "moh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888103"
+    },
+    "moh/moh_admin_15.wav": {
+      "class": "moh",
+      "filename": "moh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888105"
+    },
+    "moh/moh_admin_17.wav": {
+      "class": "moh",
+      "filename": "moh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888107"
+    },
+    "moh/moh_admin_16.wav": {
+      "class": "moh",
+      "filename": "moh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888108"
+    },
+    "moh/moh_admin_12.wav": {
+      "class": "moh",
+      "filename": "moh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888110"
+    },
+    "moh/moh_admin_8.wav": {
+      "class": "moh",
+      "filename": "moh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888112"
+    },
+    "moh/moh_admin_9.wav": {
+      "class": "moh",
+      "filename": "moh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888114"
+    },
+    "moh/moh_admin_13.wav": {
+      "class": "moh",
+      "filename": "moh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888115"
+    },
+    "moh/moh_admin_11.wav": {
+      "class": "moh",
+      "filename": "moh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888117"
+    },
+    "moh/moh_admin_10.wav": {
+      "class": "moh",
+      "filename": "moh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888119"
+    },
+    "moo/moo_admin_21.wav": {
+      "class": "moo",
+      "filename": "moo_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888150"
+    },
+    "moo/moo_admin_20.wav": {
+      "class": "moo",
+      "filename": "moo_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888153"
+    },
+    "moo/moo_admin_22.wav": {
+      "class": "moo",
+      "filename": "moo_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888155"
+    },
+    "moo/moo_admin_8.wav": {
+      "class": "moo",
+      "filename": "moo_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888156"
+    },
+    "moo/moo_admin_9.wav": {
+      "class": "moo",
+      "filename": "moo_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888158"
+    },
+    "moo/moo_admin_23.wav": {
+      "class": "moo",
+      "filename": "moo_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888160"
+    },
+    "moo/moo_admin_27.wav": {
+      "class": "moo",
+      "filename": "moo_admin_27.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888162"
+    },
+    "moo/moo_admin_26.wav": {
+      "class": "moo",
+      "filename": "moo_admin_26.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888164"
+    },
+    "moo/moo_admin_32.wav": {
+      "class": "moo",
+      "filename": "moo_admin_32.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888165"
+    },
+    "moo/moo_admin_24.wav": {
+      "class": "moo",
+      "filename": "moo_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888168"
+    },
+    "moo/moo_admin_30.wav": {
+      "class": "moo",
+      "filename": "moo_admin_30.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888170"
+    },
+    "moo/moo_admin_18.wav": {
+      "class": "moo",
+      "filename": "moo_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888172"
+    },
+    "moo/moo_admin_19.wav": {
+      "class": "moo",
+      "filename": "moo_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888173"
+    },
+    "moo/moo_admin_31.wav": {
+      "class": "moo",
+      "filename": "moo_admin_31.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888175"
+    },
+    "moo/moo_admin_25.wav": {
+      "class": "moo",
+      "filename": "moo_admin_25.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888177"
+    },
+    "moo/moo_admin_28.wav": {
+      "class": "moo",
+      "filename": "moo_admin_28.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888179"
+    },
+    "moo/moo_admin_14.wav": {
+      "class": "moo",
+      "filename": "moo_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888180"
+    },
+    "moo/moo_admin_2.wav": {
+      "class": "moo",
+      "filename": "moo_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888182"
+    },
+    "moo/moo_admin_3.wav": {
+      "class": "moo",
+      "filename": "moo_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888184"
+    },
+    "moo/moo_admin_15.wav": {
+      "class": "moo",
+      "filename": "moo_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888186"
+    },
+    "moo/moo_admin_29.wav": {
+      "class": "moo",
+      "filename": "moo_admin_29.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888188"
+    },
+    "moo/moo_admin_17.wav": {
+      "class": "moo",
+      "filename": "moo_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888189"
+    },
+    "moo/moo_admin_1.wav": {
+      "class": "moo",
+      "filename": "moo_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888191"
+    },
+    "moo/moo_admin_16.wav": {
+      "class": "moo",
+      "filename": "moo_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888193"
+    },
+    "moo/moo_admin_12.wav": {
+      "class": "moo",
+      "filename": "moo_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888195"
+    },
+    "moo/moo_admin_4.wav": {
+      "class": "moo",
+      "filename": "moo_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888197"
+    },
+    "moo/moo_admin_5.wav": {
+      "class": "moo",
+      "filename": "moo_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888198"
+    },
+    "moo/moo_admin_13.wav": {
+      "class": "moo",
+      "filename": "moo_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888200"
+    },
+    "moo/moo_admin_11.wav": {
+      "class": "moo",
+      "filename": "moo_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888202"
+    },
+    "moo/moo_admin_7.wav": {
+      "class": "moo",
+      "filename": "moo_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888203"
+    },
+    "moo/moo_admin_6.wav": {
+      "class": "moo",
+      "filename": "moo_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888207"
+    },
+    "moo/moo_admin_10.wav": {
+      "class": "moo",
+      "filename": "moo_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888209"
+    },
+    "leh/leh_admin_21.wav": {
+      "class": "leh",
+      "filename": "leh_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888276"
+    },
+    "leh/leh_admin_20.wav": {
+      "class": "leh",
+      "filename": "leh_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888279"
+    },
+    "leh/leh_admin_22.wav": {
+      "class": "leh",
+      "filename": "leh_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888282"
+    },
+    "leh/leh_admin_8.wav": {
+      "class": "leh",
+      "filename": "leh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888283"
+    },
+    "leh/leh_admin_18.wav": {
+      "class": "leh",
+      "filename": "leh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888285"
+    },
+    "leh/leh_admin_19.wav": {
+      "class": "leh",
+      "filename": "leh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888287"
+    },
+    "leh/leh_admin_9.wav": {
+      "class": "leh",
+      "filename": "leh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888289"
+    },
+    "leh/leh_admin_4.wav": {
+      "class": "leh",
+      "filename": "leh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888290"
+    },
+    "leh/leh_admin_14.wav": {
+      "class": "leh",
+      "filename": "leh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888292"
+    },
+    "leh/leh_admin_15.wav": {
+      "class": "leh",
+      "filename": "leh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888294"
+    },
+    "leh/leh_admin_5.wav": {
+      "class": "leh",
+      "filename": "leh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888296"
+    },
+    "leh/leh_admin_7.wav": {
+      "class": "leh",
+      "filename": "leh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888297"
+    },
+    "leh/leh_admin_17.wav": {
+      "class": "leh",
+      "filename": "leh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888299"
+    },
+    "leh/leh_admin_16.wav": {
+      "class": "leh",
+      "filename": "leh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888301"
+    },
+    "leh/leh_admin_6.wav": {
+      "class": "leh",
+      "filename": "leh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888302"
+    },
+    "leh/leh_admin_12.wav": {
+      "class": "leh",
+      "filename": "leh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888304"
+    },
+    "leh/leh_admin_2.wav": {
+      "class": "leh",
+      "filename": "leh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888306"
+    },
+    "leh/leh_admin_3.wav": {
+      "class": "leh",
+      "filename": "leh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888307"
+    },
+    "leh/leh_admin_13.wav": {
+      "class": "leh",
+      "filename": "leh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888309"
+    },
+    "leh/leh_admin_11.wav": {
+      "class": "leh",
+      "filename": "leh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888311"
+    },
+    "leh/leh_admin_1.wav": {
+      "class": "leh",
+      "filename": "leh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888313"
+    },
+    "leh/leh_admin_10.wav": {
+      "class": "leh",
+      "filename": "leh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888314"
+    },
+    "loo/loo_admin_19.wav": {
+      "class": "loo",
+      "filename": "loo_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888362"
+    },
+    "loo/loo_admin_5.wav": {
+      "class": "loo",
+      "filename": "loo_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888364"
+    },
+    "loo/loo_admin_4.wav": {
+      "class": "loo",
+      "filename": "loo_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888366"
+    },
+    "loo/loo_admin_18.wav": {
+      "class": "loo",
+      "filename": "loo_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888368"
+    },
+    "loo/loo_admin_6.wav": {
+      "class": "loo",
+      "filename": "loo_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888370"
+    },
+    "loo/loo_admin_7.wav": {
+      "class": "loo",
+      "filename": "loo_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888371"
+    },
+    "loo/loo_admin_23.wav": {
+      "class": "loo",
+      "filename": "loo_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888373"
+    },
+    "loo/loo_admin_3.wav": {
+      "class": "loo",
+      "filename": "loo_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888375"
+    },
+    "loo/loo_admin_2.wav": {
+      "class": "loo",
+      "filename": "loo_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888381"
+    },
+    "loo/loo_admin_22.wav": {
+      "class": "loo",
+      "filename": "loo_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888382"
+    },
+    "loo/loo_admin_20.wav": {
+      "class": "loo",
+      "filename": "loo_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888384"
+    },
+    "loo/loo_admin_1.wav": {
+      "class": "loo",
+      "filename": "loo_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888386"
+    },
+    "loo/loo_admin_21.wav": {
+      "class": "loo",
+      "filename": "loo_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888387"
+    },
+    "loo/loo_admin_10.wav": {
+      "class": "loo",
+      "filename": "loo_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888389"
+    },
+    "loo/loo_admin_11.wav": {
+      "class": "loo",
+      "filename": "loo_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888391"
+    },
+    "loo/loo_admin_13.wav": {
+      "class": "loo",
+      "filename": "loo_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888393"
+    },
+    "loo/loo_admin_12.wav": {
+      "class": "loo",
+      "filename": "loo_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888394"
+    },
+    "loo/loo_admin_16.wav": {
+      "class": "loo",
+      "filename": "loo_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888396"
+    },
+    "loo/loo_admin_17.wav": {
+      "class": "loo",
+      "filename": "loo_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888398"
+    },
+    "loo/loo_admin_15.wav": {
+      "class": "loo",
+      "filename": "loo_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888399"
+    },
+    "loo/loo_admin_9.wav": {
+      "class": "loo",
+      "filename": "loo_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888401"
+    },
+    "loo/loo_admin_8.wav": {
+      "class": "loo",
+      "filename": "loo_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888403"
+    },
+    "loo/loo_admin_14.wav": {
+      "class": "loo",
+      "filename": "loo_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888404"
+    },
+    "loh/loh_admin_9.wav": {
+      "class": "loh",
+      "filename": "loh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888431"
+    },
+    "loh/loh_admin_19.wav": {
+      "class": "loh",
+      "filename": "loh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888433"
+    },
+    "loh/loh_admin_18.wav": {
+      "class": "loh",
+      "filename": "loh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888435"
+    },
+    "loh/loh_admin_8.wav": {
+      "class": "loh",
+      "filename": "loh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888437"
+    },
+    "loh/loh_admin_10.wav": {
+      "class": "loh",
+      "filename": "loh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888438"
+    },
+    "loh/loh_admin_1.wav": {
+      "class": "loh",
+      "filename": "loh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888440"
+    },
+    "loh/loh_admin_11.wav": {
+      "class": "loh",
+      "filename": "loh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888442"
+    },
+    "loh/loh_admin_13.wav": {
+      "class": "loh",
+      "filename": "loh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888445"
+    },
+    "loh/loh_admin_3.wav": {
+      "class": "loh",
+      "filename": "loh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888446"
+    },
+    "loh/loh_admin_2.wav": {
+      "class": "loh",
+      "filename": "loh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888448"
+    },
+    "loh/loh_admin_12.wav": {
+      "class": "loh",
+      "filename": "loh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888450"
+    },
+    "loh/loh_admin_6.wav": {
+      "class": "loh",
+      "filename": "loh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888451"
+    },
+    "loh/loh_admin_16.wav": {
+      "class": "loh",
+      "filename": "loh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888453"
+    },
+    "loh/loh_admin_17.wav": {
+      "class": "loh",
+      "filename": "loh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888455"
+    },
+    "loh/loh_admin_7.wav": {
+      "class": "loh",
+      "filename": "loh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888457"
+    },
+    "loh/loh_admin_5.wav": {
+      "class": "loh",
+      "filename": "loh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888458"
+    },
+    "loh/loh_admin_15.wav": {
+      "class": "loh",
+      "filename": "loh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888460"
+    },
+    "loh/loh_admin_14.wav": {
+      "class": "loh",
+      "filename": "loh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888462"
+    },
+    "loh/loh_admin_4.wav": {
+      "class": "loh",
+      "filename": "loh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888463"
+    },
+    "ah/ah_admin_21.wav": {
+      "class": "ah",
+      "filename": "ah_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888490"
+    },
+    "ah/ah_admin_3.wav": {
+      "class": "ah",
+      "filename": "ah_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888492"
+    },
+    "ah/ah_admin_2.wav": {
+      "class": "ah",
+      "filename": "ah_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888494"
+    },
+    "ah/ah_admin_20.wav": {
+      "class": "ah",
+      "filename": "ah_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888496"
+    },
+    "ah/ah_admin_22.wav": {
+      "class": "ah",
+      "filename": "ah_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888498"
+    },
+    "ah/ah_admin_1.wav": {
+      "class": "ah",
+      "filename": "ah_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888499"
+    },
+    "ah/ah_admin_5.wav": {
+      "class": "ah",
+      "filename": "ah_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888501"
+    },
+    "ah/ah_admin_4.wav": {
+      "class": "ah",
+      "filename": "ah_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888503"
+    },
+    "ah/ah_admin_18.wav": {
+      "class": "ah",
+      "filename": "ah_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888505"
+    },
+    "ah/ah_admin_6.wav": {
+      "class": "ah",
+      "filename": "ah_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888506"
+    },
+    "ah/ah_admin_7.wav": {
+      "class": "ah",
+      "filename": "ah_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888508"
+    },
+    "ah/ah_admin_19.wav": {
+      "class": "ah",
+      "filename": "ah_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888510"
+    },
+    "ah/ah_admin_14.wav": {
+      "class": "ah",
+      "filename": "ah_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888512"
+    },
+    "ah/ah_admin_15.wav": {
+      "class": "ah",
+      "filename": "ah_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888513"
+    },
+    "ah/ah_admin_17.wav": {
+      "class": "ah",
+      "filename": "ah_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888515"
+    },
+    "ah/ah_admin_9.wav": {
+      "class": "ah",
+      "filename": "ah_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888517"
+    },
+    "ah/ah_admin_8.wav": {
+      "class": "ah",
+      "filename": "ah_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888519"
+    },
+    "ah/ah_admin_16.wav": {
+      "class": "ah",
+      "filename": "ah_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888520"
+    },
+    "ah/ah_admin_12.wav": {
+      "class": "ah",
+      "filename": "ah_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888522"
+    },
+    "ah/ah_admin_13.wav": {
+      "class": "ah",
+      "filename": "ah_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888525"
+    },
+    "ah/ah_admin_11.wav": {
+      "class": "ah",
+      "filename": "ah_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888527"
+    },
+    "ah/ah_admin_10.wav": {
+      "class": "ah",
+      "filename": "ah_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888529"
+    },
+    "boo/boo_admin_18.wav": {
+      "class": "boo",
+      "filename": "boo_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888557"
+    },
+    "boo/boo_admin_1.wav": {
+      "class": "boo",
+      "filename": "boo_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888559"
+    },
+    "boo/boo_admin_3.wav": {
+      "class": "boo",
+      "filename": "boo_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888560"
+    },
+    "boo/boo_admin_2.wav": {
+      "class": "boo",
+      "filename": "boo_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888562"
+    },
+    "boo/boo_admin_6.wav": {
+      "class": "boo",
+      "filename": "boo_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888564"
+    },
+    "boo/boo_admin_7.wav": {
+      "class": "boo",
+      "filename": "boo_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888566"
+    },
+    "boo/boo_admin_5.wav": {
+      "class": "boo",
+      "filename": "boo_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888567"
+    },
+    "boo/boo_admin_4.wav": {
+      "class": "boo",
+      "filename": "boo_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888569"
+    },
+    "boo/boo_admin_9.wav": {
+      "class": "boo",
+      "filename": "boo_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888571"
+    },
+    "boo/boo_admin_8.wav": {
+      "class": "boo",
+      "filename": "boo_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888573"
+    },
+    "boo/boo_admin_16.wav": {
+      "class": "boo",
+      "filename": "boo_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888574"
+    },
+    "boo/boo_admin_17.wav": {
+      "class": "boo",
+      "filename": "boo_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888576"
+    },
+    "boo/boo_admin_15.wav": {
+      "class": "boo",
+      "filename": "boo_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888578"
+    },
+    "boo/boo_admin_14.wav": {
+      "class": "boo",
+      "filename": "boo_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888580"
+    },
+    "boo/boo_admin_10.wav": {
+      "class": "boo",
+      "filename": "boo_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888581"
+    },
+    "boo/boo_admin_11.wav": {
+      "class": "boo",
+      "filename": "boo_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888583"
+    },
+    "boo/boo_admin_13.wav": {
+      "class": "boo",
+      "filename": "boo_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888585"
+    },
+    "boo/boo_admin_12.wav": {
+      "class": "boo",
+      "filename": "boo_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888587"
+    },
+    "boh/boh_admin_23.wav": {
+      "class": "boh",
+      "filename": "boh_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888619"
+    },
+    "boh/boh_admin_22.wav": {
+      "class": "boh",
+      "filename": "boh_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888621"
+    },
+    "boh/boh_admin_20.wav": {
+      "class": "boh",
+      "filename": "boh_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888623"
+    },
+    "boh/boh_admin_21.wav": {
+      "class": "boh",
+      "filename": "boh_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888625"
+    },
+    "boh/boh_admin_19.wav": {
+      "class": "boh",
+      "filename": "boh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888627"
+    },
+    "boh/boh_admin_24.wav": {
+      "class": "boh",
+      "filename": "boh_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888628"
+    },
+    "boh/boh_admin_18.wav": {
+      "class": "boh",
+      "filename": "boh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888630"
+    },
+    "boh/boh_admin_9.wav": {
+      "class": "boh",
+      "filename": "boh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888632"
+    },
+    "boh/boh_admin_8.wav": {
+      "class": "boh",
+      "filename": "boh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888634"
+    },
+    "boh/boh_admin_5.wav": {
+      "class": "boh",
+      "filename": "boh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888635"
+    },
+    "boh/boh_admin_4.wav": {
+      "class": "boh",
+      "filename": "boh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888637"
+    },
+    "boh/boh_admin_6.wav": {
+      "class": "boh",
+      "filename": "boh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888639"
+    },
+    "boh/boh_admin_7.wav": {
+      "class": "boh",
+      "filename": "boh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888641"
+    },
+    "boh/boh_admin_3.wav": {
+      "class": "boh",
+      "filename": "boh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888642"
+    },
+    "boh/boh_admin_2.wav": {
+      "class": "boh",
+      "filename": "boh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888644"
+    },
+    "boh/boh_admin_1.wav": {
+      "class": "boh",
+      "filename": "boh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888646"
+    },
+    "boh/boh_admin_16.wav": {
+      "class": "boh",
+      "filename": "boh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888648"
+    },
+    "boh/boh_admin_17.wav": {
+      "class": "boh",
+      "filename": "boh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888649"
+    },
+    "boh/boh_admin_15.wav": {
+      "class": "boh",
+      "filename": "boh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888651"
+    },
+    "boh/boh_admin_14.wav": {
+      "class": "boh",
+      "filename": "boh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888653"
+    },
+    "boh/boh_admin_10.wav": {
+      "class": "boh",
+      "filename": "boh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888655"
+    },
+    "boh/boh_admin_11.wav": {
+      "class": "boh",
+      "filename": "boh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888656"
+    },
+    "boh/boh_admin_13.wav": {
+      "class": "boh",
+      "filename": "boh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888658"
+    },
+    "boh/boh_admin_12.wav": {
+      "class": "boh",
+      "filename": "boh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888660"
+    },
+    "beh/beh_admin_8.wav": {
+      "class": "beh",
+      "filename": "beh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888690"
+    },
+    "beh/beh_admin_9.wav": {
+      "class": "beh",
+      "filename": "beh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888692"
+    },
+    "beh/beh_9ace84a1.wav": {
+      "class": "beh",
+      "filename": "beh_9ace84a1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888694"
+    },
+    "beh/beh_34055398.wav": {
+      "class": "beh",
+      "filename": "beh_34055398.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888696"
+    },
+    "beh/beh_admin_18.wav": {
+      "class": "beh",
+      "filename": "beh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888697"
+    },
+    "beh/beh_admin_19.wav": {
+      "class": "beh",
+      "filename": "beh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888700"
+    },
+    "beh/beh_3013ea36.wav": {
+      "class": "beh",
+      "filename": "beh_3013ea36.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888702"
+    },
+    "beh/beh_ae7e90e2.wav": {
+      "class": "beh",
+      "filename": "beh_ae7e90e2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888704"
+    },
+    "beh/beh_2be7c818.wav": {
+      "class": "beh",
+      "filename": "beh_2be7c818.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888707"
+    },
+    "beh/beh_admin_12.wav": {
+      "class": "beh",
+      "filename": "beh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888708"
+    },
+    "beh/beh_admin_13.wav": {
+      "class": "beh",
+      "filename": "beh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888710"
+    },
+    "beh/beh_admin_11.wav": {
+      "class": "beh",
+      "filename": "beh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888712"
+    },
+    "beh/beh_admin_10.wav": {
+      "class": "beh",
+      "filename": "beh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888714"
+    },
+    "beh/beh_admin_14.wav": {
+      "class": "beh",
+      "filename": "beh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888715"
+    },
+    "beh/beh_admin_15.wav": {
+      "class": "beh",
+      "filename": "beh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888717"
+    },
+    "beh/beh_12e2c30f.wav": {
+      "class": "beh",
+      "filename": "beh_12e2c30f.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888719"
+    },
+    "beh/beh_admin_17.wav": {
+      "class": "beh",
+      "filename": "beh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888720"
+    },
+    "beh/beh_admin_16.wav": {
+      "class": "beh",
+      "filename": "beh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888722"
+    },
+    "beh/beh_5389d2c2.wav": {
+      "class": "beh",
+      "filename": "beh_5389d2c2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888724"
+    },
+    "beh/beh_admin_1.wav": {
+      "class": "beh",
+      "filename": "beh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888726"
+    },
+    "beh/beh_admin_2.wav": {
+      "class": "beh",
+      "filename": "beh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888727"
+    },
+    "beh/beh_admin_3.wav": {
+      "class": "beh",
+      "filename": "beh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888729"
+    },
+    "beh/beh_admin_7.wav": {
+      "class": "beh",
+      "filename": "beh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888731"
+    },
+    "beh/beh_16a46d83.wav": {
+      "class": "beh",
+      "filename": "beh_16a46d83.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888733"
+    },
+    "beh/beh_admin_6.wav": {
+      "class": "beh",
+      "filename": "beh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888735"
+    },
+    "beh/beh_admin_4.wav": {
+      "class": "beh",
+      "filename": "beh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888736"
+    },
+    "beh/beh_admin_5.wav": {
+      "class": "beh",
+      "filename": "beh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888738"
+    },
+    "eh/eh_admin_20.wav": {
+      "class": "eh",
+      "filename": "eh_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888770"
+    },
+    "eh/eh_9f0c1c96.wav": {
+      "class": "eh",
+      "filename": "eh_9f0c1c96.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888772"
+    },
+    "eh/eh_3f680c67.wav": {
+      "class": "eh",
+      "filename": "eh_3f680c67.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888774"
+    },
+    "eh/eh_admin_21.wav": {
+      "class": "eh",
+      "filename": "eh_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888775"
+    },
+    "eh/eh_admin_8.wav": {
+      "class": "eh",
+      "filename": "eh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888799"
+    },
+    "eh/eh_admin_9.wav": {
+      "class": "eh",
+      "filename": "eh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888801"
+    },
+    "eh/eh_admin_22.wav": {
+      "class": "eh",
+      "filename": "eh_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888803"
+    },
+    "eh/eh_admin_19.wav": {
+      "class": "eh",
+      "filename": "eh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888805"
+    },
+    "eh/eh_admin_18.wav": {
+      "class": "eh",
+      "filename": "eh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888807"
+    },
+    "eh/eh_admin_2.wav": {
+      "class": "eh",
+      "filename": "eh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888809"
+    },
+    "eh/eh_admin_15.wav": {
+      "class": "eh",
+      "filename": "eh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888810"
+    },
+    "eh/eh_admin_14.wav": {
+      "class": "eh",
+      "filename": "eh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888812"
+    },
+    "eh/eh_admin_3.wav": {
+      "class": "eh",
+      "filename": "eh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888814"
+    },
+    "eh/eh_admin_1.wav": {
+      "class": "eh",
+      "filename": "eh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888816"
+    },
+    "eh/eh_admin_16.wav": {
+      "class": "eh",
+      "filename": "eh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888820"
+    },
+    "eh/eh_admin_17.wav": {
+      "class": "eh",
+      "filename": "eh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888822"
+    },
+    "eh/eh_admin_4.wav": {
+      "class": "eh",
+      "filename": "eh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888823"
+    },
+    "eh/eh_admin_13.wav": {
+      "class": "eh",
+      "filename": "eh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888825"
+    },
+    "eh/eh_admin_12.wav": {
+      "class": "eh",
+      "filename": "eh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888827"
+    },
+    "eh/eh_admin_5.wav": {
+      "class": "eh",
+      "filename": "eh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888829"
+    },
+    "eh/eh_admin_7.wav": {
+      "class": "eh",
+      "filename": "eh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888830"
+    },
+    "eh/eh_admin_10.wav": {
+      "class": "eh",
+      "filename": "eh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888832"
+    },
+    "eh/eh_1382b5a4.wav": {
+      "class": "eh",
+      "filename": "eh_1382b5a4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888834"
+    },
+    "eh/eh_admin_11.wav": {
+      "class": "eh",
+      "filename": "eh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888836"
+    },
+    "eh/eh_admin_6.wav": {
+      "class": "eh",
+      "filename": "eh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888837"
+    },
+    "oo/oo_admin_3.wav": {
+      "class": "oo",
+      "filename": "oo_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888870"
+    },
+    "oo/oo_admin_18.wav": {
+      "class": "oo",
+      "filename": "oo_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888872"
+    },
+    "oo/oo_admin_24.wav": {
+      "class": "oo",
+      "filename": "oo_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888873"
+    },
+    "oo/oo_admin_25.wav": {
+      "class": "oo",
+      "filename": "oo_admin_25.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888875"
+    },
+    "oo/oo_admin_19.wav": {
+      "class": "oo",
+      "filename": "oo_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888877"
+    },
+    "oo/oo_admin_2.wav": {
+      "class": "oo",
+      "filename": "oo_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888879"
+    },
+    "oo/oo_admin_27.wav": {
+      "class": "oo",
+      "filename": "oo_admin_27.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888880"
+    },
+    "oo/oo_admin_26.wav": {
+      "class": "oo",
+      "filename": "oo_admin_26.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888882"
+    },
+    "oo/oo_admin_1.wav": {
+      "class": "oo",
+      "filename": "oo_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888884"
+    },
+    "oo/oo_admin_5.wav": {
+      "class": "oo",
+      "filename": "oo_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888887"
+    },
+    "oo/oo_admin_22.wav": {
+      "class": "oo",
+      "filename": "oo_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888888"
+    },
+    "oo/oo_admin_23.wav": {
+      "class": "oo",
+      "filename": "oo_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888890"
+    },
+    "oo/oo_admin_4.wav": {
+      "class": "oo",
+      "filename": "oo_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888892"
+    },
+    "oo/oo_admin_6.wav": {
+      "class": "oo",
+      "filename": "oo_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888894"
+    },
+    "oo/oo_admin_21.wav": {
+      "class": "oo",
+      "filename": "oo_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888895"
+    },
+    "oo/oo_admin_20.wav": {
+      "class": "oo",
+      "filename": "oo_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888897"
+    },
+    "oo/oo_admin_7.wav": {
+      "class": "oo",
+      "filename": "oo_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888899"
+    },
+    "oo/oo_admin_11.wav": {
+      "class": "oo",
+      "filename": "oo_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888901"
+    },
+    "oo/oo_admin_10.wav": {
+      "class": "oo",
+      "filename": "oo_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888903"
+    },
+    "oo/oo_admin_9.wav": {
+      "class": "oo",
+      "filename": "oo_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888904"
+    },
+    "oo/oo_admin_12.wav": {
+      "class": "oo",
+      "filename": "oo_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888906"
+    },
+    "oo/oo_admin_13.wav": {
+      "class": "oo",
+      "filename": "oo_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888908"
+    },
+    "oo/oo_admin_8.wav": {
+      "class": "oo",
+      "filename": "oo_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888909"
+    },
+    "oo/oo_admin_17.wav": {
+      "class": "oo",
+      "filename": "oo_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888911"
+    },
+    "oo/oo_admin_16.wav": {
+      "class": "oo",
+      "filename": "oo_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888913"
+    },
+    "oo/oo_admin_14.wav": {
+      "class": "oo",
+      "filename": "oo_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888916"
+    },
+    "oo/oo_admin_28.wav": {
+      "class": "oo",
+      "filename": "oo_admin_28.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888917"
+    },
+    "oo/oo_admin_29.wav": {
+      "class": "oo",
+      "filename": "oo_admin_29.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888919"
+    },
+    "oo/oo_admin_15.wav": {
+      "class": "oo",
+      "filename": "oo_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888921"
+    },
+    "oh/oh_admin_18.wav": {
+      "class": "oh",
+      "filename": "oh_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888957"
+    },
+    "oh/oh_admin_19.wav": {
+      "class": "oh",
+      "filename": "oh_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888959"
+    },
+    "oh/oh_admin_9.wav": {
+      "class": "oh",
+      "filename": "oh_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888961"
+    },
+    "oh/oh_admin_8.wav": {
+      "class": "oh",
+      "filename": "oh_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888963"
+    },
+    "oh/oh_admin_21.wav": {
+      "class": "oh",
+      "filename": "oh_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888964"
+    },
+    "oh/oh_admin_20.wav": {
+      "class": "oh",
+      "filename": "oh_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888966"
+    },
+    "oh/oh_admin_11.wav": {
+      "class": "oh",
+      "filename": "oh_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888968"
+    },
+    "oh/oh_admin_6.wav": {
+      "class": "oh",
+      "filename": "oh_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888970"
+    },
+    "oh/oh_admin_10.wav": {
+      "class": "oh",
+      "filename": "oh_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888971"
+    },
+    "oh/oh_admin_7.wav": {
+      "class": "oh",
+      "filename": "oh_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888973"
+    },
+    "oh/oh_admin_5.wav": {
+      "class": "oh",
+      "filename": "oh_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888975"
+    },
+    "oh/oh_admin_12.wav": {
+      "class": "oh",
+      "filename": "oh_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888977"
+    },
+    "oh/oh_admin_4.wav": {
+      "class": "oh",
+      "filename": "oh_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888978"
+    },
+    "oh/oh_admin_13.wav": {
+      "class": "oh",
+      "filename": "oh_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888980"
+    },
+    "oh/oh_admin_17.wav": {
+      "class": "oh",
+      "filename": "oh_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888982"
+    },
+    "oh/oh_admin_16.wav": {
+      "class": "oh",
+      "filename": "oh_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888984"
+    },
+    "oh/oh_admin_1.wav": {
+      "class": "oh",
+      "filename": "oh_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888985"
+    },
+    "oh/oh_admin_3.wav": {
+      "class": "oh",
+      "filename": "oh_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888987"
+    },
+    "oh/oh_admin_14.wav": {
+      "class": "oh",
+      "filename": "oh_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888989"
+    },
+    "oh/oh_admin_2.wav": {
+      "class": "oh",
+      "filename": "oh_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888991"
+    },
+    "oh/oh_admin_15.wav": {
+      "class": "oh",
+      "filename": "oh_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.888992"
+    },
+    "bah/bah_admin_1.wav": {
+      "class": "bah",
+      "filename": "bah_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889023"
+    },
+    "bah/bah_admin_3.wav": {
+      "class": "bah",
+      "filename": "bah_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889025"
+    },
+    "bah/bah_admin_2.wav": {
+      "class": "bah",
+      "filename": "bah_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889027"
+    },
+    "bah/bah_admin_6.wav": {
+      "class": "bah",
+      "filename": "bah_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889029"
+    },
+    "bah/bah_admin_7.wav": {
+      "class": "bah",
+      "filename": "bah_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889031"
+    },
+    "bah/bah_admin_5.wav": {
+      "class": "bah",
+      "filename": "bah_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889033"
+    },
+    "bah/bah_admin_4.wav": {
+      "class": "bah",
+      "filename": "bah_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889034"
+    },
+    "bah/bah_admin_19.wav": {
+      "class": "bah",
+      "filename": "bah_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889036"
+    },
+    "bah/bah_admin_18.wav": {
+      "class": "bah",
+      "filename": "bah_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889038"
+    },
+    "bah/bah_admin_20.wav": {
+      "class": "bah",
+      "filename": "bah_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889040"
+    },
+    "bah/bah_admin_21.wav": {
+      "class": "bah",
+      "filename": "bah_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889041"
+    },
+    "bah/bah_admin_13.wav": {
+      "class": "bah",
+      "filename": "bah_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889043"
+    },
+    "bah/bah_admin_12.wav": {
+      "class": "bah",
+      "filename": "bah_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889046"
+    },
+    "bah/bah_admin_10.wav": {
+      "class": "bah",
+      "filename": "bah_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889047"
+    },
+    "bah/bah_admin_11.wav": {
+      "class": "bah",
+      "filename": "bah_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889049"
+    },
+    "bah/bah_admin_15.wav": {
+      "class": "bah",
+      "filename": "bah_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889051"
+    },
+    "bah/bah_admin_14.wav": {
+      "class": "bah",
+      "filename": "bah_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889053"
+    },
+    "bah/bah_admin_16.wav": {
+      "class": "bah",
+      "filename": "bah_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889054"
+    },
+    "bah/bah_admin_17.wav": {
+      "class": "bah",
+      "filename": "bah_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889056"
+    },
+    "bah/bah_admin_9.wav": {
+      "class": "bah",
+      "filename": "bah_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889058"
+    },
+    "bah/bah_admin_8.wav": {
+      "class": "bah",
+      "filename": "bah_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889060"
+    },
+    "lah/lah_admin_5.wav": {
+      "class": "lah",
+      "filename": "lah_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889099"
+    },
+    "lah/lah_admin_20.wav": {
+      "class": "lah",
+      "filename": "lah_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889102"
+    },
+    "lah/lah_admin_21.wav": {
+      "class": "lah",
+      "filename": "lah_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889103"
+    },
+    "lah/lah_admin_4.wav": {
+      "class": "lah",
+      "filename": "lah_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889105"
+    },
+    "lah/lah_admin_6.wav": {
+      "class": "lah",
+      "filename": "lah_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889107"
+    },
+    "lah/lah_admin_23.wav": {
+      "class": "lah",
+      "filename": "lah_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889109"
+    },
+    "lah/lah_admin_22.wav": {
+      "class": "lah",
+      "filename": "lah_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889110"
+    },
+    "lah/lah_admin_7.wav": {
+      "class": "lah",
+      "filename": "lah_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889112"
+    },
+    "lah/lah_admin_3.wav": {
+      "class": "lah",
+      "filename": "lah_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889114"
+    },
+    "lah/lah_admin_26.wav": {
+      "class": "lah",
+      "filename": "lah_admin_26.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889116"
+    },
+    "lah/lah_admin_27.wav": {
+      "class": "lah",
+      "filename": "lah_admin_27.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889117"
+    },
+    "lah/lah_admin_2.wav": {
+      "class": "lah",
+      "filename": "lah_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889119"
+    },
+    "lah/lah_admin_25.wav": {
+      "class": "lah",
+      "filename": "lah_admin_25.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889121"
+    },
+    "lah/lah_admin_19.wav": {
+      "class": "lah",
+      "filename": "lah_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889123"
+    },
+    "lah/lah_admin_18.wav": {
+      "class": "lah",
+      "filename": "lah_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889125"
+    },
+    "lah/lah_admin_30.wav": {
+      "class": "lah",
+      "filename": "lah_admin_30.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889126"
+    },
+    "lah/lah_admin_24.wav": {
+      "class": "lah",
+      "filename": "lah_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889128"
+    },
+    "lah/lah_admin_1.wav": {
+      "class": "lah",
+      "filename": "lah_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889130"
+    },
+    "lah/lah_admin_29.wav": {
+      "class": "lah",
+      "filename": "lah_admin_29.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889132"
+    },
+    "lah/lah_admin_15.wav": {
+      "class": "lah",
+      "filename": "lah_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889133"
+    },
+    "lah/lah_admin_14.wav": {
+      "class": "lah",
+      "filename": "lah_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889135"
+    },
+    "lah/lah_admin_28.wav": {
+      "class": "lah",
+      "filename": "lah_admin_28.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889137"
+    },
+    "lah/lah_admin_16.wav": {
+      "class": "lah",
+      "filename": "lah_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889138"
+    },
+    "lah/lah_admin_17.wav": {
+      "class": "lah",
+      "filename": "lah_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889140"
+    },
+    "lah/lah_admin_13.wav": {
+      "class": "lah",
+      "filename": "lah_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889142"
+    },
+    "lah/lah_admin_12.wav": {
+      "class": "lah",
+      "filename": "lah_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889143"
+    },
+    "lah/lah_admin_9.wav": {
+      "class": "lah",
+      "filename": "lah_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889145"
+    },
+    "lah/lah_admin_10.wav": {
+      "class": "lah",
+      "filename": "lah_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889147"
+    },
+    "lah/lah_admin_11.wav": {
+      "class": "lah",
+      "filename": "lah_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889148"
+    },
+    "lah/lah_admin_8.wav": {
+      "class": "lah",
+      "filename": "lah_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889150"
+    },
+    "mee/mee_admin_21.wav": {
+      "class": "mee",
+      "filename": "mee_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889186"
+    },
+    "mee/mee_admin_8.wav": {
+      "class": "mee",
+      "filename": "mee_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889188"
+    },
+    "mee/mee_admin_9.wav": {
+      "class": "mee",
+      "filename": "mee_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889190"
+    },
+    "mee/mee_admin_20.wav": {
+      "class": "mee",
+      "filename": "mee_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889192"
+    },
+    "mee/mee_admin_22.wav": {
+      "class": "mee",
+      "filename": "mee_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889193"
+    },
+    "mee/mee_admin_23.wav": {
+      "class": "mee",
+      "filename": "mee_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889195"
+    },
+    "mee/mee_admin_27.wav": {
+      "class": "mee",
+      "filename": "mee_admin_27.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889197"
+    },
+    "mee/mee_admin_26.wav": {
+      "class": "mee",
+      "filename": "mee_admin_26.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889199"
+    },
+    "mee/mee_admin_24.wav": {
+      "class": "mee",
+      "filename": "mee_admin_24.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889200"
+    },
+    "mee/mee_admin_18.wav": {
+      "class": "mee",
+      "filename": "mee_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889202"
+    },
+    "mee/mee_admin_19.wav": {
+      "class": "mee",
+      "filename": "mee_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889203"
+    },
+    "mee/mee_admin_25.wav": {
+      "class": "mee",
+      "filename": "mee_admin_25.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889205"
+    },
+    "mee/mee_admin_14.wav": {
+      "class": "mee",
+      "filename": "mee_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889207"
+    },
+    "mee/mee_admin_1.wav": {
+      "class": "mee",
+      "filename": "mee_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889208"
+    },
+    "mee/mee_admin_15.wav": {
+      "class": "mee",
+      "filename": "mee_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889211"
+    },
+    "mee/mee_admin_17.wav": {
+      "class": "mee",
+      "filename": "mee_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889213"
+    },
+    "mee/mee_admin_2.wav": {
+      "class": "mee",
+      "filename": "mee_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889214"
+    },
+    "mee/mee_admin_3.wav": {
+      "class": "mee",
+      "filename": "mee_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889216"
+    },
+    "mee/mee_admin_16.wav": {
+      "class": "mee",
+      "filename": "mee_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889218"
+    },
+    "mee/mee_admin_12.wav": {
+      "class": "mee",
+      "filename": "mee_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889220"
+    },
+    "mee/mee_admin_7.wav": {
+      "class": "mee",
+      "filename": "mee_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889221"
+    },
+    "mee/mee_admin_6.wav": {
+      "class": "mee",
+      "filename": "mee_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889223"
+    },
+    "mee/mee_admin_13.wav": {
+      "class": "mee",
+      "filename": "mee_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889225"
+    },
+    "mee/mee_admin_11.wav": {
+      "class": "mee",
+      "filename": "mee_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889226"
+    },
+    "mee/mee_admin_4.wav": {
+      "class": "mee",
+      "filename": "mee_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889228"
+    },
+    "mee/mee_admin_5.wav": {
+      "class": "mee",
+      "filename": "mee_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889229"
+    },
+    "mee/mee_admin_10.wav": {
+      "class": "mee",
+      "filename": "mee_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889231"
+    },
+    "ooah/ooah_admin_1.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_1.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889287"
+    },
+    "ooah/ooah_admin_3.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_3.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889289"
+    },
+    "ooah/ooah_admin_2.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_2.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889291"
+    },
+    "ooah/ooah_admin_6.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_6.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889292"
+    },
+    "ooah/ooah_admin_7.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_7.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889294"
+    },
+    "ooah/ooah_admin_5.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_5.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889296"
+    },
+    "ooah/ooah_admin_4.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_4.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889297"
+    },
+    "ooah/ooah_admin_19.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_19.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889299"
+    },
+    "ooah/ooah_admin_18.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_18.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889301"
+    },
+    "ooah/ooah_admin_23.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_23.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889302"
+    },
+    "ooah/ooah_admin_22.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_22.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889304"
+    },
+    "ooah/ooah_admin_20.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_20.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889306"
+    },
+    "ooah/ooah_admin_21.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_21.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889307"
+    },
+    "ooah/ooah_admin_10.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_10.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889309"
+    },
+    "ooah/ooah_admin_11.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_11.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889311"
+    },
+    "ooah/ooah_admin_13.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_13.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889312"
+    },
+    "ooah/ooah_admin_12.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_12.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889314"
+    },
+    "ooah/ooah_admin_16.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_16.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889316"
+    },
+    "ooah/ooah_admin_17.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_17.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889318"
+    },
+    "ooah/ooah_admin_15.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_15.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889319"
+    },
+    "ooah/ooah_admin_14.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_14.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889321"
+    },
+    "ooah/ooah_admin_9.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_9.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889323"
+    },
+    "ooah/ooah_admin_8.wav": {
+      "class": "ooah",
+      "filename": "ooah_admin_8.wav",
+      "include_in_training": true,
+      "quality_rating": null,
+      "notes": "",
+      "added_date": "2025-03-04T22:57:38.889324"
+    }
+  },
+  "classes": {
+    "training_sounds": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "uploaded_sounds": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "pending_verification_live_recording_sounds": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "raw_sounds": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "test_sounds": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "mah": {
+      "file_count": 21,
+      "included_count": 21
+    },
+    "pee": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "lee": {
+      "file_count": 24,
+      "included_count": 24
+    },
+    "bee": {
+      "file_count": 23,
+      "included_count": 23
+    },
+    "ee": {
+      "file_count": 21,
+      "included_count": 21
+    },
+    "jo": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "meh": {
+      "file_count": 32,
+      "included_count": 32
+    },
+    "moh": {
+      "file_count": 20,
+      "included_count": 20
+    },
+    "moo": {
+      "file_count": 32,
+      "included_count": 32
+    },
+    "ree": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "zoo": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "leh": {
+      "file_count": 22,
+      "included_count": 22
+    },
+    "dee": {
+      "file_count": 0,
+      "included_count": 0
+    },
+    "loo": {
+      "file_count": 23,
+      "included_count": 23
+    },
+    "loh": {
+      "file_count": 19,
+      "included_count": 19
+    },
+    "ah": {
+      "file_count": 22,
+      "included_count": 22
+    },
+    "boo": {
+      "file_count": 18,
+      "included_count": 18
+    },
+    "boh": {
+      "file_count": 24,
+      "included_count": 24
+    },
+    "beh": {
+      "file_count": 27,
+      "included_count": 27
+    },
+    "eh": {
+      "file_count": 25,
+      "included_count": 25
+    },
+    "oo": {
+      "file_count": 29,
+      "included_count": 29
+    },
+    "oh": {
+      "file_count": 21,
+      "included_count": 21
+    },
+    "bah": {
+      "file_count": 21,
+      "included_count": 21
+    },
+    "lah": {
+      "file_count": 30,
+      "included_count": 30
+    },
+    "mee": {
+      "file_count": 27,
+      "included_count": 27
+    },
+    "ooah": {
+      "file_count": 23,
+      "included_count": 23
+    }
+  },
+  "dataset_info": {
+    "total_files": 504,
+    "included_files": 504,
+    "excluded_files": 0,
+    "last_updated": "2025-03-04T23:11:25.898800"
+  }
+}

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Train Model with Unified Extractor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Train Model with Unified Feature Extractor</h2>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Why use Unified Training?</strong><br>
+                        This training method ensures that the same feature extraction process is used during
+                        both training and inference, leading to more accurate predictions.
+                        <br><br>
+                        <strong>Key benefits:</strong>
+                        <ul>
+                            <li>Eliminates inconsistencies between training and inference features</li>
+                            <li>Improves model accuracy by ensuring features are identical</li>
+                            <li>Provides better performance for real-time sound classification</li>
+                            <li>Simplifies the preprocessing pipeline and reduces errors</li>
+                        </ul>
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('ml.train_unified_model') }}">
+                        <div class="form-group mb-3">
+                            <label for="model_type"><strong>Model Type:</strong></label>
+                            <select class="form-control" id="model_type" name="model_type" required>
+                                {% for model_type in model_types %}
+                                <option value="{{ model_type }}">{{ model_type|upper }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                CNN is recommended for most audio classification tasks
+                            </small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="dict_name"><strong>Dictionary:</strong></label>
+                            <select class="form-control" id="dict_name" name="dict_name" required>
+                                <option value="">Select a dictionary</option>
+                                {% for dict_name in dictionaries %}
+                                <option value="{{ dict_name }}">{{ dict_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                The dictionary defines which sound classes to include in the model
+                            </small>
+                        </div>
+                        
+                        <!-- Advanced training parameters section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#advancedParams">
+                                        <i class="bi bi-gear"></i> Advanced Training Parameters
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="advancedParams" class="collapse">
+                                <div class="card-body">
+                                    <!-- CNN-specific parameters (shown/hidden based on model type) -->
+                                    <div id="cnn-params">
+                                        <h6>CNN Parameters</h6>
+                                        <div class="form-group mb-3">
+                                            <label for="epochs"><strong>Training Epochs:</strong></label>
+                                            <input type="number" class="form-control" id="epochs" name="epochs" value="50" min="1" max="200">
+                                            <small class="form-text text-muted">Number of complete passes through the training dataset</small>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="batch_size"><strong>Batch Size:</strong></label>
+                                            <input type="number" class="form-control" id="batch_size" name="batch_size" value="32" min="1" max="128">
+                                            <small class="form-text text-muted">Number of samples processed at once</small>
+                                        </div>
+                                        
+                                        <div class="form-check mb-3">
+                                            <input type="checkbox" class="form-check-input" id="use_class_weights" name="use_class_weights" checked>
+                                            <label class="form-check-label" for="use_class_weights">Use Class Weights</label>
+                                            <small class="form-text text-muted d-block">Compensates for imbalanced classes</small>
+                                        </div>
+                                        
+                                        <div class="form-check mb-3">
+                                            <input type="checkbox" class="form-check-input" id="use_data_augmentation" name="use_data_augmentation" checked>
+                                            <label class="form-check-label" for="use_data_augmentation">Use Data Augmentation</label>
+                                            <small class="form-text text-muted d-block">Creates variations of training data to improve model generalization</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- RF-specific parameters -->
+                                    <div id="rf-params" style="display:none;">
+                                        <h6>Random Forest Parameters</h6>
+                                        <div class="form-group mb-3">
+                                            <label for="n_estimators"><strong>Number of Trees:</strong></label>
+                                            <input type="number" class="form-control" id="n_estimators" name="n_estimators" value="100" min="10" max="500">
+                                            <small class="form-text text-muted">Number of trees in the forest</small>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="max_depth"><strong>Max Depth:</strong></label>
+                                            <input type="number" class="form-control" id="max_depth" name="max_depth" value="None" min="1" max="100">
+                                            <small class="form-text text-muted">Maximum depth of the trees (leave empty for unlimited)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <strong>Note:</strong> Training may take several minutes depending on the amount of data
+                            and selected model type. Progress will be displayed on the training status page.
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-cogs"></i> Start Training
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Home
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide model-specific parameters based on model type selection
+    document.getElementById('model_type').addEventListener('change', function() {
+        const modelType = this.value;
+        if (modelType === 'cnn') {
+            document.getElementById('cnn-params').style.display = 'block';
+            document.getElementById('rf-params').style.display = 'none';
+        } else if (modelType === 'rf') {
+            document.getElementById('cnn-params').style.display = 'none';
+            document.getElementById('rf-params').style.display = 'block';
+        }
+    });
+    
+    // Initialize visibility based on default selection
+    window.addEventListener('DOMContentLoaded', function() {
+        const modelType = document.getElementById('model_type').value;
+        if (modelType === 'cnn') {
+            document.getElementById('cnn-params').style.display = 'block';
+            document.getElementById('rf-params').style.display = 'none';
+        } else if (modelType === 'rf') {
+            document.getElementById('cnn-params').style.display = 'none';
+            document.getElementById('rf-params').style.display = 'block';
+        }
+    });
+</script>
+{% endblock %} 

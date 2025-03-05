@@ -1,0 +1,32 @@
+{
+  "accuracy": 0.8514851485148515,
+  "n_estimators": 100,
+  "n_features": 90,
+  "n_classes": 21,
+  "classes": [
+    "ah",
+    "bah",
+    "bee",
+    "beh",
+    "boh",
+    "boo",
+    "ee",
+    "eh",
+    "lah",
+    "lee",
+    "leh",
+    "loh",
+    "loo",
+    "mah",
+    "mee",
+    "meh",
+    "moh",
+    "moo",
+    "oh",
+    "oo",
+    "ooah"
+  ],
+  "training_samples": 403,
+  "test_samples": 101,
+  "created_at": "2025-03-05 13:31:31"
+}
