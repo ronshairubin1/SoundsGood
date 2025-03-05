@@ -10,12 +10,16 @@ import traceback
 import librosa
 import tensorflow as tf
 from collections import Counter
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
 
 from src.core.ml_algorithms import create_model
 from src.core.audio.processor import AudioProcessor
 from src.core.data.dataset_preparation import DatasetPreparation
 from src.services.training_analysis_service import TrainingAnalysisService
+from backend.features.extractor import FeatureExtractor
 from config import Config
+from backend.audio import AudioPreprocessor
 
 class TrainingService:
     """
@@ -46,6 +50,10 @@ class TrainingService:
         self.is_training = False
         self.error_logs = []  # Store error logs
         self.file_errors = []  # Store detailed file-specific errors
+        
+        # Set up logging
+        self.logger = logging.getLogger('TrainingService')
+        self.logger.setLevel(logging.DEBUG)  # Set to DEBUG level for more detailed logs
     
     def prepare_dataset_for_cnn(self, audio_dir, classes=None):
         """
@@ -1200,3 +1208,290 @@ class TrainingService:
         except Exception as e:
             logging.error(f"Error updating model registry: {e}", exc_info=True)
             return False 
+
+    def train_unified(self, model_type, audio_dir, save=True, progress_callback=None, **kwargs):
+        """
+        Train a model using the unified feature extractor.
+        
+        Args:
+            model_type (str): Type of model to train ('cnn', 'rf', 'ensemble')
+            audio_dir (str): Directory containing class folders with audio files
+            save (bool): Whether to save the trained model
+            progress_callback (callable): Optional callback for progress reporting
+            **kwargs: Additional model-specific parameters
+            
+        Returns:
+            dict: Training results
+        """
+        logging.info(f"Starting unified {model_type} model training with FeatureExtractor")
+        
+        # Initialize audio processing components
+        audio_preprocessor = AudioPreprocessor(
+            sample_rate=16000,
+            sound_threshold=0.008,
+            min_silence_duration=0.1,
+            target_duration=1.0,
+            normalize_audio=True
+        )
+        
+        # Initialize the feature extractor based on model type
+        if model_type == 'cnn':
+            unified_extractor = FeatureExtractor(
+                sample_rate=16000,
+                n_mels=64,
+                n_fft=1024,
+                hop_length=256
+            )
+        else:
+            unified_extractor = FeatureExtractor(sample_rate=16000)
+            
+        logging.info("Initialized audio processing components for training")
+        
+        # Check if audio directory exists
+        if not os.path.exists(audio_dir):
+            error_msg = f"Audio directory {audio_dir} does not exist"
+            logging.error(error_msg)
+            return {"error": error_msg}
+        
+        # Get class directories
+        class_dirs = [d for d in os.listdir(audio_dir) 
+                     if os.path.isdir(os.path.join(audio_dir, d)) and not d.startswith('.')]
+        
+        if not class_dirs:
+            error_msg = f"No class directories found in {audio_dir}"
+            logging.error(error_msg)
+            return {"error": error_msg}
+        
+        class_dirs.sort()
+        
+        if progress_callback:
+            progress_callback(5, f"Found {len(class_dirs)} classes. Preprocessing and extracting features...")
+        
+        # First, preprocess all audio files to ensure consistency
+        preprocessed_files = []
+        class_labels = []
+        
+        try:
+            # Process each class directory
+            for class_idx, class_dir in enumerate(class_dirs):
+                class_path = os.path.join(audio_dir, class_dir)
+                wav_files = [f for f in os.listdir(class_path) if f.endswith('.wav')]
+                
+                if not wav_files:
+                    logging.warning(f"No .wav files found in {class_path}")
+                    continue
+                
+                logging.info(f"Preprocessing {len(wav_files)} files for class {class_dir}")
+                
+                # Process each file in the class
+                for file_idx, wav_file in enumerate(wav_files):
+                    file_path = os.path.join(class_path, wav_file)
+                    
+                    try:
+                        # Preprocess the audio file
+                        processed_audio = audio_preprocessor.preprocess_file(file_path)
+                        
+                        if processed_audio is not None:
+                            preprocessed_files.append((processed_audio, file_path))
+                            class_labels.append(class_dir)
+                            
+                            # Report progress
+                            if progress_callback and (file_idx % 5 == 0 or file_idx == len(wav_files) - 1):
+                                total_progress = int(5 + (class_idx * len(wav_files) + file_idx) / 
+                                                  (len(class_dirs) * len(wav_files)) * 15)  # 5-20% of total
+                                progress_callback(
+                                    total_progress,
+                                    f"Preprocessing {class_dir}: {file_idx+1}/{len(wav_files)} files"
+                                )
+                    except Exception as e:
+                        logging.error(f"Error preprocessing {file_path}: {str(e)}")
+            
+            if len(preprocessed_files) == 0:
+                error_msg = "No valid audio files found after preprocessing. Check audio files."
+                logging.error(error_msg)
+                if progress_callback:
+                    progress_callback(0, f"Error: {error_msg}")
+                return {'status': 'error', 'message': error_msg}
+            
+            if progress_callback:
+                progress_callback(20, f"Preprocessing complete. Extracting features from {len(preprocessed_files)} files...")
+        
+            # Now extract features from the preprocessed audio
+            X = []
+            y = []
+            
+            for idx, (processed_audio, file_path) in enumerate(preprocessed_files):
+                try:
+                    # Extract all features
+                    all_features = unified_extractor.extract_features(processed_audio, is_file=False)
+                    
+                    # Extract model-specific features
+                    features = unified_extractor.extract_features_for_model(all_features, model_type=model_type)
+                    
+                    if features is not None:
+                        X.append(features)
+                        y.append(class_labels[idx])
+                        
+                        # Report progress
+                        if progress_callback and (idx % 5 == 0 or idx == len(preprocessed_files) - 1):
+                            total_progress = int(20 + (idx / len(preprocessed_files) * 15))  # 20-35% of total
+                            progress_callback(
+                                total_progress,
+                                f"Extracting features: {idx+1}/{len(preprocessed_files)} files"
+                            )
+                except Exception as e:
+                    logging.error(f"Error extracting features from {file_path}: {str(e)}")
+            
+            # Convert to arrays
+            X = np.array(X)
+            y = np.array(y)
+            class_names = np.unique(y).tolist()
+            
+            # Create stats
+            stats = {
+                'total_samples': len(X),
+                'class_counts': {c: np.sum(y == c) for c in class_names},
+                'preprocessing_method': 'unified_audio_preprocessor',
+                'feature_extractor': 'unified_feature_extractor'
+            }
+            
+            logging.info(f"Feature extraction complete: {len(X)} samples processed with shapes: {X.shape}")
+            
+            # Check if we have any samples at all
+            if len(X) == 0:
+                error_msg = "No valid samples extracted for training. Check audio files and feature extraction process."
+                logging.error(error_msg)
+                if progress_callback:
+                    progress_callback(0, f"Error: {error_msg}")
+                return {'status': 'error', 'message': error_msg}
+                
+            # Check if we have enough samples for each class
+            unique_classes, class_counts = np.unique(y, return_counts=True)
+            min_samples_needed = 5  # Minimum needed for splitting into train/val
+            
+            if len(unique_classes) < 2:
+                error_msg = f"Need at least 2 classes, but only found {len(unique_classes)}."
+                logging.error(error_msg)
+                if progress_callback:
+                    progress_callback(0, f"Error: {error_msg}")
+                return {'status': 'error', 'message': error_msg}
+                
+            for cls, count in zip(unique_classes, class_counts):
+                if count < min_samples_needed:
+                    error_msg = f"Class '{cls}' has only {count} samples. Need at least {min_samples_needed} samples per class."
+                    logging.error(error_msg)
+                    if progress_callback:
+                        progress_callback(0, f"Error: {error_msg}")
+                    return {'status': 'error', 'message': error_msg}
+                    
+            if progress_callback:
+                progress_callback(35, "Feature extraction complete, starting model training")
+            
+            # Train the model based on type
+            if model_type == 'cnn':
+                # For CNN models, reshape X if needed to match expected input shape
+                # (The extractor should already return with the right shape)
+                if len(X.shape) == 3:  # (samples, time_steps, mel_bands)
+                    X = X.reshape(X.shape[0], X.shape[1], X.shape[2], 1)
+                
+                logging.info(f"Preparing data for CNN training: X shape={X.shape}, y unique values={np.unique(y)}")
+                
+                try:
+                    # Split the data into training and validation sets (80/20 split)
+                    from sklearn.model_selection import train_test_split
+                    X_train, X_val, y_train_indices, y_val_indices = train_test_split(
+                        X, np.arange(len(y)), test_size=0.2, random_state=42, stratify=y
+                    )
+                    
+                    # Convert class names to one-hot encoded labels
+                    from tensorflow.keras.utils import to_categorical
+                    
+                    # Create a mapping from class names to indices
+                    class_to_index = {class_name: i for i, class_name in enumerate(class_names)}
+                    logging.info(f"Class to index mapping: {class_to_index}")
+                    
+                    # Convert string labels to indices
+                    y_train = np.array([class_to_index[class_name] for class_name in y[y_train_indices]])
+                    y_val = np.array([class_to_index[class_name] for class_name in y[y_val_indices]])
+                    
+                    # Convert to one-hot encoding
+                    y_train_onehot = to_categorical(y_train, num_classes=len(class_names))
+                    y_val_onehot = to_categorical(y_val, num_classes=len(class_names))
+                    
+                    # Log data shapes for debugging
+                    logging.info(f"X_train shape: {X_train.shape}, y_train shape: {y_train_onehot.shape}")
+                    logging.info(f"X_val shape: {X_val.shape}, y_val shape: {y_val_onehot.shape}")
+                    
+                    # Create the data dictionary that _train_cnn_model expects
+                    data_dict = {
+                        'train': (X_train, y_train_onehot),
+                        'val': (X_val, y_val_onehot)
+                    }
+                    
+                    # Call existing CNN training method
+                    if progress_callback:
+                        # Create a wrapper to forward progress updates
+                        def cnn_progress_callback(epoch, logs):
+                            # Report model training progress (35-95%)
+                            epochs = kwargs.get('epochs', 50)
+                            progress = 35 + int((epoch / epochs) * 60)
+                            progress_callback(progress, f"Training epoch {epoch+1}/{epochs}")
+                        
+                        # Add callback to kwargs
+                        kwargs['custom_callback'] = cnn_progress_callback
+                    
+                    result = self._train_cnn_model(
+                        data_dict,
+                        len(class_names),
+                        class_names,
+                        save=save,
+                        **kwargs
+                    )
+                except Exception as e:
+                    error_msg = f"Error preparing data for CNN training: {str(e)}"
+                    logging.error(error_msg)
+                    logging.error(traceback.format_exc())
+                    if progress_callback:
+                        progress_callback(35, f"Error: {error_msg}")
+                    return {'status': 'error', 'message': error_msg}
+            elif model_type == 'rf':
+                # Call existing RF training method with our dataset
+                if progress_callback:
+                    # This is just an estimate since RF doesn't have clear progress reporting
+                    progress_callback(50, "Training Random Forest model")
+                
+                result = self._train_rf_model(
+                    (X, y, class_names, stats),
+                    save=save,
+                    **kwargs
+                )
+                
+                # Report completion for RF model
+                if progress_callback and result.get('status') == 'success':
+                    progress_callback(95, "Random Forest training complete, finalizing model")
+            else:  # ensemble or other
+                error_msg = f"Unsupported model type for unified training: {model_type}"
+                logging.error(error_msg)
+                if progress_callback:
+                    progress_callback(35, f"Error: {error_msg}")
+                return {'status': 'error', 'message': error_msg}
+            
+            # Report final status
+            if progress_callback:
+                if result.get('status') == 'success':
+                    progress_callback(100, "Training complete!")
+                else:
+                    progress_callback(
+                        min(95, current_app.training_progress if hasattr(current_app, 'training_progress') else 35), 
+                        f"Training failed: {result.get('message', 'Unknown error')}"
+                    )
+            
+            return result 
+            
+        except Exception as e:
+            error_msg = f"Error during feature extraction: {str(e)}"
+            logging.error(error_msg)
+            logging.error(traceback.format_exc())
+            if progress_callback:
+                progress_callback(5, f"Error: {error_msg}")
+            return {'status': 'error', 'message': error_msg} 

@@ -11,7 +11,7 @@ import pyaudio
 import wave
 import time
 from threading import Thread, Lock
-from .audio_feature_extractor import AudioFeatureExtractor
+from backend.features.extractor import FeatureExtractor
 
 class SoundDetectorRF:
     """
@@ -19,21 +19,25 @@ class SoundDetectorRF:
     This class manages audio input, processing, and prediction for RF models.
     """
     
-    def __init__(self, model, sound_classes, preprocessing_params=None):
+    def __init__(self, model, sound_classes=None, preprocessing_params=None, use_ambient_noise=False):
         """
         Initialize the RF sound detector.
         
         Args:
-            model: RF model to use for prediction
+            model (RandomForestClassifier): Random Forest classifier model
             sound_classes (list): List of sound class names
             preprocessing_params (dict): Parameters for audio preprocessing
+            use_ambient_noise (bool): Whether to measure ambient noise before listening
         """
         self.model = model
-        self.sound_classes = sound_classes
+        self.sound_classes = sound_classes or []
+        self.use_ambient_noise = use_ambient_noise
+        self.ambient_noise_level = None
         
         # Default preprocessing parameters
         self.preprocessing_params = preprocessing_params or {
             "sample_rate": 22050,
+            "n_mfcc": 13,
             "sound_threshold": 0.01,
             "min_silence_duration": 0.5,
             "trim_silence": True,
@@ -48,6 +52,7 @@ class SoundDetectorRF:
         self.min_silence_duration = self.preprocessing_params.get("min_silence_duration", 0.5)
         self.trim_silence = self.preprocessing_params.get("trim_silence", True)
         self.normalize_audio = self.preprocessing_params.get("normalize_audio", True)
+        self.n_mfcc = self.preprocessing_params.get("n_mfcc", 13)
         
         # Initialize sound processor
         self.sound_processor = SoundProcessor(
@@ -58,10 +63,8 @@ class SoundDetectorRF:
             normalize_audio=self.normalize_audio
         )
         
-        # Initialize audio feature extractor
-        self.feature_extractor = AudioFeatureExtractor(
-            sample_rate=self.sample_rate
-        )
+        # Initialize feature extractor - using the unified feature extractor for consistency
+        self.feature_extractor = FeatureExtractor(sample_rate=self.sample_rate, use_cache=True)
         
         # PyAudio setup
         self.audio = pyaudio.PyAudio()
@@ -78,18 +81,70 @@ class SoundDetectorRF:
         self.sound_start_time = 0
         self.predictions = []
         
-        logging.info(f"SoundDetectorRF initialized with {len(sound_classes)} classes")
+        logging.info(f"SoundDetectorRF initialized with {len(sound_classes)} classes and ambient_noise={use_ambient_noise}")
     
-    def start_listening(self):
-        """Start audio stream and listen for sounds."""
+    def start_listening(self, callback=None):
+        """
+        Start audio stream and listen for sounds.
+        
+        Args:
+            callback (function): Callback function for prediction results
+            
+        Returns:
+            bool: True if started successfully, False otherwise
+        """
         if self.is_listening:
             logging.warning("Already listening")
-            return
+            return False
         
         self.is_listening = True
         self.buffer = []
+        self.callback = callback  # Store callback for later use
         
-        # Open audio stream
+        # Measure ambient noise if requested
+        if self.use_ambient_noise:
+            logging.info("Measuring ambient noise before starting RF detection...")
+            # Create a temporary audio stream to measure ambient noise
+            temp_stream = self.audio.open(
+                format=pyaudio.paFloat32,
+                channels=1,
+                rate=self.sample_rate,
+                input=True,
+                frames_per_buffer=1024
+            )
+            
+            # Collect 3 seconds of audio for ambient noise measurement
+            ambient_frames = []
+            for _ in range(0, int(self.sample_rate / 1024 * 3)):  # 3 seconds of frames
+                try:
+                    data = temp_stream.read(1024)
+                    ambient_frames.append(np.frombuffer(data, dtype=np.float32))
+                except Exception as e:
+                    logging.error(f"Error reading ambient noise: {e}")
+            
+            # Close temporary stream
+            temp_stream.stop_stream()
+            temp_stream.close()
+            
+            # Process ambient noise frames
+            if ambient_frames:
+                ambient_audio = np.concatenate(ambient_frames)
+                # Calculate RMS of ambient noise
+                self.ambient_noise_level = np.sqrt(np.mean(ambient_audio**2))
+                logging.info(f"Measured ambient noise level: {self.ambient_noise_level:.6f}")
+                
+                # Update sound threshold based on ambient noise
+                if self.ambient_noise_level > 0:
+                    # Use 2x ambient noise as threshold for sound detection (reduced from 3x)
+                    self.sound_threshold = max(self.sound_threshold, self.ambient_noise_level * 2.0)
+                    logging.info(f"Updated sound threshold to {self.sound_threshold:.6f}")
+                    
+                    # Update the sound processor with the new threshold
+                    self.sound_processor.sound_threshold = self.sound_threshold
+            else:
+                logging.warning("Failed to collect ambient noise samples")
+        
+        # Open audio stream for main listening
         self.stream = self.audio.open(
             format=pyaudio.paFloat32,
             channels=1,
@@ -99,7 +154,8 @@ class SoundDetectorRF:
             stream_callback=self.audio_callback
         )
         
-        logging.info(f"Started listening with sample rate {self.sample_rate}")
+        logging.info(f"Started RF listening with sample rate {self.sample_rate}")
+        return True
     
     def stop_listening(self):
         """Stop audio stream."""
@@ -184,56 +240,40 @@ class SoundDetectorRF:
             # Process audio data
             logging.info(f"Processing audio data of shape {audio_data.shape}")
             
-            # Create a temporary WAV file for feature extraction
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                temp_path = temp_file.name
-                
-                # Save audio data to WAV file
-                with wave.open(temp_path, 'wb') as wf:
-                    wf.setnchannels(1)
-                    wf.setsampwidth(4)  # 32-bit float
-                    wf.setframerate(self.sample_rate)
-                    wf.writeframes(audio_data.tobytes())
+            # Extract features using the unified feature extractor
+            all_features = self.feature_extractor.extract_features(audio_data, is_file=False)
+            features = self.feature_extractor.extract_features_for_model(all_features, model_type='rf')
             
-            try:
-                # Extract features using feature extractor
-                features = self.feature_extractor.extract_features(temp_path)
-                
-                if features is None:
-                    logging.error("Failed to extract features")
-                    return {'class': 'error', 'confidence': 0}
-                
-                # Make prediction with RF model
-                probabilities = self.model.predict_proba([features])[0]
-                
-                # Get top prediction
-                top_idx = np.argmax(probabilities)
-                top_class = self.sound_classes[top_idx]
-                top_confidence = float(probabilities[top_idx])
-                
-                # Create prediction result
-                result = {
-                    'class': top_class,
-                    'confidence': top_confidence,
-                    'probabilities': {
-                        self.sound_classes[i]: float(p) 
-                        for i, p in enumerate(probabilities)
-                    }
+            if features is None:
+                logging.error("Failed to extract features")
+                return {'class': 'error', 'confidence': 0}
+            
+            # Make prediction with RF model
+            probabilities = self.model.predict_proba([features])[0]
+            
+            # Get top prediction
+            top_idx = np.argmax(probabilities)
+            top_class = self.sound_classes[top_idx]
+            top_confidence = float(probabilities[top_idx])
+            
+            # Create prediction result
+            result = {
+                'class': top_class,
+                'confidence': top_confidence,
+                'probabilities': {
+                    self.sound_classes[i]: float(p) 
+                    for i, p in enumerate(probabilities)
                 }
-                
-                # Add to predictions list
-                self.predictions.append(result)
-                if len(self.predictions) > 5:
-                    self.predictions = self.predictions[-5:]
-                
-                logging.info(f"Prediction: {top_class} with confidence {top_confidence:.4f}")
-                
-                return result
+            }
             
-            finally:
-                # Clean up temp file
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
+            # Add to predictions list
+            self.predictions.append(result)
+            if len(self.predictions) > 5:
+                self.predictions = self.predictions[-5:]
+            
+            logging.info(f"Prediction: {top_class} with confidence {top_confidence:.4f}")
+            
+            return result
         
         except Exception as e:
             logging.error(f"Error processing audio: {e}", exc_info=True)

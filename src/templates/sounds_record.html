@@ -199,23 +199,28 @@
                     Please select or create a sound class first to enable recording.
                 </div>
                 
-                <div id="recordControls" class="text-center mb-4">
-                    <div class="record-btn" id="recordButton" style="opacity: 0.5; cursor: not-allowed;">
-                        <i class="bi bi-mic-fill"></i>
+                <div class="recording-controls d-flex flex-column align-items-center mb-4">
+                    <div class="record-btn" id="recordBtn">
+                        <i class="fas fa-microphone"></i>
                     </div>
-                    <div class="recording-status mt-2" id="recordingStatus">Select a class to enable recording</div>
-                    <span id="recordingTime" class="badge bg-danger" style="display: none;">00:00</span>
+                    <span class="mt-2" id="recordStatus">Click to start recording</span>
+                    <div class="recording-time mt-2 d-none" id="recordingTime">00:00</div>
                     
-                    <!-- Ambient Noise Detection Switch -->
-                    <div class="form-check form-switch mt-3 d-flex justify-content-center align-items-center">
-                        <input class="form-check-input me-2" type="checkbox" id="ambientNoiseSwitch">
-                        <label class="form-check-label" for="ambientNoiseSwitch">
-                            <i class="bi bi-soundwave me-1"></i>Check Ambient Noise
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="ambientNoise">
+                        <label class="form-check-label" for="ambientNoise">
+                            Measure ambient noise before recording
                         </label>
-                        <span class="ms-2 badge bg-secondary" id="ambientNoiseStatus">Off</span>
                     </div>
-                    <div class="small text-muted mb-3">
-                        Turn on to measure background noise before recording
+                    
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="useUnifiedProcessor" checked>
+                        <label class="form-check-label" for="useUnifiedProcessor">
+                            Use enhanced audio processing (recommended)
+                        </label>
+                        <small class="form-text text-muted d-block">
+                            Improves sound detection accuracy and ensures consistency between training and inference
+                        </small>
                     </div>
                 </div>
                 
@@ -407,15 +412,15 @@
         const createClassBtn = document.getElementById('createClassBtn');
         const addToDictionaryBtn = document.getElementById('addToDictionaryBtn');
 
-        const recordButton = document.getElementById('recordButton');
-        const recordingStatus = document.getElementById('recordingStatus');
+        const recordButton = document.getElementById('recordBtn');
+        const recordingStatus = document.getElementById('recordStatus');
         const recordingInstructions = document.getElementById('recordingInstructions');
         const currentClassInfo = document.getElementById('currentClassInfo');
         const processControls = document.getElementById('processControls');
         const recentRecordings = document.getElementById('recentRecordings');
         const noRecordingsMessage = document.getElementById('noRecordingsMessage');
         const recordingTime = document.getElementById('recordingTime');
-        const ambientNoiseSwitch = document.getElementById('ambientNoiseSwitch');
+        const ambientNoiseSwitch = document.getElementById('ambientNoise');
         const ambientNoiseStatus = document.getElementById('ambientNoiseStatus');
 
         // Variables to track state
@@ -765,6 +770,10 @@
             
             // Add ambient noise detection flag
             formData.append('measure_ambient', ambientNoiseSwitch.checked ? 'true' : 'false');
+            
+            // Add unified processor flag
+            const useUnifiedProcessor = document.getElementById('useUnifiedProcessor');
+            formData.append('use_unified', useUnifiedProcessor && useUnifiedProcessor.checked ? 'true' : 'false');
             
             // Send the recording to the ML processing pipeline
             fetch('/api/ml/record', {

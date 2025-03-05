@@ -13,7 +13,7 @@
 }
 .recording-controls {
     text-align: center;
-    margin: 2rem 0;
+    margin: 1rem 0;
 }
 .waveform-container {
     height: 100px;
@@ -22,7 +22,7 @@
     margin-bottom: 1rem;
 }
 .prediction-result {
-    margin-top: 2rem;
+    margin-top: 1rem;
     padding: 1.5rem;
     border-radius: 10px;
     background-color: #f8f9fa;
@@ -171,22 +171,22 @@
 
 {% block content %}
 <div class="predict-container">
-<div class="row mb-4">
-    <div class="col-12">
-        <h1 class="page-title">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
                 <i class="bi bi-ear-fill me-2"></i>Real-Time Sound Predictor
-        </h1>
+            </h1>
             <p class="text-muted">Test your trained models with real-time sound classification</p>
+        </div>
     </div>
-</div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
+    <div class="row mb-4">
+        <div class="col-md-6">
             <div class="card model-card">
-            <div class="card-body">
-                <h5 class="card-title">
+                <div class="card-body">
+                    <h5 class="card-title">
                         <i class="bi bi-file-earmark-binary me-2"></i>Select a Prediction Model
-                </h5>
+                    </h5>
                     <p class="text-muted">Choose a trained model for sound prediction</p>
                     
                     <div id="modelsList" class="mb-3">
@@ -196,27 +196,27 @@
                         </div>
                     </div>
                 
-                <div id="modelInfo" class="mt-3" style="display: none;">
-                    <h6>Model Information:</h6>
-                    <div class="row">
-                        <div class="col-md-6">
+                    <div id="modelInfo" class="mt-3" style="display: none;">
+                        <h6>Model Information:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
                                 <p><strong>Learning Type:</strong> <span id="modelType">-</span></p>
-                        </div>
-                        <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
                                 <p><strong>Dictionary:</strong> <span id="dictionaryName">-</span></p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-6">
+        
+        <div class="col-md-6">
             <div class="card model-card">
-            <div class="card-body">
-                <h5 class="card-title">
+                <div class="card-body">
+                    <h5 class="card-title">
                         <i class="bi bi-mic-fill me-2"></i>Available Sound Classes
-                </h5>
+                    </h5>
                     <p class="text-muted">These are the sound classes that can be recognized</p>
                     
                     <div class="sounds-list" id="soundsList">
@@ -229,141 +229,172 @@
                     </div>
                     
                     <div id="listenControls" class="text-center mt-3" style="display: none;">
+                        <!-- Add ambient noise measurement switch -->
+                        <div class="form-check form-switch d-flex justify-content-center align-items-center mb-3">
+                            <input class="form-check-input me-2" type="checkbox" id="ambientNoiseSwitch">
+                            <label class="form-check-label" for="ambientNoiseSwitch">
+                                <i class="bi bi-soundwave me-1"></i>Check Ambient Noise
+                            </label>
+                            <span class="ms-2 badge bg-secondary" id="ambientNoiseStatus">Off</span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            Turn on to measure background noise before recording
+                        </div>
                         <button class="btn btn-primary btn-lg" id="listenButton">
                             <i class="bi bi-mic-fill me-2"></i>Listen
                         </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Real-Time Predictor moved directly under Available Sound Classes -->
+            <div id="predictorInterface" class="card mt-3" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-soundwave me-2"></i>Real-Time Predictor
+                    </h5>
+                    
+                    <div class="recording-controls">
+                        <div class="waveform-container" id="waveform">
+                            <!-- Waveform visualization will be shown here -->
+                        </div>
+                        
+                        <div id="listeningIndicator" class="mt-3 mb-3" style="display: none;">
+                            <span class="badge bg-danger listening-active">Listening...</span>
+                            <p class="text-muted mt-2">Speak one of the available sound classes</p>
+                        </div>
+                        
+                        <!-- Add speech detection indicator below the listening indicator -->
+                        <div id="speechDetectedIndicator" class="alert alert-warning mt-2 mb-2" style="display: none;">
+                            <i class="bi bi-volume-up me-2"></i>
+                            <span>Speech detected but not loud enough for accurate classification. Try speaking louder or reducing ambient noise.</span>
+                        </div>
+
+                        <!-- Add noise calibration indicator -->
+                        <div id="noiseCalibrationIndicator" class="alert alert-info mt-2 mb-2" style="display: none;">
+                            <i class="bi bi-soundwave me-2"></i>
+                            <span>Measuring ambient noise... Please stay quiet.</span>
+                            <div class="progress mt-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Latest Prediction - moved directly under Real-Time Predictor -->
+            <div id="latestPrediction" class="prediction-result mt-3" style="display: none;">
+                <h5><i class="bi bi-soundwave me-2"></i>Latest Prediction</h5>
+                
+                <div class="result-label text-center">
+                    <span id="predictedClass">Unknown</span>
+                    <div class="fs-6 text-muted" id="confidenceValue">0% confidence</div>
+                </div>
+                
+                <div class="feedback-form">
+                    <h6>Was this prediction correct?</h6>
+                    <p class="text-muted">Please select what you actually said:</p>
+                    
+                    <div class="feedback-options" id="feedbackOptions">
+                        <!-- Feedback options will be loaded here -->
+                        {% if active_dict and active_dict.sounds %}
+                            {% for sound in active_dict.sounds %}
+                                <div class="feedback-option">
+                                    <input type="radio" name="feedbackSound" id="sound_{{ sound }}" value="{{ sound }}" class="form-check-input">
+                                    <label for="sound_{{ sound }}" class="form-check-label">{{ sound }}</label>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary" id="submitFeedbackBtn" disabled>
+                            <i class="bi bi-check2-circle me-1"></i>Submit Feedback
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Latest Prediction - moved directly under Available Sound Classes -->
-        <div id="latestPrediction" class="prediction-result mt-3" style="display: none;">
-            <h5><i class="bi bi-soundwave me-2"></i>Latest Prediction</h5>
-            
-            <div class="result-label text-center">
-                <span id="predictedClass">Unknown</span>
-                <div class="fs-6 text-muted" id="confidenceValue">0% confidence</div>
+    </div>
+
+    <!-- Prediction History in full width column below -->
+    <div class="row">
+        <div class="col-12">
+            <!-- Prediction History -->
+            <div id="predictionHistory" class="mt-4" style="display: none;">
+                <h5><i class="bi bi-clock-history me-2"></i>Prediction History</h5>
+                <div class="prediction-history" id="predictionsList">
+                    <!-- Prediction history will be added here -->
+                </div>
             </div>
-            
-            <div class="feedback-form">
-                <h6>Was this prediction correct?</h6>
-                <p class="text-muted">Please select what you actually said:</p>
+
+            <!-- Statistics -->
+            <div id="statistics" class="statistics-container mt-4">
+                <h5><i class="bi bi-bar-chart-fill me-2"></i>Prediction Statistics</h5>
                 
-                <div class="feedback-options" id="feedbackOptions">
-                    <!-- Feedback options will be loaded here -->
-                    {% if active_dict and active_dict.sounds %}
-                        {% for sound in active_dict.sounds %}
-                            <div class="feedback-option">
-                                <input type="radio" name="feedbackSound" id="sound_{{ sound }}" value="{{ sound }}" class="form-check-input">
-                                <label for="sound_{{ sound }}" class="form-check-label">{{ sound }}</label>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6>Total Predictions</h6>
+                                <h3 id="totalPredictions">0</h3>
                             </div>
-                        {% endfor %}
-                    {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6>Average Confidence</h6>
+                                <h3 id="avgConfidence">0%</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6>Overall Accuracy</h6>
+                                <h3 id="overallAccuracy">0%</h3>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="text-center mt-3">
-                    <button class="btn btn-primary" id="submitFeedbackBtn" disabled>
-                        <i class="bi bi-check2-circle me-1"></i>Submit Feedback
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h6>Class Accuracy</h6>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Sound Class</th>
+                                    <th>Total</th>
+                                    <th>Correct</th>
+                                    <th>Accuracy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classAccuracyTable">
+                                <!-- Class accuracy will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h6>Confusion Matrix</h6>
+                        <div class="table-responsive">
+                            <table class="confusion-matrix" id="confusionMatrix">
+                                <!-- Confusion matrix will be loaded here -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-primary" id="saveAnalysisBtn">
+                        <i class="bi bi-save me-1"></i>Save Analysis
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-    <!-- Real-Time Prediction Interface -->
-    <div id="predictorInterface" class="card" style="display: none;">
-    <div class="card-body">
-        <h5 class="card-title">
-                <i class="bi bi-soundwave me-2"></i>Real-Time Predictor
-        </h5>
-        
-        <div class="recording-controls">
-            <div class="waveform-container" id="waveform">
-                    <!-- Waveform visualization will be shown here -->
-            </div>
-            
-                <div id="listeningIndicator" class="mt-3 mb-3" style="display: none;">
-                    <span class="badge bg-danger listening-active">Listening...</span>
-                    <p class="text-muted mt-2">Speak one of the available sound classes</p>
-                </div>
-            </div>
-        </div>
-    </div>
-            
-    <!-- Prediction History -->
-    <div id="predictionHistory" class="mt-4" style="display: none;">
-        <h5><i class="bi bi-clock-history me-2"></i>Prediction History</h5>
-        <div class="prediction-history" id="predictionsList">
-            <!-- Prediction history will be added here -->
-        </div>
-    </div>
-
-    <!-- Statistics -->
-    <div id="statistics" class="statistics-container mt-4">
-        <h5><i class="bi bi-bar-chart-fill me-2"></i>Prediction Statistics</h5>
-        
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>Total Predictions</h6>
-                        <h3 id="totalPredictions">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>Average Confidence</h6>
-                        <h3 id="avgConfidence">0%</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>Overall Accuracy</h6>
-                        <h3 id="overallAccuracy">0%</h3>
-                    </div>
-                </div>
-            </div>
-    </div>
-    
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <h6>Class Accuracy</h6>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Sound Class</th>
-                            <th>Total</th>
-                            <th>Correct</th>
-                            <th>Accuracy</th>
-                        </tr>
-                    </thead>
-                    <tbody id="classAccuracyTable">
-                        <!-- Class accuracy will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-    </div>
-    
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <h6>Confusion Matrix</h6>
-                <div class="table-responsive">
-                    <table class="confusion-matrix" id="confusionMatrix">
-                        <!-- Confusion matrix will be loaded here -->
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <div class="text-center mt-4">
-            <button class="btn btn-outline-primary" id="saveAnalysisBtn">
-                <i class="bi bi-save me-1"></i>Save Analysis
-        </button>
         </div>
     </div>
 </div>
@@ -424,6 +455,21 @@ document.addEventListener('DOMContentLoaded', function() {
             activeSound = this.value;
         });
     });
+    
+    // Setup ambient noise switch
+    const ambientNoiseSwitch = document.getElementById('ambientNoiseSwitch');
+    const ambientNoiseStatus = document.getElementById('ambientNoiseStatus');
+    if (ambientNoiseSwitch) {
+        ambientNoiseSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                ambientNoiseStatus.textContent = 'On';
+                ambientNoiseStatus.className = 'ms-2 badge bg-success';
+            } else {
+                ambientNoiseStatus.textContent = 'Off';
+                ambientNoiseStatus.className = 'ms-2 badge bg-secondary';
+            }
+        });
+    }
 });
 
 function loadAvailableModels() {
@@ -998,8 +1044,25 @@ function startListening() {
     listenButton.classList.remove('btn-primary');
     listenButton.classList.add('btn-danger');
     
-    // Show listening indicator
-    document.getElementById('listeningIndicator').style.display = 'block';
+    // Get ambient noise setting
+    const useAmbientNoise = document.getElementById('ambientNoiseSwitch')?.checked || false;
+    console.log('📋 DEBUG: Using ambient noise measurement:', useAmbientNoise);
+    
+    // Show appropriate indicators
+    if (useAmbientNoise) {
+        // Show noise calibration indicator
+        document.getElementById('noiseCalibrationIndicator').style.display = 'block';
+        document.getElementById('listeningIndicator').style.display = 'none';
+        
+        // Set a timer to hide calibration and show listening indicator after 4 seconds (3s measurement + buffer)
+        setTimeout(() => {
+            document.getElementById('noiseCalibrationIndicator').style.display = 'none';
+            document.getElementById('listeningIndicator').style.display = 'block';
+        }, 4000);
+    } else {
+        // Show listening indicator immediately
+        document.getElementById('listeningIndicator').style.display = 'block';
+    }
     
     // Start listening API call with the full model ID
     console.log('📋 DEBUG: Sending request to /api/start_listening with model_id:', selectedModel);
@@ -1013,7 +1076,8 @@ function startListening() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model_id: selectedModel
+            model_id: selectedModel,
+            use_ambient_noise: useAmbientNoise
         })
     })
     .then(response => {
@@ -1095,45 +1159,36 @@ function startPredictionStream() {
     
     console.log('📋 DEBUG: Starting prediction stream');
     
-    // Make sure we're using the correct endpoint
-    const streamEndpoint = '/api/ml/prediction_stream';
-    
-    eventSource = new EventSource(streamEndpoint);
+    // Set up EventSource for real-time predictions
+    eventSource = new EventSource('/api/ml/prediction_stream');
     
     eventSource.onmessage = function(event) {
-        console.log('📋 DEBUG: Received event from stream:', event.data);
-        
-        if (event.data === ": heartbeat") {
-            console.log('📋 DEBUG: Received heartbeat');
-        return;
-    }
-    
         try {
+            console.log('📋 DEBUG: Received event from stream:', event.data);
+            
+            // Parse the event data
             const data = JSON.parse(event.data);
             console.log('📋 DEBUG: Parsed event data:', data);
             
-            if (data.prediction) {
-                // Update UI with prediction
-                updatePredictionUI(data.prediction);
-            }
-            
+            // Check if this is a log message or prediction
             if (data.log) {
                 console.log('📋 DEBUG: Log message from server:', data.log);
             }
-        } catch (e) {
-            console.error('📋 DEBUG: Error parsing event data:', e, event.data);
+            
+            // Check if this has prediction data
+            if (data.prediction) {
+                console.log('📋 DEBUG: Received prediction:', data.prediction);
+                updatePredictionUI(data.prediction.prediction);
+            }
+        } catch (error) {
+            console.error('📋 DEBUG: Error parsing event:', error);
         }
     };
     
     eventSource.onerror = function(error) {
         console.error('📋 DEBUG: EventSource error:', error);
         
-        if (eventSource.readyState === EventSource.CLOSED) {
-            console.log('📋 DEBUG: EventSource connection closed');
-        } else {
-            console.error('📋 DEBUG: EventSource failed');
-        }
-        
+        // Clean up and reset if connection closed
         eventSource.close();
         resetListeningUI();
     };
@@ -1142,13 +1197,31 @@ function startPredictionStream() {
 }
 
 function updatePredictionUI(prediction) {
+    if (!prediction) {
+        console.error('📋 DEBUG: Null prediction received');
+        return;
+    }
+    
+    console.log('📋 DEBUG: Updating UI with prediction:', prediction);
+    
     // Store current prediction for feedback
     currentPrediction = prediction;
     
     // Update latest prediction display
     document.getElementById('latestPrediction').style.display = 'block';
-    document.getElementById('predictedClass').textContent = prediction.class;
-    document.getElementById('confidenceValue').textContent = `${(prediction.confidence * 100).toFixed(1)}% confidence`;
+    
+    if (prediction.class) {
+        document.getElementById('predictedClass').textContent = prediction.class;
+    } else {
+        document.getElementById('predictedClass').textContent = 'Unknown';
+    }
+    
+    if (prediction.confidence !== undefined && prediction.confidence !== null) {
+        const confidencePercent = (prediction.confidence * 100).toFixed(1);
+        document.getElementById('confidenceValue').textContent = `${confidencePercent}% confidence`;
+    } else {
+        document.getElementById('confidenceValue').textContent = 'Unknown confidence';
+    }
     
     // Reset feedback form
     document.querySelectorAll('input[name="feedbackSound"]').forEach(input => {
@@ -1174,11 +1247,15 @@ function addToPredictionHistory(prediction) {
     
     const soundSpan = document.createElement('span');
     soundSpan.className = 'sound';
-    soundSpan.textContent = prediction.class;
+    soundSpan.textContent = prediction.class || 'Unknown';
     
     const confidenceSpan = document.createElement('span');
     confidenceSpan.className = 'confidence';
-    confidenceSpan.textContent = `${(prediction.confidence * 100).toFixed(1)}%`;
+    if (prediction.confidence !== undefined && prediction.confidence !== null) {
+        confidenceSpan.textContent = `${(prediction.confidence * 100).toFixed(1)}%`;
+    } else {
+        confidenceSpan.textContent = 'Unknown confidence';
+    }
     
     infoDiv.appendChild(soundSpan);
     infoDiv.appendChild(document.createTextNode(' - '));
@@ -1248,12 +1325,31 @@ function submitFeedback() {
 }
 
 function updateStatistics() {
+    console.log('📋 DEBUG: Fetching statistics from /api/ml/inference_statistics');
     fetch('/api/ml/inference_statistics')
-        .then(response => response.json())
+        .then(response => {
+            console.log(`📋 DEBUG: Statistics response status: ${response.status} ${response.statusText}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('📋 DEBUG: Received statistics data:', data);
+            
             // Update basic stats
             document.getElementById('totalPredictions').textContent = data.total_predictions || 0;
-            document.getElementById('avgConfidence').textContent = `${((data.average_confidence || 0) * 100).toFixed(1)}%`;
+            
+            // Handle average confidence carefully
+            let avgConfidence = 'N/A';
+            if (data.average_confidence !== undefined && data.average_confidence !== null) {
+                avgConfidence = `${(data.average_confidence * 100).toFixed(1)}%`;
+            } else if (data.confidence_levels && data.confidence_levels.length > 0) {
+                // Calculate average from raw confidence levels if available
+                const sum = data.confidence_levels.reduce((a, b) => a + b, 0);
+                avgConfidence = `${((sum / data.confidence_levels.length) * 100).toFixed(1)}%`;
+            }
+            document.getElementById('avgConfidence').textContent = avgConfidence;
             
             // Calculate overall accuracy
             let correctTotal = 0;
@@ -1263,41 +1359,78 @@ function updateStatistics() {
             classAccuracyTable.innerHTML = '';
             
             // Build class accuracy table
-            Object.entries(data.class_accuracy || {}).forEach(([className, stats]) => {
+            const classAccuracy = data.class_accuracy || {};
+            if (Object.keys(classAccuracy).length === 0) {
+                // No class accuracy data yet
                 const row = document.createElement('tr');
-                
-                const nameCell = document.createElement('td');
-                nameCell.textContent = className;
-                
-                const totalCell = document.createElement('td');
-                totalCell.textContent = stats.total_samples;
-                
-                const correctCell = document.createElement('td');
-                correctCell.textContent = stats.correct_samples;
-                
-                const accuracyCell = document.createElement('td');
-                accuracyCell.textContent = `${(stats.accuracy * 100).toFixed(1)}%`;
-                
-                row.appendChild(nameCell);
-                row.appendChild(totalCell);
-                row.appendChild(correctCell);
-                row.appendChild(accuracyCell);
-                
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.textContent = 'No accuracy data available yet';
+                cell.style.textAlign = 'center';
+                row.appendChild(cell);
                 classAccuracyTable.appendChild(row);
-                
-                correctTotal += stats.correct_samples;
-                totalPredictions += stats.total_samples;
-            });
+            } else {
+                // We have class accuracy data
+                Object.entries(classAccuracy).forEach(([className, stats]) => {
+                    const row = document.createElement('tr');
+                    
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = className;
+                    
+                    const totalCell = document.createElement('td');
+                    totalCell.textContent = stats.total_samples || 0;
+                    
+                    const correctCell = document.createElement('td');
+                    correctCell.textContent = stats.correct_samples || 0;
+                    
+                    const accuracyCell = document.createElement('td');
+                    if (stats.accuracy !== undefined) {
+                        accuracyCell.textContent = `${(stats.accuracy * 100).toFixed(1)}%`;
+                    } else if (stats.total_samples > 0) {
+                        // Calculate accuracy if not provided
+                        const acc = (stats.correct_samples || 0) / stats.total_samples;
+                        accuracyCell.textContent = `${(acc * 100).toFixed(1)}%`;
+                    } else {
+                        accuracyCell.textContent = 'N/A';
+                    }
+                    
+                    row.appendChild(nameCell);
+                    row.appendChild(totalCell);
+                    row.appendChild(correctCell);
+                    row.appendChild(accuracyCell);
+                    
+                    classAccuracyTable.appendChild(row);
+                    
+                    // Update running totals for overall accuracy
+                    correctTotal += (stats.correct_samples || 0);
+                    totalPredictions += (stats.total_samples || 0);
+                });
+            }
             
             // Set overall accuracy
-            const overallAccuracy = totalPredictions > 0 ? (correctTotal / totalPredictions) : 0;
-            document.getElementById('overallAccuracy').textContent = `${(overallAccuracy * 100).toFixed(1)}%`;
-            
-            // Build confusion matrix
-            buildConfusionMatrix(data.confusion_matrix || {});
+            let overallAccuracy = 'N/A';
+            if (totalPredictions > 0) {
+                overallAccuracy = `${((correctTotal / totalPredictions) * 100).toFixed(1)}%`;
+            }
+            document.getElementById('overallAccuracy').textContent = overallAccuracy;
         })
         .catch(error => {
-            console.error('Error fetching statistics:', error);
+            console.error('📋 DEBUG: Error fetching statistics:', error);
+            // Set default values on error
+            document.getElementById('totalPredictions').textContent = 'Error';
+            document.getElementById('avgConfidence').textContent = 'Error';
+            document.getElementById('overallAccuracy').textContent = 'Error';
+            
+            const classAccuracyTable = document.getElementById('classAccuracyTable');
+            classAccuracyTable.innerHTML = '';
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.textContent = `Error loading statistics: ${error.message}`;
+            cell.style.textAlign = 'center';
+            cell.style.color = 'red';
+            row.appendChild(cell);
+            classAccuracyTable.appendChild(row);
         });
 }
 
@@ -1446,23 +1579,63 @@ function createModelListItem(model, isLatest) {
 
 function loadSoundClassesForModel(modelId) {
     console.log(`📋 DEBUG: Loading sound classes for model: ${modelId}`);
+    
+    // Show debugging info about routes
+    console.log(`📋 DEBUG ROUTES INFO:`);
+    console.log(`📋 Current location: ${window.location.href}`);
+    console.log(`📋 All fetch URLs used:`)
+    console.log(`📋 - Models list: /api/ml/models`);
+    console.log(`📋 - Model metadata attempt 1: /model_metadata/${modelId}`);
+    console.log(`📋 - API route path: /api/ml/model_metadata/${modelId} (not currently used)`);
+    
+    // Add loading indicator
+    const soundsList = document.getElementById('soundsList');
+    soundsList.innerHTML = `
+        <div class="alert alert-info">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div>
+                    <strong>Loading sound classes for model ${modelId}...</strong>
+                </div>
+            </div>
+        </div>
+    `;
+    
     // Use the direct route instead
     fetch(`/model_metadata/${encodeURIComponent(modelId)}`)
     .then(response => {
+        console.log(`📋 DEBUG: Fetch response status: ${response.status} ${response.statusText}`);
+        console.log(`📋 DEBUG: Response headers:`, response.headers);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text().then(text => {
+                console.log(`📋 DEBUG: Error response body:`, text);
+                try {
+                    // Try to parse as JSON if possible
+                    const errorJson = JSON.parse(text);
+                    console.log(`📋 DEBUG: Parsed error response:`, errorJson);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorJson.message || 'Unknown error'}`);
+                } catch (parseError) {
+                    // If not valid JSON, use text
+                    throw new Error(`HTTP error! status: ${response.status}, response: ${text || 'No response body'}`);
+                }
+            });
         }
         return response.json();
     })
     .then(data => {
         console.log('📋 DEBUG: Model metadata response:', data);
         if (data.status === 'success' && data.metadata && data.metadata.class_names) {
+            console.log(`📋 SUCCESS: Found ${data.metadata.class_names.length} sound classes:`, data.metadata.class_names);
             updateSoundClasses(data.metadata.class_names);
             
             // Show listen controls
             document.getElementById('listenControls').style.display = 'block';
         } else {
             console.warn('📋 DEBUG: No class names found in metadata');
+            console.log('📋 DEBUG: Full response data:', JSON.stringify(data, null, 2));
             soundsList.innerHTML = `
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle me-2"></i>
@@ -1472,6 +1645,9 @@ function loadSoundClassesForModel(modelId) {
                     </div>
                     <hr>
                     <div>No sound classes available for ${modelId}</div>
+                    <div class="mt-2">
+                        <small class="text-muted">Response data: ${JSON.stringify(data)}</small>
+                    </div>
                 </div>
             `;
             
@@ -1481,17 +1657,48 @@ function loadSoundClassesForModel(modelId) {
     })
     .catch(error => {
         console.error('📋 DEBUG: Error loading sound classes:', error);
-        soundsList.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                <div>
-                    <strong>Available Sound Classes for ${modelId}</strong><br>
-                    These are the sound classes that can be recognized.
+        
+        // Try alternative URL as a fallback
+        console.log('📋 DEBUG: Attempting fallback URL with api/ml prefix...');
+        fetch(`/api/ml/model_metadata/${encodeURIComponent(modelId)}`)
+        .then(response => {
+            console.log(`📋 DEBUG FALLBACK: Response status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Fallback also failed with status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('📋 DEBUG FALLBACK: Success with alternative URL!', data);
+            if (data.status === 'success' && data.metadata && data.metadata.class_names) {
+                updateSoundClasses(data.metadata.class_names);
+                console.log(`📋 IMPORTANT: The correct URL appears to be /api/ml/model_metadata/${modelId}`);
+            } else {
+                throw new Error('No class_names in fallback response');
+            }
+        })
+        .catch(fallbackError => {
+            console.error('📋 DEBUG: Fallback attempt also failed:', fallbackError);
+            
+            // Display final error message
+            soundsList.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <div>
+                        <strong>Available Sound Classes for ${modelId}</strong><br>
+                        These are the sound classes that can be recognized.
+                    </div>
+                    <hr>
+                    <div>Error loading sound classes for ${modelId}: ${error.message}</div>
+                    <div class="mt-2">
+                        <small class="text-muted">Technical details: ${error.stack}</small>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Fallback attempt also failed: ${fallbackError.message}</small>
+                    </div>
                 </div>
-                <hr>
-                <div>Error loading sound classes for ${modelId}: ${error.message}</div>
-            </div>
-        `;
+            `;
+        });
     });
 }
 </script>

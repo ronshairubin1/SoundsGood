@@ -15,6 +15,12 @@
                 <i class="bi bi-info-circle-fill me-2"></i>
                 <strong>Step 2:</strong> Listen to each sound sample below and decide if it's a good example of the <strong>{{ class_name }}</strong> sound. 
                 Keep good samples for training and discard any that don't represent the sound well.
+                {% if use_unified %}
+                <div class="mt-2">
+                    <span class="badge bg-success">Enhanced Processing Enabled</span>
+                    <small class="text-muted">Using improved audio processing for better quality</small>
+                </div>
+                {% endif %}
             </div>
             
             {% if chunks and chunks|length > 0 %}
@@ -185,15 +191,20 @@
                 }
             }
             
+            // Get the use_unified value from the data attribute
+            const useUnified = document.querySelector('.container').getAttribute('data-use-unified') === 'true';
+            
             // Send to server
-            fetch('/api/sounds/verify', {
+            fetch('/process_verification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    filename: chunkId, 
-                    keep: keep 
+                    chunkId: chunkId, 
+                    className: "{{ class_name }}", 
+                    isGood: keep,
+                    useUnified: useUnified
                 })
             })
             .then(response => response.json())

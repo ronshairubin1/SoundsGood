@@ -11,7 +11,7 @@ import tempfile
 import time
 from threading import Thread, Lock
 from .audio_processing import SoundProcessor
-from .audio_feature_extractor import AudioFeatureExtractor
+from backend.features.extractor import FeatureExtractor
 
 class SoundDetectorEnsemble:
     """
@@ -19,7 +19,7 @@ class SoundDetectorEnsemble:
     This class manages audio input, processing, and prediction for ensemble models.
     """
     
-    def __init__(self, models, sound_classes, preprocessing_params=None):
+    def __init__(self, models, sound_classes, preprocessing_params=None, use_ambient_noise=False):
         """
         Initialize the ensemble sound detector.
         
@@ -27,9 +27,12 @@ class SoundDetectorEnsemble:
             models (dict): Dictionary of models (cnn and rf)
             sound_classes (list): List of sound class names
             preprocessing_params (dict): Parameters for audio preprocessing
+            use_ambient_noise (bool): Whether to measure ambient noise before listening
         """
         self.models = models
         self.sound_classes = sound_classes
+        self.use_ambient_noise = use_ambient_noise
+        self.ambient_noise_level = None
         
         # Default preprocessing parameters
         self.preprocessing_params = preprocessing_params or {
@@ -55,50 +58,100 @@ class SoundDetectorEnsemble:
         self.n_fft = self.preprocessing_params.get("n_fft", 2048)
         self.hop_length = self.preprocessing_params.get("hop_length", 512)
         
-        # Initialize sound processor
+        # Initialize sound processor for basic sound detection
         self.sound_processor = SoundProcessor(
             sample_rate=self.sample_rate,
-            sound_threshold=self.sound_threshold,
-            min_silence_duration=self.min_silence_duration,
-            trim_silence=self.trim_silence,
-            normalize_audio=self.normalize_audio
+            sound_threshold=self.sound_threshold
         )
         
-        # Initialize audio feature extractor
-        self.feature_extractor = AudioFeatureExtractor(
+        # Initialize the unified feature extractor
+        self.feature_extractor = FeatureExtractor(
             sample_rate=self.sample_rate,
-            n_mels=self.n_mels,
-            n_fft=self.n_fft,
-            hop_length=self.hop_length
+            use_cache=True
         )
         
         # PyAudio setup
         self.audio = pyaudio.PyAudio()
         self.stream = None
         self.is_listening = False
+        self.callback = None
         
-        # Buffer for audio data
+        # Audio buffer for storing sound data
         self.buffer = []
-        self.buffer_size = int(self.sample_rate * 5)  # 5 seconds buffer
+        self.buffer_size = self.sample_rate * 10  # 10 seconds max
         self.buffer_lock = Lock()
         
-        # Sound detection state
+        # Sound detection parameters
         self.is_sound_detected = False
         self.sound_start_time = 0
+        
+        # Predictions storage
         self.predictions = []
         
-        logging.info(f"SoundDetectorEnsemble initialized with {len(sound_classes)} classes")
+        logging.info(f"SoundDetectorEnsemble initialized with {len(sound_classes)} classes and ambient_noise={use_ambient_noise}")
     
-    def start_listening(self):
-        """Start audio stream and listen for sounds."""
+    def start_listening(self, callback=None):
+        """
+        Start audio stream and listen for sounds.
+        
+        Args:
+            callback (function): Callback function for prediction results
+            
+        Returns:
+            bool: True if started successfully, False otherwise
+        """
         if self.is_listening:
             logging.warning("Already listening")
-            return
+            return False
         
         self.is_listening = True
         self.buffer = []
+        self.callback = callback  # Store callback for later use
         
-        # Open audio stream
+        # Measure ambient noise if requested
+        if self.use_ambient_noise:
+            logging.info("Measuring ambient noise before starting ensemble detection...")
+            # Create a temporary audio stream to measure ambient noise
+            temp_stream = self.audio.open(
+                format=pyaudio.paFloat32,
+                channels=1,
+                rate=self.sample_rate,
+                input=True,
+                frames_per_buffer=1024
+            )
+            
+            # Collect 3 seconds of audio for ambient noise measurement
+            ambient_frames = []
+            for _ in range(0, int(self.sample_rate / 1024 * 3)):  # 3 seconds of frames
+                try:
+                    data = temp_stream.read(1024)
+                    ambient_frames.append(np.frombuffer(data, dtype=np.float32))
+                except Exception as e:
+                    logging.error(f"Error reading ambient noise: {e}")
+            
+            # Close temporary stream
+            temp_stream.stop_stream()
+            temp_stream.close()
+            
+            # Process ambient noise frames
+            if ambient_frames:
+                ambient_audio = np.concatenate(ambient_frames)
+                # Calculate RMS of ambient noise
+                self.ambient_noise_level = np.sqrt(np.mean(ambient_audio**2))
+                logging.info(f"Measured ambient noise level: {self.ambient_noise_level:.6f}")
+                
+                # Update sound threshold based on ambient noise
+                if self.ambient_noise_level > 0:
+                    # Use 2x ambient noise as threshold for sound detection (reduced from 3x) 
+                    self.sound_threshold = max(self.sound_threshold, self.ambient_noise_level * 2.0)
+                    logging.info(f"Updated sound threshold to {self.sound_threshold:.6f}")
+                    
+                    # Update the sound processor with the new threshold
+                    self.sound_processor.sound_threshold = self.sound_threshold
+            else:
+                logging.warning("Failed to collect ambient noise samples")
+        
+        # Open audio stream for main listening
         self.stream = self.audio.open(
             format=pyaudio.paFloat32,
             channels=1,
@@ -108,7 +161,8 @@ class SoundDetectorEnsemble:
             stream_callback=self.audio_callback
         )
         
-        logging.info(f"Started listening with sample rate {self.sample_rate}")
+        logging.info(f"Started ensemble listening with sample rate {self.sample_rate}")
+        return True
     
     def stop_listening(self):
         """Stop audio stream."""
@@ -193,102 +247,81 @@ class SoundDetectorEnsemble:
             # Process audio data
             logging.info(f"Processing audio data of shape {audio_data.shape}")
             
-            # Create a temporary WAV file for feature extraction
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                temp_path = temp_file.name
-                
-                # Save audio data to WAV file
-                with wave.open(temp_path, 'wb') as wf:
-                    wf.setnchannels(1)
-                    wf.setsampwidth(4)  # 32-bit float
-                    wf.setframerate(self.sample_rate)
-                    wf.writeframes(audio_data.tobytes())
+            # Extract features using the unified feature extractor
+            # This handles both CNN and RF features in one call
+            all_features = self.feature_extractor.extract_features(audio_data, is_file=False)
             
-            try:
-                # Extract features for RF model
-                rf_features = self.feature_extractor.extract_features(temp_path)
-                
-                # Extract spectrograms for CNN model
-                spectrogram = self.feature_extractor.extract_mel_spectrogram(temp_path)
-                
-                # Make predictions
-                predictions = {}
-                
-                # RF model prediction
-                if 'rf' in self.models and self.models['rf'] is not None:
-                    rf_pred = self.models['rf'].predict_proba([rf_features])[0]
-                    predictions['rf'] = {
-                        'class': self.sound_classes[np.argmax(rf_pred)],
-                        'confidence': np.max(rf_pred),
-                        'probabilities': {self.sound_classes[i]: float(p) for i, p in enumerate(rf_pred)}
-                    }
-                
-                # CNN model prediction
-                if 'cnn' in self.models and self.models['cnn'] is not None:
-                    # Reshape spectrogram to match model input shape
-                    spectrogram_input = np.expand_dims(spectrogram, axis=0)
-                    
-                    # Add channel dimension if needed
-                    if len(spectrogram_input.shape) == 3:
-                        spectrogram_input = np.expand_dims(spectrogram_input, axis=-1)
-                    
-                    cnn_pred = self.models['cnn'].predict(spectrogram_input)[0]
-                    predictions['cnn'] = {
-                        'class': self.sound_classes[np.argmax(cnn_pred)],
-                        'confidence': float(np.max(cnn_pred)),
-                        'probabilities': {self.sound_classes[i]: float(p) for i, p in enumerate(cnn_pred)}
-                    }
-                
-                # Ensemble prediction (weighted average)
-                if 'rf' in predictions and 'cnn' in predictions:
-                    # Get probabilities for all classes
-                    ensemble_probs = {}
-                    
-                    # Default weights
-                    rf_weight = 0.5
-                    cnn_weight = 0.5
-                    
-                    for cls in self.sound_classes:
-                        rf_prob = predictions['rf']['probabilities'].get(cls, 0)
-                        cnn_prob = predictions['cnn']['probabilities'].get(cls, 0)
-                        ensemble_probs[cls] = (rf_weight * rf_prob) + (cnn_weight * cnn_prob)
-                    
-                    # Get top class
-                    top_class = max(ensemble_probs, key=ensemble_probs.get)
-                    
-                    predictions['ensemble'] = {
-                        'class': top_class,
-                        'confidence': ensemble_probs[top_class],
-                        'probabilities': ensemble_probs
-                    }
-                
-                # Use best available prediction
-                if 'ensemble' in predictions:
-                    final_prediction = predictions['ensemble']
-                elif 'cnn' in predictions:
-                    final_prediction = predictions['cnn']
-                elif 'rf' in predictions:
-                    final_prediction = predictions['rf']
-                else:
-                    final_prediction = {'class': 'unknown', 'confidence': 0, 'probabilities': {}}
-                
-                # Save the most recent prediction
-                self.predictions.append(final_prediction)
-                if len(self.predictions) > 5:
-                    self.predictions = self.predictions[-5:]
-                
-                logging.info(f"Prediction: {final_prediction['class']} with confidence {final_prediction['confidence']:.2f}")
-                
-                return final_prediction
-                
-            finally:
-                # Clean up temp file
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
-        
+            # Get CNN features
+            cnn_features = self.feature_extractor.extract_features_for_model(all_features, model_type='cnn')
+            # Get RF features
+            rf_features = self.feature_extractor.extract_features_for_model(all_features, model_type='rf')
+            
+            features = {
+                'cnn': cnn_features,
+                'rf': rf_features
+            }
+            
+            if features is None or 'cnn' not in features or 'rf' not in features:
+                logging.error("Failed to extract features")
+                return {'class': 'error', 'confidence': 0}
+            
+            # Get CNN predictions
+            cnn_model = self.models.get('cnn')
+            if cnn_model and features['cnn'] is not None:
+                # Add batch dimension if needed
+                cnn_features = features['cnn']
+                if len(cnn_features.shape) == 3:  # If missing batch dimension
+                    cnn_features = np.expand_dims(cnn_features, axis=0)
+                cnn_predictions = cnn_model.predict(cnn_features, verbose=0)[0]
+            else:
+                cnn_predictions = None
+            
+            # Get RF predictions
+            rf_model = self.models.get('rf')
+            if rf_model and features['rf'] is not None:
+                rf_probabilities = rf_model.predict_proba([features['rf']])[0]
+            else:
+                rf_probabilities = None
+            
+            # Combine predictions
+            if cnn_predictions is not None and rf_probabilities is not None:
+                # Equal weighting for CNN and RF
+                combined_probabilities = (cnn_predictions + rf_probabilities) / 2
+            elif cnn_predictions is not None:
+                combined_probabilities = cnn_predictions
+            elif rf_probabilities is not None:
+                combined_probabilities = rf_probabilities
+            else:
+                logging.error("Both models failed to produce predictions")
+                return {'class': 'error', 'confidence': 0}
+            
+            # Get top prediction
+            top_idx = np.argmax(combined_probabilities)
+            top_class = self.sound_classes[top_idx]
+            top_confidence = float(combined_probabilities[top_idx])
+            
+            # Create prediction result
+            result = {
+                'class': top_class,
+                'confidence': top_confidence,
+                'probabilities': {
+                    self.sound_classes[i]: float(p) 
+                    for i, p in enumerate(combined_probabilities)
+                }
+            }
+            
+            # Add to predictions list
+            self.predictions.append(result)
+            if len(self.predictions) > 5:
+                self.predictions = self.predictions[-5:]
+            
+            logging.info(f"Ensemble prediction: {top_class} with confidence {top_confidence:.4f}")
+            
+            return result
+            
         except Exception as e:
             logging.error(f"Error processing audio: {e}", exc_info=True)
-            return {'class': 'error', 'confidence': 0, 'probabilities': {}}
+            return {'class': 'error', 'confidence': 0}
     
     def get_latest_prediction(self):
         """

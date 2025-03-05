@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections import Counter
 
 from src.core.audio.processor import AudioProcessor
-from src.ml.feature_extractor import AudioFeatureExtractor
+from backend.features.extractor import FeatureExtractor
 from src.ml.augmentation_manager import augment_audio_with_repetitions
 from config import Config
 
@@ -33,8 +33,8 @@ class DatasetPreparation:
             sample_rate=sample_rate,
             enable_loudness_normalization=False  # Disable loudness normalization by default
         )
-        # Initialize AudioFeatureExtractor for RF features
-        self.feature_extractor = AudioFeatureExtractor(sr=sample_rate)
+        # Initialize FeatureExtractor for features
+        self.feature_extractor = FeatureExtractor(sr=sample_rate)
         # Stats tracking
         self.file_errors = []
         self.error_logs = []
@@ -454,7 +454,8 @@ class DatasetPreparation:
                     y_audio, sr = librosa.load(file_path, sr=self.sample_rate)
                     
                     # Extract features
-                    feats = self.feature_extractor.extract_features_from_array(y_audio, sr=sr)
+                    all_features = self.feature_extractor.extract_features(y_audio, is_file=False)
+                    feats = self.feature_extractor.extract_features_for_model(all_features, model_type='rf')
                     
                     if feats is None:
                         error_msg = f"Skipping {file_path}: Failed to extract features"
@@ -489,7 +490,8 @@ class DatasetPreparation:
                     logging.info(f"Created {len(augmented_versions)} augmented clips for {wav_file}")
                     
                     for aug_audio in augmented_versions:
-                        aug_feats = self.feature_extractor.extract_features_from_array(aug_audio, sr=sr)
+                        aug_all_features = self.feature_extractor.extract_features(aug_audio, is_file=False)
+                        aug_feats = self.feature_extractor.extract_features_for_model(aug_all_features, model_type='rf')
                         if aug_feats is not None:
                             row_aug = self._assemble_feature_row(aug_feats, self.feature_extractor)
                             X.append(row_aug)
@@ -544,8 +546,8 @@ class DatasetPreparation:
         logging.info(f"Total augmentation samples: {aug_count}")
         logging.info(f"Final dataset shape: X={X.shape}, y={y.shape}")
         
-        # Get feature names
-        feature_names = self.feature_extractor.get_feature_names()
+        # Get feature names - use the keys from the RF features
+        feature_names = list(feats.keys()) if feats else []
         
         return X, y, class_names, stats, feature_names
     
@@ -555,7 +557,7 @@ class DatasetPreparation:
         
         Args:
             feats (dict): Dictionary of extracted features
-            extractor (AudioFeatureExtractor): Feature extractor instance
+            extractor (FeatureExtractor): Feature extractor instance
             
         Returns:
             list: Assembled feature vector

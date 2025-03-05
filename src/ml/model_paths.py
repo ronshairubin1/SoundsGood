@@ -12,8 +12,40 @@ def get_model_dir(model_id, model_type):
     base_dir = os.path.join(Config.BASE_DIR, 'data', 'models', model_type.lower())
     return os.path.join(base_dir, model_id)
 
-def get_cnn_model_path(model_id):
-    """Get the path to a CNN model file"""
+def get_cnn_model_path(model_id, dictionary_name=None, version=None):
+    """
+    Get the path to a CNN model file
+    
+    This function now handles two different calling patterns:
+    1. Single argument: just the model_id (used by newer code)
+    2. Three arguments: base_dir, dictionary_name, version (used by older code)
+    """
+    # If dictionary_name is provided, we're using the old 3-parameter pattern
+    if dictionary_name is not None:
+        # The old pattern expected (base_dir, dictionary_name, version)
+        # So model_id is actually base_dir in this case
+        base_dir = model_id
+        # Construct an id in the format expected by the newer pattern
+        if version:
+            full_model_id = f"{dictionary_name}_cnn_{version}"
+        else:
+            full_model_id = f"{dictionary_name}_cnn_v1"
+        
+        # Log for debugging
+        print(f"Legacy call to get_cnn_model_path with constructed id: {full_model_id}")
+        
+        # Try the newer path pattern first
+        cnn_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'cnn', full_model_id, f"{full_model_id}.h5")
+        
+        # If that doesn't exist, return the legacy path
+        if not os.path.exists(cnn_path):
+            legacy_path = os.path.join(base_dir, dictionary_name, 'CNN', version or 'v1', 'cnn_model.h5')
+            print(f"Using legacy path: {legacy_path}")
+            return legacy_path
+        
+        return cnn_path
+    
+    # Original single-argument implementation
     model_dir = get_model_dir(model_id, 'cnn')
     return os.path.join(model_dir, f"{model_id}.h5")
 

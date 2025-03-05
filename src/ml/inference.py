@@ -15,15 +15,21 @@ import pyaudio
 from threading import Thread, Lock
 import tempfile
 import wave
+import traceback
+import matplotlib.pyplot as plt
 
 # Import shared constants and the SoundProcessor from audio_processing
 from .constants import SAMPLE_RATE, AUDIO_DURATION, AUDIO_LENGTH, TEST_DURATION, TEST_FS, INT16_MAX
 from .audio_processing import SoundProcessor
+from backend.features.extractor import FeatureExtractor
 from config import Config
+
+# Import our unified audio components
+from backend.audio import AudioPreprocessor
 
 # Set up logging
 logger = logging.getLogger('inference')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)  # Change from INFO to DEBUG to see more detailed logs
 
 # Print available audio devices for reference
 print(sd.query_devices())
@@ -32,95 +38,187 @@ class SoundDetector:
     """
     Sound detector that listens for sounds and makes predictions using CNN models.
     This class manages audio input, processing, and prediction.
+    
+    IMPORTANT: This class now uses ONLY the FeatureExtractor for feature extraction
+    to ensure 100% consistency between training and inference.
     """
     
-    def __init__(self, model, sound_classes, input_shape=None, preprocessing_params=None):
+    def __init__(self, model, sound_classes, input_shape=None, preprocessing_params=None, use_ambient_noise=False):
         """
-        Initialize the sound detector.
+        Initialize the sound detector with the specified model.
         
         Args:
-            model: CNN model to use for prediction
-            sound_classes (list): List of sound class names
-            input_shape (tuple): Shape expected by the model (height, width, channels)
-            preprocessing_params (dict): Parameters for audio preprocessing
+            model: Trained model for sound classification
+            sound_classes: List of sound class names
+            input_shape: Expected input shape for the model
+            preprocessing_params: Parameters for audio preprocessing
+            use_ambient_noise: Whether to use ambient noise for normalization
         """
-        self.model = model
-        self.sound_classes = sound_classes
-        self.input_shape = input_shape
+        logging.info("========== INITIALIZING SOUND DETECTOR ==========")
+        logging.info(f"Parameters: sound_classes={sound_classes[:5]}..., use_ambient_noise={use_ambient_noise}")
         
-        # Default preprocessing parameters
-        self.preprocessing_params = preprocessing_params or {
-            "sample_rate": 22050,
-            "n_mels": 128,
-            "n_fft": 2048,
-            "hop_length": 512,
-            "sound_threshold": 0.01,
-            "min_silence_duration": 0.5,
-            "trim_silence": True,
-            "normalize_audio": True
-        }
+        try:
+            self.model = model
+            self.sound_classes = sound_classes
+            self.input_shape = input_shape or (223, 64, 1)  # Default CNN shape
+            self.preprocessing_params = preprocessing_params or {}
+            self.use_ambient_noise = use_ambient_noise
+            
+            # Set default parameters
+            self.sample_rate = self.preprocessing_params.get('sample_rate', SAMPLE_RATE)
+            self.sound_threshold = self.preprocessing_params.get('sound_threshold', 0.01)
+            self.ambient_noise_level = 0
+            
+            logging.info("Initializing audio processing components...")
+            # Initialize the AudioPreprocessor for consistent preprocessing
+            self.audio_preprocessor = AudioPreprocessor(
+                sample_rate=self.sample_rate,
+                sound_threshold=self.sound_threshold,
+                min_silence_duration=0.3,
+                target_duration=1.0
+            )
+            
+            # Initialize the FeatureExtractor - THIS IS CRITICAL
+            # This ensures that feature extraction is IDENTICAL to training
+            self.feature_extractor = FeatureExtractor(
+                sample_rate=self.sample_rate
+            )
+            logging.info("Audio processing components initialized successfully")
+            
+            # Audio setup
+            self.format = pyaudio.paFloat32
+            self.channels = 1
+            self.chunk = int(self.sample_rate * 0.1)  # 100ms chunks
+            
+            logging.info(f"Initialized SoundDetector with sample_rate={self.sample_rate}, sound_threshold={self.sound_threshold}")
+            
+            # Initialize audio capture and processing
+            logging.info("Initializing PyAudio...")
+            self.p = pyaudio.PyAudio()
+            self.stream = None
+            self.is_listening = False
+            self.thread = None
+            self.lock = Lock()
+            
+            # Buffer to hold audio frames
+            self.audio_buffer = []
+            self.buffer_lock = Lock()
+            
+            # Utterance detection state
+            self.is_utterance = False
+            self.silence_counter = 0
+            self.min_silence_frames = 5  # Number of silent frames to end utterance
+            
+            # Callback for real-time prediction
+            self.callback = None
+            self.latest_prediction = None
+            
+            # Statistics
+            self.sounds_detected = 0
+            self.last_sound_time = None
+            
+            # Load model if string path is provided instead of model object
+            if isinstance(model, str):
+                logging.info(f"Loading model from {model}")
+                self.model = tf.keras.models.load_model(model)
+                logging.info(f"Model loaded successfully")
+                
+            # Debug log model info
+            try:
+                logging.info(f"Model info: Input shape={self.model.input_shape}, Output shape={self.model.output_shape}")
+            except:
+                logging.info(f"Model info not available")
+            
+            # State flags
+            self.has_detected_sound = False
+            
+            # Debug info
+            if self.use_ambient_noise:
+                logging.info(f"Ambient noise measurement enabled with initial threshold {self.sound_threshold}")
+                
+            logging.info("SoundDetector initialization complete")
+        except Exception as e:
+            logging.error(f"ERROR initializing SoundDetector: {e}")
+            import traceback
+            logging.error(traceback.format_exc())
+            raise  # Re-raise to avoid silent failure
         
-        logging.info(f"Initializing SoundDetector with parameters: {self.preprocessing_params}")
-        
-        # Get parameters from preprocessing_params
-        self.sample_rate = self.preprocessing_params.get("sample_rate", 22050)
-        self.sound_threshold = self.preprocessing_params.get("sound_threshold", 0.01)
-        self.min_silence_duration = self.preprocessing_params.get("min_silence_duration", 0.5)
-        self.trim_silence = self.preprocessing_params.get("trim_silence", True)
-        self.normalize_audio = self.preprocessing_params.get("normalize_audio", True)
-        self.n_mels = self.preprocessing_params.get("n_mels", 128)
-        self.n_fft = self.preprocessing_params.get("n_fft", 2048)
-        self.hop_length = self.preprocessing_params.get("hop_length", 512)
-        
-        # Initialize sound processor
-        self.sound_processor = SoundProcessor(
-            sample_rate=self.sample_rate,
-            sound_threshold=self.sound_threshold,
-            min_silence_duration=self.min_silence_duration,
-            trim_silence=self.trim_silence,
-            normalize_audio=self.normalize_audio,
-            n_mels=self.n_mels,
-            n_fft=self.n_fft,
-            hop_length=self.hop_length
-        )
-        
-        # PyAudio setup
-        self.audio = pyaudio.PyAudio()
-        self.stream = None
-        self.is_listening = False
-        
-        # Buffer for audio data
-        self.buffer = []
-        self.buffer_size = int(self.sample_rate * 5)  # 5 seconds buffer
-        self.buffer_lock = Lock()
-        
-        # Sound detection state
-        self.is_sound_detected = False
-        self.sound_start_time = 0
-        self.predictions = []
-        
-        logging.info(f"SoundDetector initialized with {len(sound_classes)} classes")
-    
-    def start_listening(self):
+    def start_listening(self, callback=None):
         """Start audio stream and listen for sounds."""
         if self.is_listening:
             logging.warning("Already listening")
-            return
+            return False
         
         self.is_listening = True
-        self.buffer = []
+        self.audio_buffer = []
+        self.callback = callback  # Store the callback if provided
         
-        # Open audio stream
-        self.stream = self.audio.open(
-            format=pyaudio.paFloat32,
-            channels=1,
+        # Measure ambient noise if requested
+        if self.use_ambient_noise:
+            print("\n===== STARTING AMBIENT NOISE MEASUREMENT =====")
+            logging.info("Measuring ambient noise before starting detection...")
+            # Create a temporary audio stream to measure ambient noise
+            temp_stream = self.p.open(
+                format=pyaudio.paFloat32,
+                channels=1,
+                rate=self.sample_rate,
+                input=True,
+                frames_per_buffer=1024
+            )
+            
+            # Collect 3 seconds of audio for ambient noise measurement
+            ambient_frames = []
+            print("Collecting ambient noise samples for 3 seconds...")
+            for i in range(0, int(self.sample_rate / 1024 * 3)):  # 3 seconds of frames
+                try:
+                    data = temp_stream.read(1024)
+                    ambient_frames.append(np.frombuffer(data, dtype=np.float32))
+                    # Print progress every second
+                    if i % int(self.sample_rate / 1024) == 0:
+                        print(f"Ambient noise measurement progress: {i // int(self.sample_rate / 1024) + 1}/3 seconds")
+                except Exception as e:
+                    logging.error(f"Error reading ambient noise: {e}")
+            
+            # Close temporary stream
+            temp_stream.stop_stream()
+            temp_stream.close()
+            
+            # Process ambient noise frames
+            if ambient_frames:
+                ambient_audio = np.concatenate(ambient_frames)
+                # Calculate RMS of ambient noise
+                self.ambient_noise_level = np.sqrt(np.mean(ambient_audio**2))
+                old_threshold = self.sound_threshold
+                
+                # Update sound threshold based on ambient noise
+                if self.ambient_noise_level > 0:
+                    # Use 2x ambient noise as threshold for sound detection (reduced from 3x)
+                    self.sound_threshold = max(self.sound_threshold, self.ambient_noise_level * 2.0)
+                
+                print(f"\n===== AMBIENT NOISE MEASUREMENT COMPLETED =====")
+                print(f"Ambient noise level: {self.ambient_noise_level:.6f}")
+                print(f"Previous sound threshold: {old_threshold:.6f}")
+                print(f"New sound threshold: {self.sound_threshold:.6f}")
+                
+                logging.info(f"Measured ambient noise level: {self.ambient_noise_level:.6f}")
+                logging.info(f"Updated sound threshold from {old_threshold:.6f} to {self.sound_threshold:.6f}")
+            else:
+                print("\n===== AMBIENT NOISE MEASUREMENT FAILED =====")
+                logging.warning("Failed to collect ambient noise samples")
+        
+        # Open audio stream for main listening
+        self.stream = self.p.open(
+            format=self.format,
+            channels=self.channels,
             rate=self.sample_rate,
             input=True,
-            frames_per_buffer=1024,
+            frames_per_buffer=self.chunk,
             stream_callback=self.audio_callback
         )
         
-        logging.info(f"Started listening with sample rate {self.sample_rate}")
+        print("\n===== STARTING AUDIO DETECTION WITH THRESHOLD: {:.6f} =====".format(self.sound_threshold))
+        logging.info(f"Started listening with sample rate {self.sample_rate} and threshold {self.sound_threshold:.6f}")
+        return True
     
     def stop_listening(self):
         """Stop audio stream."""
@@ -135,168 +233,230 @@ class SoundDetector:
             self.stream.close()
             self.stream = None
         
-        with self.buffer_lock:
-            self.buffer = []
+        with self.lock:
+            self.audio_buffer = []
         
         logging.info("Stopped listening")
     
     def audio_callback(self, in_data, frame_count, time_info, status):
         """
-        Process incoming audio data.
+        Callback function for the audio stream.
         
         Args:
-            in_data: Audio data from PyAudio
+            in_data: Input audio data
             frame_count: Number of frames
             time_info: Time information
             status: Status flag
-        
+            
         Returns:
-            tuple: (None, paContinue)
+            tuple: (None, pyaudio.paContinue)
         """
-        if not self.is_listening:
-            return None, pyaudio.paComplete
-        
-        # Convert bytes to numpy array
-        audio_data = np.frombuffer(in_data, dtype=np.float32)
-        
-        # Check if sound is detected
-        is_sound = self.sound_processor.is_sound(audio_data)
-        
-        # Add data to buffer
-        with self.buffer_lock:
-            self.buffer.extend(audio_data)
+        try:
+            # Process audio data
+            audio_data = np.frombuffer(in_data, dtype=np.float32)
             
-            # Keep buffer size limited
-            if len(self.buffer) > self.buffer_size:
-                self.buffer = self.buffer[-self.buffer_size:]
-        
-        # Handle sound detection
-        if is_sound and not self.is_sound_detected:
-            # Sound just started
-            self.is_sound_detected = True
-            self.sound_start_time = time.time()
-            logging.info("Sound detected")
-        
-        elif not is_sound and self.is_sound_detected:
-            # Sound just ended
-            self.is_sound_detected = False
-            sound_duration = time.time() - self.sound_start_time
+            # Check if this is sound or silence
+            is_sound = self.sound_threshold < np.abs(audio_data).mean()
             
-            if sound_duration >= 0.2:  # Ignore very short sounds
-                logging.info(f"Sound ended after {sound_duration:.2f} seconds")
+            # Handle utterance detection and buffering
+            with self.lock:
+                if is_sound and not self.is_utterance:
+                    # Start of a new utterance
+                    logging.debug("Starting to record new utterance")
+                    self.is_utterance = True
+                    self.audio_buffer = [audio_data]  # Start with this frame
+                    self.silence_counter = 0
+                    self.has_detected_sound = True
+                    
+                elif self.is_utterance:
+                    # Continue recording utterance
+                    self.audio_buffer.append(audio_data)
+                    self.silence_counter += 1
+                    
+                    if is_sound:
+                        # Reset silence counter if we hear sound
+                        self.silence_counter = 0
+                    else:
+                        # Increment silence counter
+                        self.silence_counter += 1
+                    
+                    # Check if utterance is complete (enough silence or max length)
+                    if self.silence_counter >= self.min_silence_frames:
+                        # Complete utterance - process it
+                        logging.debug(f"Complete utterance detected with {len(self.audio_buffer)} frames, processing...")
+                        self.process_complete_utterance()
+                        
+                        # Reset state
+                        self.is_utterance = False
+                        self.audio_buffer = []
                 
-                # Process the detected sound in a separate thread
-                audio_to_process = np.array(self.buffer[-int(self.sample_rate * (sound_duration + 0.5)):])
-                Thread(target=self.process_audio, args=(audio_to_process,)).start()
+            # Continue audio stream
+            return (None, pyaudio.paContinue)
+            
+        except Exception as e:
+            logging.error(f"Error in audio callback: {e}")
+            traceback.print_exc()
+            return (None, pyaudio.paContinue)
+    
+    def process_complete_utterance(self):
+        """
+        Process a complete utterance (sound segment) using the
+        unified feature extractor, and makes a prediction.
         
-        return None, pyaudio.paContinue
+        This method uses ONLY the unified FeatureExtractor to ensure
+        features are extracted in the EXACT SAME WAY as during training.
+        """
+        try:
+            if not self.audio_buffer:
+                return
+                
+            # Concatenate audio frames into a single buffer
+            audio_data = np.concatenate(self.audio_buffer)
+            
+            logging.info(f"Processing utterance with shape: {audio_data.shape}, min={np.min(audio_data):.4f}, max={np.max(audio_data):.4f}, mean={np.mean(audio_data):.4f}")
+            
+            # Step 1: Preprocess audio with AudioPreprocessor
+            processed_audio = self.audio_preprocessor.preprocess_audio(audio_data)
+            
+            if processed_audio is None:
+                logging.warning("Failed to preprocess audio - skipping prediction")
+                return
+            
+            # Step 2: Extract features with the unified FeatureExtractor
+            # This uses EXACTLY the same processing as during training
+            all_features = self.feature_extractor.extract_features(processed_audio, is_file=False)
+            features = self.feature_extractor.extract_features_for_model(all_features, model_type='cnn')
+            
+            if features is None:
+                logging.error("Failed to extract features from audio data")
+                return
+                
+            logging.info(f"Extracted features with shape: {features.shape}, min={np.min(features):.4f}, max={np.max(features):.4f}, mean={np.mean(features):.4f}")
+            
+            # Add batch dimension if needed
+            if len(features.shape) == 3:
+                features = np.expand_dims(features, axis=0)
+            
+            logging.info(f"Final features for model: {features.shape}")
+            
+            # Make prediction
+            predictions = self.model.predict(features, verbose=0)
+            
+            # Debug all prediction values
+            class_confidence = {}
+            for i, confidence in enumerate(predictions[0]):
+                if i < len(self.sound_classes):
+                    class_name = self.sound_classes[i]
+                    class_confidence[class_name] = float(confidence)
+                
+            # Sort by confidence (highest first)
+            sorted_predictions = sorted(class_confidence.items(), key=lambda x: x[1], reverse=True)
+            top_5 = sorted_predictions[:5]
+            logging.info(f"Top 5 predictions: {top_5}")
+            
+            # Find predicted class and confidence
+            predicted_class_idx = np.argmax(predictions[0])
+            predicted_class = self.sound_classes[predicted_class_idx]
+            confidence = float(predictions[0][predicted_class_idx])
+            
+            # Store the latest prediction
+            self.latest_prediction = {
+                'class': predicted_class,
+                'confidence': confidence,
+                'timestamp': time.time(),
+                'all_predictions': class_confidence
+            }
+            
+            # Log prediction
+            logging.info(f"Predicted class: {predicted_class} with confidence: {confidence:.4f}")
+            
+            # Call the callback if provided
+            if self.callback:
+                self.callback({
+                    "event": "prediction",
+                    "prediction": self.latest_prediction
+                })
+                
+        except Exception as e:
+            logging.error(f"Error processing utterance: {e}")
+            traceback.print_exc()
     
     def reshape_features(self, features):
         """
-        Reshape features to match the expected input shape of the model.
+        This method is now a simple wrapper that adds batch dimension
+        if needed. The actual feature reshaping is handled by the
+        FeatureExtractor.
         
         Args:
-            features: Features to reshape
+            features: Features from FeatureExtractor
             
         Returns:
-            reshaped_features: Reshaped features
+            features: Features with batch dimension added if needed
         """
-        if self.input_shape:
-            # Handle reshaping based on input_shape
-            if len(features.shape) == 2:  # (height, width)
-                if len(self.input_shape) == 3:  # (height, width, channels)
-                    # Add channel dimension
-                    features = np.expand_dims(features, axis=-1)
-            
-            # Add batch dimension if not present
-            if len(features.shape) == len(self.input_shape):
-                features = np.expand_dims(features, axis=0)
-            
-            # Check if shapes are compatible
-            for i in range(len(self.input_shape)):
-                if self.input_shape[i] is not None and features.shape[i+1] != self.input_shape[i]:
-                    logging.warning(f"Feature shape mismatch: got {features.shape}, expected ({None}, {self.input_shape})")
-                    # Try to resize
-                    if i == 0:  # Height
-                        features = np.resize(features, (features.shape[0], self.input_shape[0], features.shape[2], features.shape[3]))
-                    elif i == 1:  # Width
-                        features = np.resize(features, (features.shape[0], features.shape[1], self.input_shape[1], features.shape[3]))
-                    elif i == 2:  # Channels
-                        features = np.resize(features, (features.shape[0], features.shape[1], features.shape[2], self.input_shape[2]))
+        # If features is None, return None
+        if features is None:
+            return None
         
-        return features
+        # If features already have batch dimension (4D)
+        if len(features.shape) == 4:
+            return features
+        
+        # Add batch dimension if needed (3D -> 4D)
+        if len(features.shape) == 3:
+            return np.expand_dims(features, axis=0)
+        
+        logging.error(f"Unexpected feature shape: {features.shape}")
+        return None
     
     def process_audio(self, audio_data):
         """
-        Process audio data and make predictions.
+        Process a single frame of audio data.
         
         Args:
             audio_data: Audio data to process
             
         Returns:
-            dict: Prediction results
+            dict: Prediction result
         """
         try:
-            # Process audio data
-            logging.info(f"Processing audio data of shape {audio_data.shape}")
+            # Check if this is sound or silence
+            is_sound = self.sound_threshold < np.abs(audio_data).mean()
             
-            # Create a temporary WAV file for feature extraction
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                temp_path = temp_file.name
+            if not is_sound:
+                return None
                 
-                # Save audio data to WAV file
-                with wave.open(temp_path, 'wb') as wf:
-                    wf.setnchannels(1)
-                    wf.setsampwidth(4)  # 32-bit float
-                    wf.setframerate(self.sample_rate)
-                    wf.writeframes(audio_data.tobytes())
+            # For individual frame processing, use the feature extractor
+            all_features = self.feature_extractor.extract_features(audio_data, is_file=False)
+            features = self.feature_extractor.extract_features_for_model(all_features, model_type='cnn')
             
-            try:
-                # Extract features using sound processor
-                features = self.sound_processor.extract_features(temp_path)
+            if features is None:
+                return None
                 
-                if features is None:
-                    logging.error("Failed to extract features")
-                    return {'class': 'error', 'confidence': 0}
-                
-                # Reshape features to match model input shape
-                features = self.reshape_features(features)
-                
-                # Make prediction
-                predictions = self.model.predict(features, verbose=0)
-                
-                # Get top prediction
-                top_idx = np.argmax(predictions[0])
-                top_class = self.sound_classes[top_idx]
-                top_confidence = float(predictions[0][top_idx])
-                
-                # Create prediction result
-                result = {
-                    'class': top_class,
-                    'confidence': top_confidence,
-                    'probabilities': {
-                        self.sound_classes[i]: float(p) 
-                        for i, p in enumerate(predictions[0])
-                    }
-                }
-                
-                # Add to predictions list
-                self.predictions.append(result)
-                if len(self.predictions) > 5:
-                    self.predictions = self.predictions[-5:]
-                
-                logging.info(f"Prediction: {top_class} with confidence {top_confidence:.4f}")
-                
-                return result
+            # Reshape features for the model
+            features = self.reshape_features(features)
             
-            finally:
-                # Clean up temp file
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
-        
+            if features is None:
+                return None
+                
+            # Make prediction
+            predictions = self.model.predict(features, verbose=0)
+            
+            # Find predicted class and confidence
+            predicted_class_idx = np.argmax(predictions[0])
+            predicted_class = self.sound_classes[predicted_class_idx]
+            confidence = float(predictions[0][predicted_class_idx])
+            
+            # Return prediction
+            return {
+                'class': predicted_class,
+                'confidence': confidence,
+                'timestamp': time.time()
+            }
+            
         except Exception as e:
-            logging.error(f"Error processing audio: {e}", exc_info=True)
-            return {'class': 'error', 'confidence': 0}
+            logging.error(f"Error processing audio: {e}")
+            traceback.print_exc()
+            return None
     
     def get_latest_prediction(self):
         """
@@ -305,9 +465,9 @@ class SoundDetector:
         Returns:
             dict: Latest prediction or None
         """
-        if not self.predictions:
+        if not self.latest_prediction:
             return None
-        return self.predictions[-1]
+        return self.latest_prediction
     
     def get_current_state(self):
         """
@@ -318,7 +478,7 @@ class SoundDetector:
         """
         return {
             'is_listening': self.is_listening,
-            'is_sound_detected': self.is_sound_detected,
+            'is_sound_detected': self.has_detected_sound,
             'latest_prediction': self.get_latest_prediction()
         }
 

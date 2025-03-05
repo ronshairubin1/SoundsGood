@@ -124,9 +124,11 @@
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
-        
-        /* Additional custom styles */
-        {% block custom_styles %}{% endblock %}
+    </style>
+    
+    <!-- Simple direct include of custom styles block -->
+    <style>
+    {% block custom_styles %}{% endblock %}
     </style>
     
     {% block additional_head %}{% endblock %}
@@ -146,8 +148,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/"><i class="bi bi-house-door me-1"></i>Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/training"><i class="bi bi-gear me-1"></i>Training</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="trainingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear me-1"></i>Training
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="trainingDropdown">
+                            <li><a class="dropdown-item" href="/training"><i class="bi bi-gear-fill me-1"></i>Standard Training</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('ml.train_unified_model') }}"><i class="bi bi-gear-wide-connected me-1"></i>Unified Training</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/predict"><i class="bi bi-soundwave me-1"></i>Predict</a>

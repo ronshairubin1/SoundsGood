@@ -59,6 +59,13 @@ try:
 except ImportError as e:
     logger.error(f"Failed to import ml_bp: {e}")
 
+# Import the recording_bp blueprint for our new audio processing features
+try:
+    from src.routes.recording_routes import recording_bp
+    logger.info("Imported recording_bp from src.routes.recording_routes")
+except ImportError as e:
+    logger.error(f"Failed to import recording_bp: {e}")
+
 # Import services
 try:
     from src.services.dictionary_service import DictionaryService
@@ -103,6 +110,8 @@ try:
     logger.info("Registered dashboard_bp blueprint")
     app.register_blueprint(ml_bp)  # Register the ml_bp
     logger.info("Registered ml_bp blueprint")
+    app.register_blueprint(recording_bp, url_prefix='/recording')  # Register our new recording_bp
+    logger.info("Registered recording_bp blueprint")
 except Exception as e:
     logger.error(f"Error registering blueprints: {e}")
 
@@ -114,6 +123,13 @@ logger.info("Initialized UserService")
 
 # Initialize the ML API with our Flask app
 ml_api = MlApi(app, model_dir=Config.MODELS_DIR)
+
+# Add direct routes to support frontend
+@app.route('/model_metadata/<model_id>', methods=['GET'])
+def model_metadata_direct(model_id):
+    """Direct route for model metadata to support frontend without blueprint prefix"""
+    from src.routes.ml_routes import get_model_metadata_direct
+    return get_model_metadata_direct(model_id)
 
 # --------------------------------------------------------------------
 # Logging
@@ -427,24 +443,44 @@ def record_sounds():
     training_sounds_dir = Config.TRAINING_SOUNDS_DIR
     sound_classes = []
     
-    if os.path.exists(training_sounds_dir):
-        # Get directories representing sound classes
-        class_dirs = [d for d in os.listdir(training_sounds_dir) 
-                     if os.path.isdir(os.path.join(training_sounds_dir, d))]
+    # Initialize our new RecordingService
+    try:
+        from src.services.recording_service import RecordingService
+        recording_service = RecordingService()
+        
+        # Use the service to get available classes
+        classes = recording_service.get_available_classes()
         
         # Get sample counts for each class
-        for class_name in class_dirs:
+        for class_name in classes:
+            count = recording_service.get_class_sample_count(class_name)
             class_path = os.path.join(training_sounds_dir, class_name)
-            samples = [f for f in os.listdir(class_path) if f.lower().endswith('.wav')]
             
             sound_classes.append({
                 'name': class_name,
-                'sample_count': len(samples),
+                'sample_count': count,
                 'path': class_path
             })
-        
-        # Sort sound classes alphabetically by name
-        sound_classes.sort(key=lambda x: x['name'].lower())
+    except ImportError:
+        # Fall back to original implementation if service not available
+        if os.path.exists(training_sounds_dir):
+            # Get directories representing sound classes
+            class_dirs = [d for d in os.listdir(training_sounds_dir) 
+                        if os.path.isdir(os.path.join(training_sounds_dir, d))]
+            
+            # Get sample counts for each class
+            for class_name in class_dirs:
+                class_path = os.path.join(training_sounds_dir, class_name)
+                samples = [f for f in os.listdir(class_path) if f.lower().endswith('.wav')]
+                
+                sound_classes.append({
+                    'name': class_name,
+                    'sample_count': len(samples),
+                    'path': class_path
+                })
+    
+    # Sort sound classes alphabetically by name
+    sound_classes.sort(key=lambda x: x['name'].lower())
     
     # Check if we're coming from a dictionary page
     source_dict_name = request.args.get('dict_name')
@@ -462,7 +498,8 @@ def record_sounds():
     return render_template('sounds_record.html', 
                           sound_classes=sound_classes,
                           source_dictionary=source_dictionary,
-                          dict_classes=dict_classes)
+                          dict_classes=dict_classes,
+                          use_unified_processor=True)  # Flag to use the new unified processor
 
 @app.route('/sounds/class/<class_name>')
 def view_sound_class(class_name):
@@ -818,199 +855,168 @@ def api_verify_sample():
 @app.route('/api/ml/record', methods=['POST'])
 def api_ml_record():
     """
-    API endpoint to process a sound recording through the ML pipeline
+    API endpoint for processing sound recordings through the ML pipeline.
+    
+    This endpoint handles:
+    1. Receiving audio data from the client
+    2. Processing it through the sound detection pipeline
+    3. Saving detected segments for verification
+    
+    Returns:
+        JSON response with success/error information or redirects to verification page
     """
     try:
         # Check if user is authenticated
-        if 'username' not in session:
-            return jsonify({
-                'success': False, 
-                'message': 'Authentication required'
-            }), 401
+        if not session.get('logged_in'):
+            return jsonify({'success': False, 'message': 'Authentication required'})
         
         # Get form data
         audio_data = request.files.get('audio')
         sound_class = request.form.get('sound')
-        measure_ambient = request.form.get('measure_ambient', 'false').lower() == 'true'
+        measure_ambient = request.form.get('measure_ambient') == 'true'
+        use_unified = request.form.get('use_unified') == 'true'
+        
+        if not audio_data or not sound_class:
+            return jsonify({'success': False, 'message': 'Missing required parameters'})
         
         # Log the recording attempt
-        app.logger.info(f"Recording attempt: user={session['username']}, class={sound_class}, measure_ambient={measure_ambient}")
+        app.logger.info(f"Recording attempt by {session.get('username')} for class '{sound_class}' (ambient: {measure_ambient}, unified: {use_unified})")
         
-        # Check for required data
-        if not sound_class:
-            return jsonify({
-                'success': False, 
-                'message': 'No sound class specified'
-            }), 400
+        # Create directories for storing training sounds
+        os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
         
-        if not audio_data:
-            return jsonify({
-                'success': False, 
-                'message': 'No audio data received'
-            }), 400
+        # Create class directory in temp_sounds if it doesn't exist
+        temp_class_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, sound_class)
+        os.makedirs(temp_class_dir, exist_ok=True)
         
-        # Create timestamp for this recording
+        # Generate a timestamp for this recording session
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         
-        # Create directories for raw and temp sounds
-        raw_sounds_dir = os.path.join(Config.RAW_SOUNDS_DIR, sound_class)
-        temp_sounds_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, sound_class)
-        training_sounds_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, sound_class)
-        
-        # Ensure the class directories exist - this creates the class if needed
-        os.makedirs(raw_sounds_dir, exist_ok=True)
-        os.makedirs(temp_sounds_dir, exist_ok=True)
-        os.makedirs(training_sounds_dir, exist_ok=True)
-        
-        # Check if we need to update the classes.json file
-        created_new_class = False
-        if not os.path.exists(training_sounds_dir) or os.path.getmtime(training_sounds_dir) > time.time() - 2:  # If directory was just created
-            created_new_class = True
-            
-            # Update classes.json if the class was just created
-            classes_dir = os.path.join(os.path.dirname(__file__), 'data', 'classes')
-            classes_json_path = os.path.join(classes_dir, 'classes.json')
-            
-            if os.path.exists(os.path.dirname(classes_json_path)):
-                # Ensure the classes directory exists
-                os.makedirs(os.path.dirname(classes_json_path), exist_ok=True)
+        if use_unified:
+            # Use the unified audio processing approach
+            try:
+                from src.services.recording_service import RecordingService
+                recording_service = RecordingService()
                 
-                classes_data = {"classes": {}}
-                if os.path.exists(classes_json_path):
-                    try:
-                        with open(classes_json_path, 'r') as f:
-                            classes_data = json.load(f)
-                    except Exception as e:
-                        app.logger.error(f"Error loading classes.json: {e}")
+                # Save the audio data to a temporary file
+                temp_file = os.path.join(temp_class_dir, f"temp_{timestamp}.wav")
+                audio_data.save(temp_file)
                 
-                # Check if class already exists in the JSON
-                if sound_class not in classes_data['classes']:
-                    # Add the new class entry
-                    classes_data['classes'][sound_class] = {
-                        "name": sound_class,
-                        "samples": [],
-                        "sample_count": 0,
-                        "created_at": datetime.now().isoformat(),
-                        "in_dictionaries": []
-                    }
+                # Load the audio with librosa
+                import librosa
+                audio, sr = librosa.load(temp_file, sr=16000)
+                
+                # Process the audio to get segments
+                segments = recording_service.preprocess_audio(
+                    audio, 
+                    sr=sr,
+                    measure_ambient=measure_ambient
+                )
+                
+                # If no segments were detected
+                if not segments or len(segments) == 0:
+                    # Clean up the temp file
+                    if os.path.exists(temp_file):
+                        os.remove(temp_file)
                     
-                    # Save the updated classes.json
+                    return jsonify({
+                        'success': False, 
+                        'message': 'No sound segments were detected in your recording. Please try again with clearer sounds separated by silence.'
+                    })
+                
+                # Save each segment for verification
+                segment_files = []
+                for i, segment in enumerate(segments):
+                    segment_filename = f"{sound_class}_{timestamp}_{i+1}.wav"
+                    segment_path = os.path.join(temp_class_dir, segment_filename)
+                    
+                    # Save the segment
+                    import soundfile as sf
+                    sf.write(segment_path, segment, sr)
+                    segment_files.append(segment_path)
+                
+                app.logger.info(f"Saved {len(segment_files)} segments for verification")
+                
+                # Clean up the temp file
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                
+                # Redirect to verification page
+                return redirect(url_for('verify_sounds', class_name=sound_class, timestamp=timestamp, use_unified='true'))
+                
+            except ImportError as e:
+                app.logger.error(f"Failed to import RecordingService: {e}")
+                use_unified = False
+        
+        # Fall back to original method if unified approach not available or fails
+        if not use_unified:
+            # Save the original recording to a temporary file
+            temp_file = os.path.join(temp_class_dir, f"temp_{timestamp}.wav")
+            audio_data.save(temp_file)
+            
+            # Process the audio file to extract sound segments
+            from src.ml.sound_detector import process_audio_file
+            
+            try:
+                # Process the audio file and get segments
+                segments = process_audio_file(
+                    temp_file, 
+                    output_dir=temp_class_dir,
+                    class_name=sound_class,
+                    timestamp=timestamp,
+                    check_ambient=measure_ambient
+                )
+                
+                # Clean up the temp file
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                
+                if not segments or len(segments) == 0:
+                    return jsonify({
+                        'success': False, 
+                        'message': 'No sound segments were detected in your recording. Please try again with clearer sounds separated by silence.'
+                    })
+                
+                # Redirect to verification page
+                return redirect(url_for('verify_sounds', class_name=sound_class, timestamp=timestamp, use_unified='false'))
+                
+            except Exception as e:
+                app.logger.error(f"Error processing audio: {str(e)}")
+                # Clean up the temp file
+                if os.path.exists(temp_file):
                     try:
-                        with open(classes_json_path, 'w') as f:
-                            json.dump(classes_data, f, indent=4)
-                        app.logger.info(f"Updated classes.json with new class: {sound_class}")
-                    except Exception as e:
-                        app.logger.error(f"Error updating classes.json: {e}")
+                        os.remove(temp_file)
+                    except:
+                        pass
+                return jsonify({'success': False, 'message': f'Error processing audio: {str(e)}'})
         
-        # Save the original recording to raw_sounds directory
-        raw_filename = f"{sound_class}_raw_{timestamp}.webm"
-        raw_path = os.path.join(raw_sounds_dir, raw_filename)
-        audio_data.save(raw_path)
-        
-        # Convert audio to WAV format
-        wav_filename = f"{sound_class}_raw_{timestamp}.wav"
-        wav_path = os.path.join(raw_sounds_dir, wav_filename)
-        
-        try:
-            from pydub import AudioSegment
-            audio = AudioSegment.from_file(raw_path)
-            audio.export(wav_path, format="wav")
-            app.logger.info(f"Converted audio to WAV: {wav_path}")
-        except Exception as e:
-            app.logger.error(f"Error converting audio: {str(e)}")
-            return jsonify({
-                'success': False, 
-                'message': f'Error converting audio: {str(e)}'
-            }), 500
-        
-        # Chop the recording into chunks using the AudioProcessor
-        try:
-            from src.core.audio.processor import AudioProcessor
-            
-            # Initialize with parameters from Config
-            processor = AudioProcessor(
-                sample_rate=Config.SAMPLE_RATE,
-                sound_threshold=Config.SOUND_THRESHOLD,
-                silence_threshold=Config.SILENCE_THRESHOLD,
-                min_chunk_duration=Config.MIN_CHUNK_DURATION,
-                min_silence_duration=Config.MIN_SILENCE_DURATION,
-                max_silence_duration=Config.MAX_SILENCE_DURATION,
-                sound_multiplier=Config.SOUND_MULTIPLIER,
-                sound_end_multiplier=Config.SOUND_END_MULTIPLIER,
-                padding_duration=Config.PADDING_DURATION,
-                enable_stretching=Config.ENABLE_STRETCHING,
-                target_chunk_duration=Config.TARGET_CHUNK_DURATION,
-                auto_stop_after_silence=Config.AUTO_STOP_AFTER_SILENCE
-            )
-            
-            # Chop the recording into chunks - output directly to temp_sounds directory
-            chunk_files = processor.chop_recording(
-                file_path=wav_path,
-                output_dir=temp_sounds_dir,
-                min_samples=4000,
-                use_ambient_noise=measure_ambient
-            )
-            
-            # Log number of chunks created
-            app.logger.info(f"Created {len(chunk_files)} chunk(s) from recording")
-            
-            # Ensure all chunks have the class name prefix
-            renamed_chunks = []
-            for chunk_file in chunk_files:
-                # Get just the basename of the chunk file
-                chunk_basename = os.path.basename(chunk_file)
-                # Make sure we prefix with the class name 
-                if not chunk_basename.startswith(sound_class):
-                    new_name = f"{sound_class}_{chunk_basename}"
-                    new_path = os.path.join(temp_sounds_dir, new_name)
-                    os.rename(chunk_file, new_path)
-                    app.logger.info(f"Renamed chunk from {chunk_file} to {new_path}")
-                    renamed_chunks.append(new_path)
-                else:
-                    renamed_chunks.append(chunk_file)
-            
-            # Check if any chunks were created
-            if not renamed_chunks:
-                flash('No sound samples were detected in your recording', 'warning')
-                return redirect(url_for('record_sounds'))
-            
-            # Store timestamp in session for verification
-            session['verification_timestamp'] = timestamp
-            session['verification_class'] = sound_class
-            
-            # Redirect to the verification page with class and timestamp
-            return redirect(url_for('verify_chunks', timestamp=timestamp, class_name=sound_class))
-            
-        except Exception as e:
-            app.logger.error(f"Error chopping recording: {str(e)}")
-            return jsonify({
-                'success': False, 
-                'message': f'Error processing recording: {str(e)}'
-            }), 500
     except Exception as e:
         app.logger.error(f"Error in api_ml_record: {str(e)}")
-        return jsonify({
-            'success': False, 
-            'message': f'Error: {str(e)}'
-        }), 500
+        return jsonify({'success': False, 'message': str(e)})
 
 # Routes for verifying and processing sound chunks
-@app.route('/verify/<timestamp>')
-def verify_chunks(timestamp):
+@app.route('/verify/<class_name>/<timestamp>')
+def verify_sounds(class_name, timestamp):
     """
-    Route to verify chunks from a recording
-    """
-    # Check if user is logged in
-    if 'username' not in session:
-        flash('Please log in to verify recordings', 'warning')
-        return redirect(url_for('login'))
+    Route for verifying sound chunks after recording.
     
-    # Get class name from query parameters or session
-    class_name = request.args.get('class_name') or session.get('verification_class')
+    This page shows all detected sound chunks from a recording session
+    and allows the user to keep or discard each one.
+    
+    Args:
+        class_name: The sound class name
+        timestamp: The recording timestamp
+        
+    Returns:
+        Rendered verification template with chunks
+    """
     
     if not class_name:
         flash('No class name provided for verification', 'warning')
         return redirect(url_for('record_sounds'))
+    
+    # Get the use_unified parameter from the query string
+    use_unified = request.args.get('use_unified', 'false') == 'true'
     
     # Check for chunks in the temp_sounds directory for this class
     temp_sounds_dir = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name)
@@ -1039,7 +1045,7 @@ def verify_chunks(timestamp):
     app.logger.info(f"Showing {len(chunks)} chunks for verification of class {class_name}")
     
     # Render the verification template with the chunks
-    return render_template('verify.html', chunks=chunks, class_name=class_name)
+    return render_template('verify.html', chunks=chunks, class_name=class_name, use_unified=use_unified)
     
 # Add new route to serve files from temp_sounds
 @app.route('/temp_sounds/<class_name>/<filename>')
@@ -1077,42 +1083,84 @@ def process_verification():
         chunk_id = data.get('chunkId')
         class_name = data.get('className')
         is_good = data.get('isGood', False)
+        use_unified = data.get('useUnified', True)
         
         if not chunk_id or not class_name:
             return jsonify({'success': False, 'error': 'Missing required parameters'})
         
+        # Extract the filename from chunk_id (which might be a path)
+        if '/' in chunk_id:
+            # The chunk_id is in the format class_name/filename
+            filename = chunk_id.split('/')[-1]
+        else:
+            filename = chunk_id
+            
         # Find the chunk file
-        chunk_path = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name, chunk_id)
+        source_path = os.path.join(Config.PENDING_VERIFICATION_SOUNDS_DIR, class_name, filename)
         
-        if not os.path.exists(chunk_path):
-            return jsonify({'success': False, 'error': f'Chunk file not found: {chunk_path}'})
+        if not os.path.exists(source_path):
+            return jsonify({'success': False, 'error': f'Chunk file not found: {source_path}'})
         
+        # If the user says it's good, move it to the training directory
         if is_good:
-            # User wants to keep this sample - move it to the appropriate class directory
-            # Create the training sounds directory if it doesn't exist
-            training_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
-            os.makedirs(training_dir, exist_ok=True)
+            if use_unified:
+                # Use the RecordingService for approved sounds
+                try:
+                    from src.services.recording_service import RecordingService
+                    recording_service = RecordingService()
+                    
+                    # Load the audio file
+                    import librosa
+                    audio_data, sr = librosa.load(source_path, sr=16000)
+                    
+                    # Save the audio through the RecordingService
+                    metadata = {
+                        "user": session.get('username', 'anonymous'),
+                        "timestamp": datetime.now().strftime('%Y%m%d%H%M%S'),
+                        "approved": True,
+                        "original": True,
+                        "source_file": filename
+                    }
+                    
+                    saved_path = recording_service.save_training_sound(
+                        audio_data,
+                        class_name,
+                        is_approved=True,
+                        metadata=metadata
+                    )
+                    
+                    app.logger.info(f"Saved approved sound to {saved_path} using RecordingService")
+                    
+                except ImportError as e:
+                    app.logger.error(f"Failed to import RecordingService: {e}")
+                    use_unified = False
             
-            # Generate a unique filename
-            username = session.get('username', 'anonymous')
-            timestamp_now = datetime.now().strftime('%Y%m%d%H%M%S')
-            new_filename = f"{class_name}_{username}_{timestamp_now}_{uuid.uuid4().hex[:6]}.wav"
-            
-            # Save to training sounds directory only (no need for redundant checks)
-            training_path = os.path.join(training_dir, new_filename)
-            shutil.copy2(chunk_path, training_path)
-            app.logger.info(f"Saved approved chunk to {training_path}")
+            # Fall back to original method if unified approach not available or fails
+            if not use_unified:
+                # Create the class directory in training sounds if it doesn't exist
+                training_dir = os.path.join(Config.TRAINING_SOUNDS_DIR, class_name)
+                os.makedirs(training_dir, exist_ok=True)
+                
+                # Generate a unique filename
+                username = session.get('username', 'anonymous')
+                timestamp_now = datetime.now().strftime('%Y%m%d%H%M%S')
+                new_filename = f"{class_name}_{username}_{timestamp_now}_{uuid.uuid4().hex[:6]}.wav"
+                
+                # Save to training sounds directory
+                training_path = os.path.join(training_dir, new_filename)
+                shutil.copy2(source_path, training_path)
+                app.logger.info(f"Saved approved chunk to {training_path}")
         
-        # Always remove the chunk from the temp directory after processing
+        # Delete the temporary file
         try:
-            os.remove(chunk_path)
-            app.logger.info(f"Removed chunk file: {chunk_path}")
-        except Exception as e:
-            app.logger.error(f"Error removing chunk file: {str(e)}")
+            os.remove(source_path)
+            app.logger.info(f"Removed source file from pending verification sounds: {source_path}")
+        except Exception as del_err:
+            app.logger.warning(f"Could not remove source file: {del_err}")
         
         return jsonify({'success': True})
     except Exception as e:
-        app.logger.error(f"Error processing verification: {str(e)}")
+        app.logger.error(f"Error in process_verification: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
 # Route to serve temporary files

@@ -11,6 +11,13 @@ import threading
 from datetime import datetime
 import uuid
 import glob
+import shutil
+import io
+import joblib
+import pickle
+import matplotlib
+import traceback
+from threading import Thread
 
 # Flask imports
 from flask import (
@@ -18,6 +25,7 @@ from flask import (
     redirect, url_for, flash, jsonify, Response, stream_with_context
 )
 from flask import current_app
+from flask import _app_ctx_stack
 
 # Scientific/ML imports
 import numpy as np
@@ -41,8 +49,8 @@ from src.ml.audio_processing import SoundProcessor
 # Trainer has been moved to legacy and replaced by TrainingService
 from src.ml.sound_detector_rf import SoundDetectorRF
 from src.ml.sound_detector_ensemble import SoundDetectorEnsemble
-from src.ml.feature_extractor import AudioFeatureExtractor
 from src.ml.model_paths import get_model_dir, get_cnn_model_path, get_rf_model_path, save_model_metadata
+from backend.features.extractor import FeatureExtractor
 
 # Global variables for training stats
 training_stats = None
@@ -100,51 +108,58 @@ logging.getLogger().addHandler(debug_log_handler)
 #LATEST_PREDICTION = None
 
 def prediction_callback(prediction):
-    global LATEST_PREDICTION
-    LATEST_PREDICTION = prediction
-    logging.info(f"Got prediction: {prediction}")
-   
+    """
+    Callback function for updating inference statistics.
+    This is called after each prediction to update the stats.
+    
+    Args:
+        prediction (dict): Prediction result
+    """
+    # Import here to avoid circular imports
+    from flask import current_app, _app_ctx_stack
+    
+    if _app_ctx_stack.top is None:
+        # If we're called from outside a request context, we can't access current_app
+        logging.warning("prediction_callback called outside application context")
+        # Store prediction but don't try to update stats
+        return
+    
+    try:
+        # Check if inference_stats exists directly on the app
+        if hasattr(current_app, 'inference_stats'):
+            stats = current_app.inference_stats
+        # Check if it exists on the ml_api object
+        elif hasattr(current_app, 'ml_api') and hasattr(current_app.ml_api, 'inference_service'):
+            stats = current_app.ml_api.inference_service.inference_stats
+        # As a fallback, create a new stats object if needed
+        else:
+            logging.warning("Creating new inference_stats as it wasn't found on the app")
+            if not hasattr(current_app, 'inference_stats'):
+                current_app.inference_stats = {
+                    'total_predictions': 0,
+                    'class_counts': {},
+                    'confidence_levels': [],
+                    'confusion_matrix': {}
+                }
+            stats = current_app.inference_stats
+            
+        stats['total_predictions'] = stats.get('total_predictions', 0) + 1
+        c = prediction['prediction']['class']
+        conf = prediction['prediction']['confidence']
 
-    stats = current_app.inference_stats
-    stats['total_predictions'] += 1
-    c = prediction['class']
-    conf = prediction['confidence']
-    actual = prediction.get('actual_sound')
-
+        stats['class_counts'].setdefault(c, 0)
+        stats['class_counts'][c] += 1
     stats['class_counts'].setdefault(c, 0)
     stats['class_counts'][c] += 1
-    stats['confidence_levels'].append(conf)
+        stats['confidence_levels'] = stats.get('confidence_levels', []) + [conf]
 
-    # More advanced confusion matrix if you want
+        # Initialize confusion matrix if needed
     if 'confusion_matrix' not in stats:
         stats['confusion_matrix'] = {}
-    if 'misclassifications' not in stats:
-        stats['misclassifications'] = []
-    if 'correct_classifications' not in stats:
-        stats['correct_classifications'] = []
-
-    cm = stats['confusion_matrix']
-    if actual:
-        if actual not in cm:
-            cm[actual] = {}
-        if c not in cm[actual]:
-            cm[actual][c] = 0
-        cm[actual][c] += 1
-
-        detail = {
-            'predicted': c,
-            'actual': actual,
-            'confidence': conf,
-            'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
-        }
-        if c == actual:
-            stats['correct_classifications'].append(detail)
-        else:
-            stats['misclassifications'].append(detail)
-
-    # Also store top-level prediction in a global var for SSE
-    #global LATEST_PREDICTION
-    #LATEST_PREDICTION = prediction
+    except Exception as e:
+        logging.error(f"Error updating inference stats: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
 
 def get_sound_list():
     active_dict = Config.get_dictionary()
@@ -159,170 +174,419 @@ def get_goodsounds_dir_path():
 @ml_bp.route('/train_model', methods=['GET', 'POST'])
 def train_model():
     global training_stats, training_history, model_summary_str
-
-    if request.method == 'GET':
-        # Display the form (train_model.html) with the dropdown to select method
-        sounds = get_sound_list()  # Example function to list sounds
-        return render_template('train_model.html', sounds=sounds)
-
-    # POST: user clicked "Start Training" with a chosen method
-    train_method = request.form.get('train_method', 'cnn')  # defaults to 'cnn'
-    goodsounds_dir = get_goodsounds_dir_path()  # however you get your data path
-
-    try:
-        # Turn off debug if needed
-        original_debug = current_app.config['DEBUG']
-        current_app.config['DEBUG'] = False
-
-        # Get the dictionary name for model naming
-        dict_name = Config.get_dictionary().get('name', 'Unknown')
+    
+    if 'username' not in session:
+        return redirect(url_for('index'))
         
-        # Initialize the training service
+    if request.method == 'GET':
+        sounds = get_sound_list()
+        return render_template('train_model.html', sounds=sounds)
+        
+    if request.method == 'POST':
+        # Get a reference to the training service
+        from src.services.training_service import TrainingService
         training_service = TrainingService()
         
-        # Create an instance of the appropriate model based on train_method
-        if train_method == 'cnn':
-            model = CNNModel(model_dir=os.path.join('models', 'cnn', dict_name.replace(' ', '_')))
-            
-            logging.info("Starting CNN training using training service...")
-            
-            # Train the model using the service
-            result = training_service.train_model(
-                'cnn', 
-                goodsounds_dir, 
-                save=True,
-                dict_name=dict_name,
-                epochs=50,
-                batch_size=32,
-                use_class_weights=True
-            )
-            
-            if not result.get('success', False):
-                flash(result.get('error', 'Training failed. See logs for details.'))
-                return redirect(url_for('ml.train_model'))
-                
-            # Get training statistics for display
-            training_stats = result.get('training_stats', {})
-            training_history = result.get('history', None)
-            model_summary_str = result.get('model_summary', '')
-            
-            # Ensure these are set for the template
-            if 'classes' not in training_stats and 'class_names' in result:
-                training_stats['classes'] = result['class_names']
-            if 'dictionary_name' not in training_stats:
-                training_stats['dictionary_name'] = dict_name
-                
-            return redirect(url_for('ml.cnn_training_summary'))
-            
-        elif train_method == 'rf':
-            model = RandomForestModel(model_dir=os.path.join('models', 'rf', dict_name.replace(' ', '_')))
-            
-            logging.info("Starting RF training using training service...")
-            
-            # Train the RF model using the service
-            result = training_service.train_model(
-                'rf', 
-                goodsounds_dir, 
-                save=True,
-                dict_name=dict_name
-            )
-            
-            if not result.get('success', False):
-                flash(result.get('error', 'RF Training failed. See logs for details.'))
-                return redirect(url_for('ml.train_model'))
-                
-            # Get training statistics for display
-            training_stats = result.get('training_stats', {})
-            if 'classes' not in training_stats and 'class_names' in result:
-                training_stats['classes'] = result['class_names']
-            if 'dictionary_name' not in training_stats:
-                training_stats['dictionary_name'] = dict_name
-                
-            training_history = None
-            model_summary_str = "Random Forest does not have a Keras-style summary."
-            
-            return redirect(url_for('ml.rf_training_summary'))
-            
-        elif train_method == 'ensemble':
-            logging.info("Starting Ensemble training using training service...")
-            
-            # Train the ensemble model using the service
-            result = training_service.train_model(
-                'ensemble', 
-                goodsounds_dir, 
-                save=True,
-                dict_name=dict_name
-            )
-            
-            if not result.get('success', False):
-                flash(result.get('error', 'Ensemble Training failed. See logs for details.'))
-                return redirect(url_for('ml.train_model'))
-                
-            # Get training statistics for display
-            training_stats = result.get('training_stats', {})
-            if 'classes' not in training_stats and 'class_names' in result:
-                training_stats['classes'] = result['class_names']
-            if 'dictionary_name' not in training_stats:
-                training_stats['dictionary_name'] = dict_name
-                
-            training_history = None
-            model_summary_str = "Ensemble combines CNN + RF results."
-            
-            return redirect(url_for('ml.ensemble_training_summary'))
-            
-        elif train_method == 'all':
-            logging.info("Training all models (CNN, RF, Ensemble) using training service...")
-            
-            # First train CNN
-            cnn_result = training_service.train_model(
-                'cnn', 
-                goodsounds_dir, 
-                save=True,
-                dict_name=dict_name
-            )
-            
-            # Then train RF
-            rf_result = training_service.train_model(
-                'rf', 
-                goodsounds_dir, 
-                save=True,
-                dict_name=dict_name
-            )
-            
-            # Finally train ensemble
-            ensemble_result = training_service.train_model(
-                'ensemble', 
-                goodsounds_dir, 
-                save=True,
-                dict_name=dict_name
-            )
-            
-            # Combine results for display
-            training_stats = {
-                'method': 'All (CNN + RF + Ensemble)',
-                'cnn_acc': cnn_result.get('metrics', {}).get('val_accuracy', None),
-                'rf_acc': rf_result.get('metrics', {}).get('accuracy', None),
-                'ensemble_acc': ensemble_result.get('metrics', {}).get('accuracy', None),
-                'classes': cnn_result.get('class_names', []),
-                'dictionary_name': dict_name
-            }
-            
-            training_history = None
-            model_summary_str = "Trained CNN, RF, and Ensemble models."
-            
-            return redirect(url_for('ml.training_model_comparisons'))
-            
-        else:
-            # If the user somehow selected something else, default to CNN
-            logging.warning(f"Unknown train method {train_method}, defaulting to CNN.")
+        # Get the training method
+        train_method = request.form.get('train_method', 'cnn')
+        
+        # Check if user wants to use the unified preprocessing
+        use_unified = request.form.get('use_unified', 'off') == 'on'
+        
+        # Get a list of sounds
+        sounds = get_sound_list()
+        
+        # Check if we have enough sounds
+        if len(sounds) < 2:
+            flash('You need at least 2 sounds in your dictionary to train a model.', 'danger')
             return redirect(url_for('ml.train_model'))
             
+        # Get the active dictionary for model naming
+        active_dict = get_active_dictionary()
+        dict_name = active_dict.get('name', 'Default')
+        
+        # Configure training parameters
+        audio_dir = Config.TRAINING_SOUNDS_DIR
+        model_name = f"{dict_name}_{train_method}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
+        # Train based on method
+        if train_method == 'cnn':
+            if use_unified:
+                # Use the unified version
+                logging.info("Training CNN model with unified preprocessing...")
+                result = training_service.train_unified(
+                    'cnn',
+                    audio_dir=audio_dir,
+                    save=True,
+                    model_name=model_name,
+                    class_names=sounds
+                )
+            else:
+                # Use the standard version
+                logging.info("Training CNN model with standard approach...")
+                result = training_service.train_model(
+                    'cnn', 
+                    audio_dir=audio_dir,
+                    save=True, 
+                    model_name=model_name,
+                    class_names=sounds
+                )
+            
+            flash('CNN model training completed!', 'success')
+            return redirect(url_for('ml.train_model'))
+            
+        elif train_method == 'rf':
+            if use_unified:
+                # Use the unified version
+                logging.info("Training RF model with unified preprocessing...")
+                result = training_service.train_unified(
+                    'rf',
+                    audio_dir=audio_dir,
+                    save=True,
+                    model_name=model_name,
+                    class_names=sounds
+                )
+            else:
+                # Use the standard version
+                logging.info("Training RF model with standard approach...")
+                result = training_service.train_model(
+                    'rf', 
+                    audio_dir=audio_dir,
+                    save=True, 
+                    model_name=model_name,
+                    class_names=sounds
+                )
+            
+            flash('Random Forest model training completed!', 'success')
+            return redirect(url_for('ml.train_model'))
+            
+        elif train_method == 'ensemble':
+            if use_unified:
+                # Use the unified version
+                logging.info("Training ensemble model with unified preprocessing...")
+                result = training_service.train_unified(
+                    'ensemble',
+                    audio_dir=audio_dir,
+                    save=True,
+                    model_name=model_name,
+                    class_names=sounds
+                )
+            else:
+                # Use the standard version
+                logging.info("Training ensemble model with standard approach...")
+                result = training_service.train_model(
+                    'ensemble', 
+                    audio_dir=audio_dir,
+                    save=True, 
+                    model_name=model_name,
+                    class_names=sounds
+                )
+            
+            flash('Ensemble model training completed!', 'success')
+            return redirect(url_for('ml.train_model'))
+            
+        elif train_method == 'all':
+            logging.info("Training all models (CNN, RF, Ensemble)...")
+            
+            if use_unified:
+                # Use the unified version for all models
+                logging.info("Using unified preprocessing for all models...")
+                
+                cnn_result = training_service.train_unified(
+                    'cnn',
+                    audio_dir=audio_dir,
+                    save=True,
+                    model_name=f"{dict_name}_cnn_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    class_names=sounds
+                )
+                
+                rf_result = training_service.train_unified(
+                    'rf',
+                    audio_dir=audio_dir,
+                    save=True,
+                    model_name=f"{dict_name}_rf_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    class_names=sounds
+                )
+                
+                ensemble_result = training_service.train_unified(
+                    'ensemble',
+                    audio_dir=audio_dir,
+                    save=True,
+                    model_name=f"{dict_name}_ensemble_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    class_names=sounds
+                )
+            else:
+                # Use the standard approach
+                cnn_result = training_service.train_model(
+                    'cnn', 
+                    audio_dir=audio_dir,
+                    save=True, 
+                    model_name=f"{dict_name}_cnn_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    class_names=sounds
+                )
+                
+                rf_result = training_service.train_model(
+                    'rf', 
+                    audio_dir=audio_dir,
+                    save=True, 
+                    model_name=f"{dict_name}_rf_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    class_names=sounds
+                )
+                
+                ensemble_result = training_service.train_model(
+                    'ensemble', 
+                    audio_dir=audio_dir,
+                    save=True, 
+                    model_name=f"{dict_name}_ensemble_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    class_names=sounds
+                )
+            
+            model_summary_str = "Trained CNN, RF, and Ensemble models."
+            
+            flash('All models training completed!', 'success')
+            return redirect(url_for('ml.training_model_comparisons'))
+            
+        flash('Unknown training method specified.', 'danger')
+        return redirect(url_for('ml.train_model'))
+    
     except Exception as e:
         logging.error(f"Error in train_model: {str(e)}", exc_info=True)
-        flash(f"An error occurred during training: {str(e)}")
+        flash(f'Error during training: {str(e)}', 'danger')
         return redirect(url_for('ml.train_model'))
 
-# ... existing imports and code above ...
+@ml_bp.route('/train_unified_model', methods=['GET', 'POST'])
+def train_unified_model():
+    """
+    Train a model using the UnifiedFeatureExtractor to ensure
+    consistency between training and inference feature extraction.
+    
+    This route is designed to work with the exact same interface
+    as the regular train_model route.
+    """
+    if 'username' not in session:
+        return redirect(url_for('index'))
+    
+    # No longer requiring admin privileges - any logged in user can access this
+    
+    # Get the training service
+    from src.services.training_service import TrainingService
+    training_service = TrainingService()
+    
+    if request.method == 'GET':
+        # Use our new unified training template
+        # Get available dictionaries
+        dictionaries = Config.get_dictionaries()
+        dict_names = [d['name'] for d in dictionaries if 'name' in d]
+        
+        # Debug: List all available dictionaries
+        logging.info(f"Available dictionaries for training: {dict_names}")
+        logging.info(f"Dictionary directory: {os.path.join(Config.DATA_DIR, 'dictionaries')}")
+        dictionary_files = os.listdir(os.path.join(Config.DATA_DIR, 'dictionaries'))
+        logging.info(f"Dictionary files in directory: {dictionary_files}")
+        
+        # Render the template
+        return render_template(
+            'train_unified.html',
+            dictionaries=dict_names,
+            model_types=['cnn', 'rf']  # Ensemble not yet supported
+        )
+    
+    # Handle POST request
+    logging.info(f"Received unified training form submission: {request.form}")
+    
+    # Get form data
+    model_type = request.form.get('model_type', 'cnn')
+    dict_name = request.form.get('dict_name')
+    
+    logging.info(f"Model type: {model_type}, Dictionary name: {dict_name}")
+    
+    # Validate model type
+    if model_type not in ['cnn', 'rf', 'ensemble']:
+        logging.error(f"Invalid model type: {model_type}")
+        flash(f'Invalid model type: {model_type}', 'error')
+        return redirect(url_for('ml.train_unified_model'))
+        
+    # Validate dictionary name
+    if not dict_name:
+        logging.error("Dictionary name is required but was not provided")
+        flash('Dictionary name is required', 'error')
+        return redirect(url_for('ml.train_unified_model'))
+        
+    # Look up dictionary by name instead of assuming a file with the exact name exists
+    dictionaries = Config.get_dictionaries()
+    selected_dict = None
+    
+    for d in dictionaries:
+        if d.get('name') == dict_name:
+            selected_dict = d
+            logging.info(f"Found matching dictionary: {selected_dict}")
+            break
+            
+    if not selected_dict:
+        logging.error(f"Dictionary not found in list: {dict_name}")
+        logging.info(f"Available dictionaries: {[d.get('name') for d in dictionaries]}")
+        flash(f'Dictionary not found: {dict_name}', 'error')
+        return redirect(url_for('ml.train_unified_model'))
+        
+    # Get the sounds from the dictionary
+    sounds = selected_dict.get('sounds', [])
+    if not sounds:
+        logging.error(f"No sounds found in dictionary: {dict_name}")
+        flash(f'No sounds found in dictionary: {dict_name}', 'error')
+        return redirect(url_for('ml.train_unified_model'))
+        
+    # Get the path to the training sounds directory
+    sounds_dir = get_goodsounds_dir_path()
+    if not sounds_dir or not os.path.exists(sounds_dir):
+        logging.error(f"Training sounds directory not found: {sounds_dir}")
+        flash('Training sounds directory not found', 'error')
+        return redirect(url_for('ml.train_unified_model'))
+        
+    logging.info(f"Found sounds directory: {sounds_dir} with sounds: {sounds}")
+    
+    # Get advanced parameters based on model type
+    training_params = {
+        'model_type': model_type,
+        'audio_dir': sounds_dir,
+        'save': True,
+        'classes': sounds,
+        'dict_name': dict_name
+    }
+    
+    # Add CNN-specific parameters
+    if model_type == 'cnn':
+        # Get epochs (default to 50 if not specified or invalid)
+        try:
+            epochs = int(request.form.get('epochs', 50))
+            if epochs < 1:
+                epochs = 50
+        except ValueError:
+            epochs = 50
+        
+        # Get batch size (default to 32 if not specified or invalid)
+        try:
+            batch_size = int(request.form.get('batch_size', 32))
+            if batch_size < 1:
+                batch_size = 32
+        except ValueError:
+            batch_size = 32
+        
+        # Get boolean parameters
+        use_class_weights = 'use_class_weights' in request.form
+        use_data_augmentation = 'use_data_augmentation' in request.form
+        
+        # Add to training parameters
+        training_params.update({
+            'epochs': epochs,
+            'batch_size': batch_size,
+            'use_class_weights': use_class_weights,
+            'use_data_augmentation': use_data_augmentation
+        })
+        
+        logging.info(f"CNN training parameters: epochs={epochs}, batch_size={batch_size}, "
+                    f"use_class_weights={use_class_weights}, use_data_augmentation={use_data_augmentation}")
+    
+    # Add RF-specific parameters
+    elif model_type == 'rf':
+        # Get n_estimators (default to 100 if not specified or invalid)
+        try:
+            n_estimators = int(request.form.get('n_estimators', 100))
+            if n_estimators < 10:
+                n_estimators = 100
+        except ValueError:
+            n_estimators = 100
+        
+        # Get max_depth (default to None if not specified or invalid)
+        max_depth_str = request.form.get('max_depth', 'None')
+        if max_depth_str == 'None' or not max_depth_str:
+            max_depth = None
+        else:
+            try:
+                max_depth = int(max_depth_str)
+                if max_depth < 1:
+                    max_depth = None
+            except ValueError:
+                max_depth = None
+        
+        # Add to training parameters
+        training_params.update({
+            'n_estimators': n_estimators,
+            'max_depth': max_depth
+        })
+        
+        logging.info(f"RF training parameters: n_estimators={n_estimators}, max_depth={max_depth}")
+    
+    # Create a new section to address Flask application context issues - Insert this below the RF parameters section
+    # Get a reference to the current app for the background thread
+    app = current_app._get_current_object()
+    
+    # Set initial training status values
+    if not hasattr(app, 'training_progress'):
+        app.training_progress = 0
+    if not hasattr(app, 'training_status'):
+        app.training_status = 'Initializing'
+    
+    # Update the app status immediately
+    app.training_status = "Initializing training"
+    app.training_progress = 0
+    
+    # Define a function to run training asynchronously with proper app context
+    def train_async_unified():
+        # Use app_context to ensure we have access to Flask's current_app
+        with app.app_context():
+            try:
+                logging.info(f"Starting async training for {model_type} model with classes: {sounds}")
+                
+                # Update training status within app context
+                app.training_progress = 0
+                app.training_status = "Training in progress"
+                
+                # Define a callback function to update progress
+                def progress_callback(progress, status_message):
+                    app.training_progress = progress
+                    if status_message:
+                        app.training_status = status_message
+                    logging.info(f"Training progress: {progress}%, Status: {status_message}")
+                
+                # Train the model using the unified extractor with all parameters
+                logging.info(f"Calling train_unified with params: {training_params}")
+                
+                # Add progress callback to parameters
+                training_params['progress_callback'] = progress_callback
+                
+                # Start the training
+                result = training_service.train_unified(**training_params)
+                
+                # Log the result
+                if result and result.get('status') == 'success':
+                    logging.info(f"Training completed successfully: {result.get('message')}")
+                    app.training_status = "Completed"
+                    app.training_progress = 100
+                else:
+                    error_msg = result.get('message') if result and 'message' in result else "Unknown error"
+                    logging.error(f"Training failed: {error_msg}")
+                    app.training_status = f"Failed: {error_msg}"
+                    # Keep the last progress value
+            except Exception as e:
+                logging.error(f"Error in async training: {e}")
+                traceback.print_exc()
+                app.training_status = f"Error: {str(e)}"
+    
+    # Start training asynchronously
+    try:
+        logging.info("Starting training thread")
+        training_thread = Thread(target=train_async_unified)
+        training_thread.daemon = True
+        training_thread.start()
+        logging.info("Training thread started successfully")
+        
+        # Redirect to the training status page
+        flash(f'Training started for {model_type} model using unified extractor', 'success')
+        return redirect(url_for('ml.training_status'))
+    except Exception as e:
+        logging.error(f"Failed to start training thread: {e}")
+        flash(f'Failed to start training: {str(e)}', 'error')
+        return redirect(url_for('ml.train_unified_model'))
 
 def build_training_stats_and_history(
     X_train, y_train,
@@ -424,80 +688,70 @@ def predict_cnn():
 
 @ml_bp.route('/predict_rf', methods=['POST'])
 def predict_rf():
-
-    # 1) Load the active dictionary and get the list of sounds
     active_dict = Config.get_dictionary()
-    class_names = active_dict.get('sounds', [])
-
-    # 2) Load the Random Forest model
-    rf_path = os.path.join('models', f"{active_dict['name'].replace(' ', '_')}_rf.joblib")
+    class_names = active_dict['sounds']
+    
+    # 1) load RF model
+    rf_path = os.path.join('models', f"{active_dict['name'].replace(' ','_')}_rf.joblib")
     if not os.path.exists(rf_path):
-        return jsonify({"error": "No random forest model for current dictionary."}), 400
-
+        return jsonify({"error":"No RF model"}), 400
+    
     rf = RandomForestClassifier(model_dir='models')
-    if not rf.load(filename=os.path.basename(rf_path)):
-        return jsonify({"error": "Failed loading RF model."}), 500
-
-    # 3) Read the uploaded audio file
-    uploaded_file = request.files.get('audio')
-    if not uploaded_file:
-        return jsonify({"error": "No audio file"}), 400
-
-    # Create a unique filename for the uploaded file
+    rf.load(filename=os.path.basename(rf_path))
+    
+    # 2) get the posted audio
+    file = request.files.get('audio')
+    if not file:
+        return jsonify({"error":"No audio file"}), 400
+    
+    # 3) save to temp file
     filename = f"rf_predict_{uuid.uuid4().hex[:8]}.wav"
     temp_path = os.path.join(Config.UPLOADED_SOUNDS_DIR, filename)
-    uploaded_file.save(temp_path)
+    file.save(temp_path)
+    
+    # 4) preprocess audio
+    sp = SoundProcessor(sample_rate=16000)
+    audio_data, _ = librosa.load(temp_path, sr=16000)
+    
+    # 5) Use SoundProcessor.detect_sound_boundaries() to trim silence
+    start_idx, end_idx, has_sound = sp.detect_sound_boundaries(audio_data)
+    trimmed_data = audio_data[start_idx:end_idx]
+    if len(trimmed_data) == 0:
+        return jsonify({"error": "No sound detected in audio"}), 400
 
-    try:
-        # 4) Load audio from the temporary file
-        # Note: This call creates an instance of SoundProcessor so that we can use its methods.
-        sp = SoundProcessor(sample_rate=16000)
-        audio_data, _ = librosa.load(temp_path, sr=16000)
+    # Overwrite the temp file with the trimmed audio
+    wavfile.write(temp_path, 16000, np.int16(trimmed_data * 32767))
 
-        # 5) Use SoundProcessor.detect_sound_boundaries() to trim silence
-        start_idx, end_idx, has_sound = sp.detect_sound_boundaries(audio_data)
-        trimmed_data = audio_data[start_idx:end_idx]
-        if len(trimmed_data) == 0:
-            return jsonify({"error": "No sound detected in audio"}), 400
+    # 6) Extract features using the unified FeatureExtractor
+    extractor = FeatureExtractor(sample_rate=16000)
+    all_features = extractor.extract_features(temp_path)
+    if not all_features:
+        return jsonify({"error": "Feature extraction failed"}), 500
+        
+    # Get RF-specific features
+    feats = extractor.extract_features_for_model(all_features, model_type='rf')
+    if not feats:
+        return jsonify({"error": "Feature extraction failed"}), 500
 
-        # Overwrite the temp file with the trimmed audio
-        wavfile.write(temp_path, 16000, np.int16(trimmed_data * 32767))
+    # 7) Create a feature row in the same order as expected by the RF model
+    feature_names = list(feats.keys())
+    row = [feats[fn] for fn in feature_names]
 
-        # 6) Extract classical features using AudioFeatureExtractor.
-        # AudioFeatureExtractor.extract_features() expects a file path.
-        extractor = AudioFeatureExtractor(sr=16000)
-        feats = extractor.extract_features(temp_path)
-        if not feats:
-            return jsonify({"error": "Feature extraction failed"}), 500
+    # 8) Run RandomForest prediction
+    preds, probs = rf.predict([row])
+    if preds is None:
+        return jsonify({"error": "RF predict() returned None"}), 500
 
-        # 7) Create a feature row in the same order as expected by the RF model
-        feature_names = extractor.get_feature_names()
-        row = [feats[fn] for fn in feature_names]
+    predicted_class = preds[0]
+    confidence = float(np.max(probs[0]))  # highest probability
 
-        # 8) Run RandomForest prediction
-        preds, probs = rf.predict([row])
-        if preds is None:
-            return jsonify({"error": "RF predict() returned None"}), 500
+    return jsonify({
+        "predictions": [{
+            "sound": predicted_class,
+            "probability": confidence
+        }]
+    })
 
-        predicted_class = preds[0]
-        confidence = float(np.max(probs[0]))  # highest probability
-
-        return jsonify({
-            "predictions": [{
-                "sound": predicted_class,
-                "probability": confidence
-            }]
-        })
-
-    except Exception as e:
-        logging.error(f"Error during RF prediction: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        # Clean up the temporary file if it exists
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-         
 @ml_bp.route('/predict_ensemble', methods=['POST'])
 def predict_ensemble():
     active_dict = Config.get_dictionary()
@@ -538,15 +792,17 @@ def predict_ensemble():
         return jsonify({"error":"No features for CNN"}), 500
     X_cnn = np.expand_dims(cnn_features, axis=0)
     
-    # For RF: use AudioFeatureExtractor
-    feats = AudioFeatureExtractor(sr=16000).extract_features(temp_path)
+    # For RF: use the unified FeatureExtractor instead of AudioFeatureExtractor
+    extractor = FeatureExtractor(sample_rate=16000)
+    all_features = extractor.extract_features(temp_path)
+    rf_features = extractor.extract_features_for_model(all_features, model_type='rf')
     os.remove(temp_path)
-    if not feats:
+    if rf_features is None:
         return jsonify({"error":"Feature extraction failed for RF"}), 500
     
-    feature_names = AudioFeatureExtractor(sr=16000).get_feature_names()
-    row = [feats[fn] for fn in feature_names]
-    X_rf = [row]
+    # Get feature names from the RF features dictionary
+    feature_names = list(rf_features.keys())
+    row = [rf_features[fn] for fn in feature_names]
     
     # 5) get ensemble predictions
     top_preds = ensemble.get_top_predictions(X_rf, X_cnn, top_n=1)[0]
@@ -606,135 +862,166 @@ def start_listening():
 
     global sound_detector
     try:
-        # 1) figure out which model
-        model_choice = request.args.get('model', 'cnn')  # "cnn", "rf", or "ensemble"
+        logging.info("========== START LISTENING API CALLED ==========")
         
-        active_dict = Config.get_dictionary()
-        class_names = active_dict.get('sounds', [])
-        dict_name = active_dict.get('name', 'Default')
+        # Get request data
+        data = request.json
+        model_id = data.get('model_id')
+        use_ambient_noise = data.get('use_ambient_noise', False)
+        
+        logging.info(f"Request data: model_id={model_id}, use_ambient_noise={use_ambient_noise}")
+        
+        if not model_id:
+            logging.error("No model_id provided in request")
+            return jsonify({'status': 'error', 'message': 'No model_id provided'}), 400
+            
+        # Determine model type from model_id (cnn, rf, ensemble)
+        model_parts = model_id.split('_') if model_id else []
+        if len(model_parts) >= 2:
+            model_choice = model_parts[1].lower()  # Extract model type from ID
+        else:
+            model_choice = request.args.get('model', 'cnn')  # Use query param as fallback
+            
+        # Normalize model type to one of our supported types
+        if model_choice not in ['cnn', 'rf', 'ensemble']:
+            model_choice = 'cnn'  # Default to CNN
+            
+        logging.info(f"Starting listening with model ID: {model_id}, type: {model_choice}, use_ambient_noise: {use_ambient_noise}")
+        
+        # Get class names - first try from model metadata
+        class_names = []
+        
+        # Try to get class names from models.json registry
+        models_json_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'models.json')
+        if os.path.exists(models_json_path):
+            try:
+                with open(models_json_path, 'r') as f:
+                    models_registry = json.load(f)
+                
+                # Check if model exists in registry
+                model_data = None
+                if 'models' in models_registry and model_choice in models_registry['models']:
+                    models_of_type = models_registry['models'][model_choice]
+                    if model_id in models_of_type:
+                        model_data = models_of_type[model_id]
+                        if 'class_names' in model_data:
+                            class_names = model_data['class_names']
+                            logging.info(f"Found {len(class_names)} class names from registry for {model_id}")
+            except Exception as e:
+                logging.error(f"Error loading models.json: {e}")
+        
+        # If no class names from registry, fallback to active dictionary
         if not class_names:
-            return jsonify({'status': 'error', 'message': 'No sounds in dictionary'})
+            active_dict = Config.get_dictionary()
+            class_names = active_dict.get('sounds', [])
+            logging.info(f"Using {len(class_names)} class names from active dictionary")
+        
+        if not class_names:
+            return jsonify({'status': 'error', 'message': 'No sounds in dictionary or model metadata'}), 400
 
+        # Handle model loading based on model type
         if model_choice == 'rf':
             # Load the RF model
-            rf_path = os.path.join('models', f"{dict_name.replace(' ','_')}_rf.joblib")
+            rf_path = None
+            
+            # Try to get path from registry
+            if model_data and 'file_path' in model_data:
+                rf_path = os.path.join(Config.BASE_DIR, 'data', 'models', model_data['file_path'])
+            
+            # Fallback to constructed path
+            if not rf_path or not os.path.exists(rf_path):
+                rf_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'rf', model_id, f"{model_id}.joblib")
+            
             if not os.path.exists(rf_path):
-                return jsonify({'status': 'error', 'message': 'No RF model available for dictionary.'}), 400
+                return jsonify({'status': 'error', 'message': f'No RF model file found at {rf_path}'}), 400
 
-            rf_classifier = RandomForestClassifier(model_dir='models')
-            rf_classifier.load(filename=os.path.basename(rf_path))
+            logging.info(f"Loading RF model from {rf_path}")
+            rf_classifier = RandomForestClassifier()
+            rf_classifier.load(rf_path)
 
-            sound_detector = SoundDetectorRF(rf_classifier)
-            # Start listening with the same callback
+            sound_detector = SoundDetectorRF(rf_classifier, class_names, use_ambient_noise=use_ambient_noise)
+            
+            # Start listening with the callback
             sound_detector.start_listening(callback=prediction_callback)
-
-            return jsonify({'status': 'success', 'message': 'Real-time RF started'})
+            
+            return jsonify({
+                'status': 'success', 
+                'message': 'Real-time RF started',
+                'sound_classes': class_names
+            })
 
         elif model_choice == 'ensemble':
+            # This is a placeholder for ensemble model loading
+            # Actual implementation would load both CNN and RF models
+            return jsonify({
+                'status': 'error', 
+                'message': 'Ensemble detection not yet implemented in this interface'
+            }), 501
             
+        else:  # Default to CNN
             # Load the CNN model
-            cnn_path = os.path.join('models', f"{dict_name.replace(' ','_')}_model.h5")
-            if not os.path.exists(cnn_path):
-                return jsonify({'status': 'error', 'message': 'No CNN model found for this dictionary'}), 400
-            cnn_model = load_model(cnn_path)
-
-            # Load the RF model
-            rf_path = os.path.join('models', f"{dict_name.replace(' ','_')}_rf.joblib")
-            if not os.path.exists(rf_path):
-                return jsonify({'status': 'error', 'message': 'No RF model found for this dictionary'}), 400
-
-            rf_classifier = RandomForestClassifier(model_dir='models')
-            rf_classifier.load(filename=os.path.basename(rf_path))
-
-            # Create an EnsembleClassifier object
-            ensemble_model = EnsembleClassifier(
-                rf_classifier=rf_classifier,
-                cnn_model=cnn_model,
-                class_names=class_names,
-                rf_weight=0.5
-            )
-
-            # Create the SoundDetectorEnsemble
-            sound_detector = SoundDetectorEnsemble(ensemble_model)
-
-            # Start listening, same callback as your CNN/RF routes
-            success = sound_detector.start_listening(callback=prediction_callback)
-            if not success:
-                return jsonify({'status': 'error', 'message': 'Failed to start Ensemble detection'}), 500
-
-            return jsonify({'status': 'success', 'message': 'Real-time Ensemble started'})
-        else:
-            # Add more detailed logging to find the model
-            logging.info(f"Looking for CNN model for: {dict_name}")
-            
-            # Check for possible paths
-            possible_paths = [
-                # Path 1: Expected path from get_cnn_model_path()
-                get_cnn_model_path('models', dict_name.replace(' ', '_'), 'v1'),
-                
-                # Path 2: Old format with _model.h5 suffix
-                os.path.join('models', f"{dict_name.replace(' ', '_')}_model.h5"),
-                
-                # Path 3: Direct cnn_model.h5 file in dictionary folder
-                os.path.join('models', dict_name.replace(' ', '_'), 'cnn_model.h5'),
-                
-                # Path 4: Any .h5 file in the models folder with dict name
-                os.path.join('models', f"{dict_name.replace(' ', '_')}.h5"),
-                
-                # Path 5: Just try a fallback model
-                os.path.join('models', 'audio_classifier.h5'),
-            ]
-            
-            # Try each path
             model_path = None
-            for path in possible_paths:
-                logging.info(f"Checking path: {path}")
-                if os.path.exists(path):
-                    model_path = path
-                    logging.info(f"Found model at: {model_path}")
-                    break
             
-            # Check if there's a directory with dict name and list its contents
-            dict_dir = os.path.join('models', dict_name.replace(' ', '_'))
-            if os.path.exists(dict_dir) and os.path.isdir(dict_dir):
-                # List all files in this directory and subdirectories
-                logging.info(f"Listing contents of {dict_dir}:")
-                for root, dirs, files in os.walk(dict_dir):
-                    for file in files:
-                        if file.endswith('.h5'):
-                            logging.info(f"Found .h5 file: {os.path.join(root, file)}")
-                            if not model_path:  # use the first .h5 file if no path was found
-                                model_path = os.path.join(root, file)
-                                logging.info(f"Using model at: {model_path}")
-            
-            # If still not found, try any .h5 file in models dir
-            if not model_path:
-                models_dir = 'models'
-                if os.path.exists(models_dir):
-                    for file in os.listdir(models_dir):
-                        if file.endswith('.h5'):
-                            model_path = os.path.join(models_dir, file)
-                            logging.info(f"Falling back to: {model_path}")
-                            break
-            
+            # Try to get path from registry
+            if model_data and 'file_path' in model_data:
+                model_path = os.path.join(Config.BASE_DIR, 'data', 'models', model_data['file_path'])
+                
+            # Try the direct path to the model file
+            if not model_path or not os.path.exists(model_path):
+                # Try to find the model file in standard locations
+                model_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'cnn', model_id, f"{model_id}.h5")
+                
+            # Check if the path exists
             if not os.path.exists(model_path):
-                logging.error(f"No CNN model found for {dict_name} after trying all paths")
+                logging.error(f"Model file not found at {model_path}")
                 return jsonify({
                     'status': 'error', 
-                    'message': f'No CNN model found for {dict_name}. Please train a model first.'
-                }), 400
+                    'message': f'Model file not found at {model_path}'
+                }), 404
             
+            logging.info(f"Loading CNN model from {model_path}")
+            
+            # Load the model
+            try:
+                logging.info("Loading Keras model...")
             with tf.keras.utils.custom_object_scope({'BatchShape': lambda x: None}):
                 model = tf.keras.models.load_model(model_path)
+                logging.info(f"Model loaded successfully with input shape: {model.input_shape}")
+            except Exception as e:
+                logging.error(f"Error loading model: {e}")
+                traceback.print_exc()
+                return jsonify({
+                    'status': 'error', 
+                    'message': f'Failed to load model: {str(e)}'
+                }), 500
             
-            sound_detector = SoundDetector(model, class_names)
+            # Create and start the sound detector
+            try:
+                logging.info("Creating SoundDetector...")
+                sound_detector = SoundDetector(model, class_names, use_ambient_noise=use_ambient_noise)
+                logging.info("SoundDetector created successfully")
+                
+                logging.info("Starting listening...")
             sound_detector.start_listening(callback=prediction_callback)
-            
-            return jsonify({'status': 'success'})
+                logging.info("Listening started successfully")
+                
+                return jsonify({
+                    'status': 'success', 
+                    'message': 'Real-time CNN listening started',
+                    'sound_classes': class_names
+                })
+            except Exception as e:
+                logging.error(f"Error creating/starting SoundDetector: {e}")
+                traceback.print_exc()
+                return jsonify({
+                    'status': 'error', 
+                    'message': f'Failed to start listening: {str(e)}'
+                }), 500
 
     except Exception as e:
         logging.error(f"Error in start_listening: {e}", exc_info=True)
-        return jsonify({'status': 'error', 'message': str(e)})
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @ml_bp.route('/stop_listening', methods=['POST'])
 def stop_listening():
@@ -789,13 +1076,47 @@ def inference_statistics():
         JSON: Statistics about model predictions, including accuracy and confidence
     """
     try:
-        # Get stats from the inference service
+        # First try to find stats on the app instance
+        stats = None
+        
+        # Check if stats exist directly on the app
+        if hasattr(current_app, 'inference_stats'):
+            stats = current_app.inference_stats
+        # Check if stats are accessible through ml_api
+        elif hasattr(current_app, 'ml_api') and hasattr(current_app.ml_api, 'inference_service'):
+            stats = current_app.ml_api.inference_service.inference_stats
+        # Check the old path for backward compatibility
+        elif hasattr(current_app, 'inference_service'):
         stats = current_app.inference_service.get_inference_stats()
         
-        # Return the stats directly - they're already formatted properly by the service
+        # If stats still not found, create minimal stats
+        if stats is None:
+            logging.warning("No inference stats found on app, creating minimal stats")
+            stats = {
+                'total_predictions': 0,
+                'class_counts': {},
+                'confidence_levels': [],
+                'average_confidence': 0,
+                'classes_found': [],
+                'status': 'initialized'
+            }
+            # Save for future access
+            current_app.inference_stats = stats
+        
+        # Calculate derived statistics if not already present
+        if 'average_confidence' not in stats and stats.get('confidence_levels'):
+            confidences = stats.get('confidence_levels', [])
+            stats['average_confidence'] = sum(confidences) / len(confidences) if confidences else 0
+            
+        if 'classes_found' not in stats:
+            stats['classes_found'] = list(stats.get('class_counts', {}).keys())
+            
+        # Return the stats
         return jsonify(stats)
     except Exception as e:
         logging.error(f"Error getting inference statistics: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
         return jsonify({
             'status': 'error',
             'message': f"Failed to get inference statistics: {str(e)}"
@@ -940,13 +1261,32 @@ def get_analysis(filename):
 
 @ml_bp.route('/training_status')
 def training_status():
-    # So your front-end can poll. If you prefer a purely JS solution, okay.
-    if hasattr(current_app, 'training_progress'):
-        return jsonify({
+    """
+    Get the current training status and progress.
+    
+    Returns JSON if requested via AJAX, otherwise renders the training status page.
+    """
+    # Set default training status values if not already set
+    if not hasattr(current_app, 'training_progress'):
+        current_app.training_progress = 0
+    if not hasattr(current_app, 'training_status'):
+        current_app.training_status = 'Not started'
+    
+    # Prepare the status data
+    status_data = {
             'progress': current_app.training_progress,
             'status': current_app.training_status
-        })
-    return jsonify({'progress':0,'status':'Not started'})
+    }
+    
+    # Check if this is an AJAX request (expecting JSON)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+              request.accept_mimetypes.best_match(['application/json', 'text/html']) == 'application/json'
+    
+    # Return JSON for AJAX requests, render template for direct visits
+    if is_ajax:
+        return jsonify(status_data)
+    else:
+        return render_template('training_status.html')
 
 @ml_bp.route('/record', methods=['POST'])
 def record():
@@ -1415,7 +1755,7 @@ def model_summary():
 @ml_bp.route('/api/ml/models')
 def get_available_models():
     """
-    Get a list of available trained models for the current dictionary.
+    Get a list of available trained models for all dictionaries, not just the current one.
     Returns:
     {
         "models": [
@@ -1429,7 +1769,7 @@ def get_available_models():
         return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
     
     try:
-        # Get current dictionary
+        # Get current dictionary for reference only
         active_dict = Config.get_dictionary()
         dict_name = active_dict.get('name', 'Unknown')
         
@@ -1448,19 +1788,8 @@ def get_available_models():
                 if 'models' in models_registry and 'cnn' in models_registry['models']:
                     cnn_models = models_registry['models']['cnn']
                     
-                    # Find all relevant models for the current dictionary
-                    dict_name_normalized = dict_name.replace(' ', '_')
-                    
+                    # Process all models - removed dictionary filtering
                     for model_id, model_data in cnn_models.items():
-                        # Check if this model is for the current dictionary or if it's an EhOh model
-                        # Note: Some older models might not have the 'dictionary' field
-                        model_dict = model_data.get('dictionary', '')
-                        
-                        # Handle special case for EhOh models
-                        is_ehoh_model = dict_name.lower() == 'ehoh' and model_id.startswith('EhOh')
-                        
-                        # Match by dictionary name in model_id or by the dictionary field
-                        if dict_name_normalized in model_id or model_dict == dict_name_normalized or is_ehoh_model:
                             # Get model path
                             file_path = model_data.get('file_path', '')
                             model_path = os.path.join(Config.BASE_DIR, 'data', 'models', file_path)
@@ -1477,8 +1806,11 @@ def get_available_models():
                                 except Exception as e:
                                     logging.warning(f"Error loading metadata for {model_id}: {e}")
                             
-                            # If no class names in metadata, use dictionary sounds
-                            if not class_names and 'sounds' in active_dict:
+                        # If no class names in metadata, use model_data class_names or dictionary sounds
+                        if not class_names and 'class_names' in model_data:
+                            class_names = model_data['class_names']
+                            logging.info(f"Using {len(class_names)} class names from model_data")
+                        elif not class_names and 'sounds' in active_dict:
                                 class_names = active_dict['sounds']
                                 logging.info(f"Using {len(class_names)} class names from active dictionary")
                             
@@ -1486,13 +1818,13 @@ def get_available_models():
                                 'id': model_id,
                                 'name': model_data.get('name', model_id),
                                 'type': model_data.get('type', 'cnn'),
-                                'dictionary': model_data.get('dictionary', dict_name_normalized),
+                            'dictionary': model_data.get('dictionary', model_id.split('_')[0] if '_' in model_id else 'Unknown'),
                                 'path': file_path,
                                 'created_at': model_data.get('created_at', ''),
                                 'class_names': class_names  # Include class names in the response
                             })
                 
-                logging.info(f"Found {len(available_models)} models for dictionary '{dict_name}'")
+                logging.info(f"Found {len(available_models)} total models across all dictionaries")
             except Exception as e:
                 logging.error(f"Error parsing models.json: {e}", exc_info=True)
         
@@ -1797,7 +2129,14 @@ def get_model_metadata_direct(model_id):
     Returns:
         JSON response containing model metadata
     """
+    print(f"\n\n===== DEBUG: MODEL METADATA REQUEST =====")
+    print(f"Requested model_id: {model_id}")
+    print(f"Blueprint name: {ml_bp.name}")
+    print(f"Full request path: {request.path}")
+    print(f"Request method: {request.method}")
+    
     if not model_id:
+        print("DEBUG: No model_id provided")
         return jsonify({
             'status': 'error', 
             'message': 'No model_id provided'
@@ -1806,30 +2145,48 @@ def get_model_metadata_direct(model_id):
     try:
         # First try to get the model from models.json
         models_json_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'models.json')
+        print(f"DEBUG: Looking for models.json at: {models_json_path}")
+        print(f"DEBUG: File exists: {os.path.exists(models_json_path)}")
+        
         if os.path.exists(models_json_path):
+            print("DEBUG: models.json exists, attempting to load it")
             with open(models_json_path, 'r') as f:
                 registry = json.load(f)
+            
+            print(f"DEBUG: Registry keys: {list(registry.keys())}")
+            if 'models' in registry:
+                print(f"DEBUG: Model types in registry: {list(registry['models'].keys())}")
             
             # Look for the model in each type category
             model_data = None
             for model_type, models in registry.get('models', {}).items():
+                print(f"DEBUG: Checking models of type {model_type}, count: {len(models)}")
                 if model_id in models:
+                    print(f"DEBUG: Found model {model_id} in type {model_type}")
                     model_data = models[model_id]
                     break
             
             if model_data:
+                print(f"DEBUG: Model data keys: {list(model_data.keys())}")
                 # If model has class_names directly in the registry, return them
                 if 'class_names' in model_data:
+                    print(f"DEBUG: Found class_names in model_data: {model_data['class_names']}")
                     return jsonify({
                         'status': 'success',
                         'metadata': model_data
                     })
+                else:
+                    print("DEBUG: model_data exists but does not contain class_names")
         
         # If we didn't find class_names in models.json or the model wasn't found,
         # try to load from the model's metadata file
+        print(f"DEBUG: Attempting to find metadata file for model: {model_id}")
         model_parts = model_id.split('_')
+        print(f"DEBUG: Model parts: {model_parts}")
+        
         if len(model_parts) >= 3:
             model_type = model_parts[1]  # e.g., 'cnn', 'rf'
+            print(f"DEBUG: Extracted model_type: {model_type}")
             
             # Determine the metadata file path based on model type and ID
             if model_type.lower() == 'cnn':
@@ -1846,38 +2203,63 @@ def get_model_metadata_direct(model_id):
                 )
             else:
                 # Unknown model type
+                print(f"DEBUG: Unknown model type: {model_type}")
                 return jsonify({
                     'status': 'error',
                     'message': f'Unknown model type: {model_type}'
                 }), 400
+            
+            print(f"DEBUG: Looking for metadata file at: {metadata_path}")
+            print(f"DEBUG: Metadata file exists: {os.path.exists(metadata_path)}")
                 
             # Check if metadata file exists
             if os.path.exists(metadata_path):
+                print(f"DEBUG: Metadata file exists, loading content")
+                try:
                 with open(metadata_path, 'r') as f:
                     metadata = json.load(f)
+                
+                    print(f"DEBUG: Metadata keys: {list(metadata.keys())}")
+                    print(f"DEBUG: class_names in metadata: {'class_names' in metadata}")
+                    if 'class_names' in metadata:
+                        print(f"DEBUG: class_names value: {metadata['class_names']}")
                 
                 # Return the metadata
                 return jsonify({
                     'status': 'success',
                     'metadata': metadata
                 })
+                except Exception as file_error:
+                    print(f"DEBUG: Error reading metadata file: {str(file_error)}")
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Error reading metadata file: {str(file_error)}'
+                    }), 500
             else:
                 # Metadata file doesn't exist
+                print(f"DEBUG: Metadata file not found at path: {metadata_path}")
                 return jsonify({
                     'status': 'error',
                     'message': f'Metadata file not found for model {model_id}'
                 }), 404
+        else:
+            print(f"DEBUG: Invalid model ID format: {model_id}, cannot extract parts")
         
         # If we get here, we couldn't find the model or its metadata
+        print(f"DEBUG: Could not find model {model_id} or its metadata")
         return jsonify({
             'status': 'error',
             'message': f'Model {model_id} not found or has no metadata'
         }), 404
     
     except Exception as e:
-        app.logger.error(f"Error retrieving model metadata: {str(e)}")
+        print(f"DEBUG: Unhandled exception in get_model_metadata_direct: {str(e)}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
+        
         return jsonify({
             'status': 'error',
             'message': f'Error retrieving model metadata: {str(e)}'
         }), 500
+
 

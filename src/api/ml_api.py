@@ -70,6 +70,64 @@ class MlApi:
         def delete_model(model_type, model_name):
             return self.handle_delete_model(model_type, model_name)
         
+        # Add model metadata endpoint
+        @self.app.route('/api/ml/model_metadata/<model_id>', methods=['GET'])
+        def get_model_metadata_api(model_id):
+            print(f"\n\n===== DEBUG: API MODEL METADATA REQUEST =====")
+            print(f"Using API route for model_id: {model_id}")
+            
+            # Forward to the blueprint function
+            from src.routes.ml_routes import get_model_metadata_direct
+            return get_model_metadata_direct(model_id)
+            
+        # Add start_listening endpoint
+        @self.app.route('/api/start_listening', methods=['POST'])
+        def start_listening_api():
+            print(f"\n\n===== DEBUG: API START LISTENING REQUEST =====")
+            # Forward to the blueprint function
+            from src.routes.ml_routes import start_listening
+            return start_listening()
+            
+        # Add stop_listening endpoint
+        @self.app.route('/api/ml/stop_listening', methods=['POST'])
+        def stop_listening_api():
+            print(f"\n\n===== DEBUG: API STOP LISTENING REQUEST =====")
+            # Forward to the blueprint function
+            from src.routes.ml_routes import stop_listening
+            return stop_listening()
+        
+        # Add prediction_stream endpoint
+        @self.app.route('/api/ml/prediction_stream')
+        def prediction_stream_api():
+            print(f"\n\n===== DEBUG: API PREDICTION STREAM REQUEST =====")
+            # Forward to the blueprint function
+            from src.routes.ml_routes import prediction_stream
+            return prediction_stream()
+        
+        # Add inference_statistics endpoint
+        @self.app.route('/api/ml/inference_statistics')
+        def inference_statistics_api():
+            print(f"\n\n===== DEBUG: API INFERENCE STATISTICS REQUEST =====")
+            # Forward to the blueprint function
+            from src.routes.ml_routes import inference_statistics
+            return inference_statistics()
+        
+        # Add record_feedback endpoint
+        @self.app.route('/api/ml/record_feedback', methods=['POST'])
+        def record_feedback_api():
+            print(f"\n\n===== DEBUG: API RECORD FEEDBACK REQUEST =====")
+            # Forward to the blueprint function
+            from src.routes.ml_routes import record_feedback
+            return record_feedback()
+        
+        # Add save_analysis endpoint
+        @self.app.route('/api/ml/save_analysis', methods=['POST'])
+        def save_analysis_api():
+            print(f"\n\n===== DEBUG: API SAVE ANALYSIS REQUEST =====")
+            # Forward to the blueprint function
+            from src.routes.ml_routes import save_analysis
+            return save_analysis()
+        
         # Audio analysis routes
         @self.app.route('/api/ml/analyze', methods=['POST'])
         def analyze_audio():
