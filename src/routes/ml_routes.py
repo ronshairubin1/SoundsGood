@@ -1087,7 +1087,7 @@ def inference_statistics():
             stats = current_app.ml_api.inference_service.inference_stats
         # Check the old path for backward compatibility
         elif hasattr(current_app, 'inference_service'):
-        stats = current_app.inference_service.get_inference_stats()
+            stats = current_app.inference_service.get_inference_stats()
         
         # If stats still not found, create minimal stats
         if stats is None:
