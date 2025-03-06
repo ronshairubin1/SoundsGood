@@ -1,0 +1,112 @@
+digraph CodeMap {
+    // Graph settings
+    rankdir=LR;
+    node [shape=box, style=filled, fillcolor=lightgray];
+    
+    // Main folders
+    subgraph cluster_src {
+        label="src";
+        style=filled;
+        color=lightgrey;
+        
+        // Core components
+        subgraph cluster_core {
+            label="core";
+            style=filled;
+            color=lightblue;
+            
+            subgraph cluster_core_models {
+                label="models";
+                "base.py" [shape=ellipse];
+                "cnn.py" [shape=ellipse];
+                "rf.py" [shape=ellipse];
+                "ensemble.py" [shape=ellipse];
+            }
+            
+            subgraph cluster_core_audio {
+                label="audio";
+                "processor.py" [shape=ellipse];
+            }
+        }
+        
+        // ML components
+        subgraph cluster_ml {
+            label="ml";
+            style=filled;
+            color=lightgreen;
+            
+            "audio_processing.py" [shape=ellipse];
+            "feature_extractor.py" [shape=ellipse];
+            "trainer.py" [shape=ellipse];
+            "inference.py" [shape=ellipse];
+            "cnn_classifier.py" [shape=ellipse];
+            "rf_classifier.py" [shape=ellipse];
+            "ensemble_classifier.py" [shape=ellipse];
+            "data_augmentation.py" [shape=ellipse];
+            "model_paths.py" [shape=ellipse];
+            "constants.py" [shape=ellipse];
+        }
+        
+        // API components
+        subgraph cluster_api {
+            label="api";
+            style=filled;
+            color=lightyellow;
+            
+            "ml_api.py" [shape=ellipse];
+            "user_api.py" [shape=ellipse];
+            "dashboard_api.py" [shape=ellipse];
+            "dictionary_api.py" [shape=ellipse];
+        }
+        
+        // Services
+        subgraph cluster_services {
+            label="services";
+            style=filled;
+            color=lightpink;
+            
+            "training_service.py" [shape=ellipse];
+            "inference_service.py" [shape=ellipse];
+            "dictionary_service.py" [shape=ellipse];
+            "user_service.py" [shape=ellipse];
+        }
+        
+        // Routes
+        subgraph cluster_routes {
+            label="routes";
+            style=filled;
+            color=lightcoral;
+            
+            "ml_routes.py" [shape=ellipse];
+            "train_app.py" [shape=ellipse];
+        }
+    }
+    
+    // Dependencies
+    "cnn.py" -> "base.py";
+    "rf.py" -> "base.py";
+    "ensemble.py" -> {"cnn.py" "rf.py"};
+    
+    "audio_processing.py" -> "processor.py";
+    "feature_extractor.py" -> "audio_processing.py";
+    "trainer.py" -> {"feature_extractor.py" "cnn_classifier.py" "rf_classifier.py"};
+    
+    "cnn_classifier.py" -> "cnn.py";
+    "rf_classifier.py" -> "rf.py";
+    "ensemble_classifier.py" -> {"ensemble.py" "cnn_classifier.py" "rf_classifier.py"};
+    
+    "ml_api.py" -> {"trainer.py" "inference.py"};
+    "dictionary_api.py" -> "dictionary_service.py";
+    "user_api.py" -> "user_service.py";
+    "dashboard_api.py" -> {"training_service.py" "inference_service.py"};
+    
+    "training_service.py" -> {"trainer.py" "dictionary_service.py"};
+    "inference_service.py" -> {"inference.py" "dictionary_service.py"};
+    
+    "ml_routes.py" -> {"ml_api.py" "dictionary_api.py"};
+    "train_app.py" -> {"training_service.py" "dictionary_service.py"};
+    
+    // Template connections
+    "ml_routes.py" -> "templates";
+    "train_app.py" -> "templates";
+} 

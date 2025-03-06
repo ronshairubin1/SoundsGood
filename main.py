@@ -22,14 +22,14 @@ logger = logging.getLogger('main')
 logger.info("=" * 50)
 logger.info("Starting Sound Classifier app with new architecture...")
 
-logger.info(f"Loaded Config from config.py")
+logger.info("Loaded Config from config.py")
 
 # Import our new API instead of the old routes
 try:
     from src.api.ml_api import MlApi
     logger.info("Imported MlApi from src.api.ml_api")
 except ImportError as e:
-    logger.error(f"Failed to import MlApi: {e}")
+    logger.error("Failed to import MlApi: %s", e)
     import sys
     logger.critical("MlApi is a critical component. Exiting application due to import failure.")
     sys.exit(1)
@@ -38,46 +38,47 @@ try:
     from src.api.dictionary_api import dictionary_bp
     logger.info("Imported dictionary_bp from src.api.dictionary_api")
 except ImportError as e:
-    logger.error(f"Failed to import dictionary_bp: {e}")
+    logger.error("Failed to import dictionary_bp: %s", e)
 
 try:
     from src.api.user_api import user_bp
     logger.info("Imported user_bp from src.api.user_api")
 except ImportError as e:
-    logger.error(f"Failed to import user_bp: {e}")
+    logger.error("Failed to import user_bp: %s", e)
 
 try:
     from src.api.dashboard_api import dashboard_bp
     logger.info("Imported dashboard_bp from src.api.dashboard_api")
 except ImportError as e:
-    logger.error(f"Failed to import dashboard_bp: {e}")
+    logger.error("Failed to import dashboard_bp: %s", e)
 
-# Import the ml_bp from routes
+# Import the ML routes
 try:
+    # Import the ml_bp blueprint
     from src.routes.ml_routes import ml_bp
     logger.info("Imported ml_bp from src.routes.ml_routes")
 except ImportError as e:
-    logger.error(f"Failed to import ml_bp: {e}")
+    logger.error("Failed to import ml_bp: %s", e)
 
 # Import the recording_bp blueprint for our new audio processing features
 try:
     from src.routes.recording_routes import recording_bp
     logger.info("Imported recording_bp from src.routes.recording_routes")
 except ImportError as e:
-    logger.error(f"Failed to import recording_bp: {e}")
+    logger.error("Failed to import recording_bp: %s", e)
 
 # Import services
 try:
     from src.services.dictionary_service import DictionaryService
     logger.info("Imported DictionaryService from src.services.dictionary_service")
 except ImportError as e:
-    logger.error(f"Failed to import DictionaryService: {e}")
+    logger.error("Failed to import DictionaryService: %s", e)
 
 try:
     from src.services.user_service import UserService
     logger.info("Imported UserService from src.services.user_service")
 except ImportError as e:
-    logger.error(f"Failed to import UserService: {e}")
+    logger.error("Failed to import UserService: %s", e)
 
 # --------------------------------------------------------------------
 # Set up Flask
@@ -88,17 +89,17 @@ app = Flask(
     static_folder=os.path.join(Config.BASE_DIR, 'static'),
     template_folder=os.path.join(Config.BASE_DIR, 'src', 'templates')
 )
-logger.debug(f"Template folder: {os.path.join(Config.BASE_DIR, 'src', 'templates')}")
-logger.debug(f"Static folder: {os.path.join(Config.BASE_DIR, 'static')}")
+logger.debug("Template folder: %s", os.path.join(Config.BASE_DIR, 'src', 'templates'))
+logger.debug("Static folder: %s", os.path.join(Config.BASE_DIR, 'static'))
 
 app.secret_key = Config.SECRET_KEY
 CORS(app, supports_credentials=True)
 
 # Ensure required directories exist
 os.makedirs(Config.TEMP_DIR, exist_ok=True)
-logger.debug(f"Ensured TEMP_DIR exists: {Config.TEMP_DIR}")
+logger.debug("Ensured TEMP_DIR exists: %s", Config.TEMP_DIR)
 os.makedirs(Config.TRAINING_SOUNDS_DIR, exist_ok=True)
-logger.debug(f"Ensured TRAINING_SOUNDS_DIR exists: {Config.TRAINING_SOUNDS_DIR}")
+logger.debug("Ensured TRAINING_SOUNDS_DIR exists: %s", Config.TRAINING_SOUNDS_DIR)
 
 # Register blueprints
 try:
@@ -108,12 +109,13 @@ try:
     logger.info("Registered user_bp blueprint")
     app.register_blueprint(dashboard_bp) 
     logger.info("Registered dashboard_bp blueprint")
-    app.register_blueprint(ml_bp)  # Register the ml_bp
+    # Register the ml_bp blueprint
+    app.register_blueprint(ml_bp)  
     logger.info("Registered ml_bp blueprint")
     app.register_blueprint(recording_bp, url_prefix='/recording')  # Register our new recording_bp
     logger.info("Registered recording_bp blueprint")
-except Exception as e:
-    logger.error(f"Error registering blueprints: {e}")
+except (ImportError, AttributeError) as e:
+    logger.error("Error registering blueprints: %s", e)
 
 # Initialize services
 dictionary_service = DictionaryService()
@@ -275,9 +277,9 @@ def login():
             session['is_admin'] = result['user']['is_admin']
             flash(f'Welcome back, {username}!', 'success')
             return redirect(url_for('index'))
-        else:
-            flash(result['error'], 'danger')
-            return render_template('login.html')
+        
+        flash(result['error'], 'danger')
+        return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -305,9 +307,9 @@ def register():
         if result['success']:
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('login'))
-        else:
-            flash(result['error'], 'danger')
-            return render_template('register.html')
+        
+        flash(result['error'], 'danger')
+        return render_template('register.html')
 
 # --------------------------------------------------------------------
 # Dictionary Management Routes
@@ -1205,13 +1207,15 @@ def check_login():
     if (request.endpoint in ['login', 'register', 'static', 'logout'] or
         request.path.startswith('/static/') or
         request.path.startswith('/api/')):
-        return
+        return None
         
     # Require login for all other routes
     if 'username' not in session:
         if request.path != '/':
             flash('Please login to access this page', 'warning')
         return redirect(url_for('login'))
+    
+    return None
 
 # --------------------------------------------------------------------
 # Error handlers
@@ -1222,7 +1226,7 @@ def not_found_error(e):
 
 @app.errorhandler(500)
 def server_error(e):
-    app.logger.error(f"Server error: {e}")
+    app.logger.error("Server error: %s", e)
     return render_template('500.html', error=str(e)), 500
 
 # --------------------------------------------------------------------

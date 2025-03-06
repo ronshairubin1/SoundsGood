@@ -24,83 +24,59 @@ import tempfile
 # Add the project root to the Python path for imports
 sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
-# Import legacy extractors (with deprecation warnings)
-from src.ml.feature_extractor import AudioFeatureExtractor
-from src.ml.audio_processing import UnifiedFeatureExtractor
-
-# Import the unified feature extractor
+# Import the unified extractor
 from backend.features.extractor import FeatureExtractor
 
-# Try importing other extractors if available
-try:
-    from unified_feature_extractor import ComprehensiveFeatureExtractor
-except ImportError:
-    ComprehensiveFeatureExtractor = None
+# Import legacy extractors through forwarding mechanism (with deprecation warnings)
+from src.ml.feature_extractor import AudioFeatureExtractor
 
-try:
-    from advanced_feature_extractor import AdvancedFeatureExtractor
-except ImportError:
-    AdvancedFeatureExtractor = None
+# Import the unified extractor directly
+from backend.features.extractor import FeatureExtractor as UnifiedExtractor
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 def extract_features_with_unified(audio_file):
-    """
-    Extract features using the unified extractor
-    
-    Args:
-        audio_file: Path to the audio file
-        
-    Returns:
-        Dict of extracted features
-    """
-    start_time = time.time()
+    """Extract features using the unified extractor."""
+    logging.info("Extracting features with unified extractor...")
     extractor = FeatureExtractor()
     features = extractor.extract_features(audio_file)
-    end_time = time.time()
-    
-    logging.info(f"Unified extractor took {end_time - start_time:.2f} seconds")
     return features
 
 def extract_features_with_legacy(audio_file, legacy_type="audio"):
     """
-    Extract features using a legacy extractor
+    Extract features using a legacy extractor for comparison.
     
     Args:
         audio_file: Path to the audio file
         legacy_type: Type of legacy extractor to use
         
     Returns:
-        Dict of extracted features or None if extraction fails
+        Dict of extracted features
     """
-    if not legacy_imports_successful:
-        logging.warning(f"Cannot use {legacy_type} extractor because legacy imports failed")
-        return None
+    logging.info(f"Extracting features with legacy extractor ({legacy_type})...")
+    
+    features = None
     
     try:
-        start_time = time.time()
-        
         if legacy_type == "audio":
+            # This now uses the forwarding mechanism to the unified extractor
             extractor = AudioFeatureExtractor()
             features = extractor.extract_features(audio_file)
         elif legacy_type == "unified":
-            extractor = UnifiedFeatureExtractor()
-            features = extractor.extract_all_features(audio_file)
-        elif legacy_type == "comprehensive" and ComprehensiveFeatureExtractor is not None:
-            extractor = ComprehensiveFeatureExtractor()
-            features = extractor.extract_features(audio_file)
-        elif legacy_type == "advanced" and AdvancedFeatureExtractor is not None:
-            extractor = AdvancedFeatureExtractor()
+            # This is just another reference to the unified extractor
+            extractor = UnifiedExtractor()
             features = extractor.extract_features(audio_file)
         else:
-            logging.warning(f"Unknown or unavailable legacy extractor type: {legacy_type}")
+            logging.warning(f"Unknown legacy type: {legacy_type}")
             return None
-        
-        end_time = time.time()
-        logging.info(f"{legacy_type.capitalize()} extractor took {end_time - start_time:.2f} seconds")
-        
+            
         return features
-    
+        
     except Exception as e:
-        logging.error(f"Error extracting features with {legacy_type} extractor: {e}")
+        logging.error(f"Error extracting features with {legacy_type} extractor: {str(e)}")
         return None
 
 def compare_feature_keys(unified_features, legacy_features, legacy_type):

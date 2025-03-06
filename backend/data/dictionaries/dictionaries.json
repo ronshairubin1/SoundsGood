@@ -1,0 +1,115 @@
+{
+    "dictionaries": {
+        "Default": {
+            "name": "Default",
+            "sounds": [
+                "ah",
+                "eh",
+                "ee",
+                "oh",
+                "oo",
+                "bah",
+                "beh",
+                "bee",
+                "boh",
+                "boo",
+                "mah",
+                "meh",
+                "mee",
+                "moh",
+                "moo",
+                "lah",
+                "leh",
+                "lee",
+                "loh",
+                "loo"
+            ]
+        },
+        "EhOh": {
+            "name": "EhOh",
+            "sounds": [
+                "eh",
+                "oh"
+            ],
+            "active": false,
+            "created_at": "2025-03-03T12:00:00.000000",
+            "updated_at": "2025-03-03T13:56:39.814463",
+            "created_by": "admin",
+            "description": "Dictionary for EhOh models with just 'eh' and 'oh' sounds",
+            "sample_count": 46,
+            "classes": [
+                "eh",
+                "oh"
+            ],
+            "class_details": [
+                {
+                    "name": "eh",
+                    "sample_count": 25
+                },
+                {
+                    "name": "oh",
+                    "sample_count": 21
+                }
+            ]
+        },
+        "Michal Base": {
+            "name": "Michal Base",
+            "sounds": [
+                "ah",
+                "eh",
+                "ee",
+                "oh",
+                "oo",
+                "bah",
+                "beh",
+                "bee",
+                "boh",
+                "boo",
+                "mah",
+                "meh",
+                "mee",
+                "moh",
+                "moo",
+                "lah",
+                "leh",
+                "lee",
+                "loh",
+                "loo"
+            ]
+        },
+        "Michal Plus Ooah": {
+            "name": "Michal Plus Ooah",
+            "sounds": [
+                "ah",
+                "eh",
+                "ee",
+                "oh",
+                "oo",
+                "bah",
+                "beh",
+                "bee",
+                "boh",
+                "boo",
+                "mah",
+                "meh",
+                "mee",
+                "moh",
+                "moo",
+                "lah",
+                "leh",
+                "lee",
+                "loh",
+                "loo",
+                "ooah"
+            ]
+        },
+        "Two words": {
+            "name": "Two words",
+            "sounds": [
+                "oh",
+                "eh"
+            ]
+        }
+    },
+    "active_dictionary": "Michal Plus Ooah"
+}

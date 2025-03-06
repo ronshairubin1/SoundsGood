@@ -10,24 +10,26 @@ class Config:
     # App directories
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
-    MODELS_DIR = os.path.join(BASE_DIR, 'data/models')
+    BACKEND_DATA_DIR = os.path.join(BASE_DIR, 'backend', 'data')
+    MODELS_DIR = os.path.join(BACKEND_DATA_DIR, 'models')
     TEMP_DIR = os.path.join(BASE_DIR, 'temp')
-    DATA_DIR = os.path.join(BASE_DIR, 'data')
-    DICTIONARIES_DIR = os.path.join(DATA_DIR, 'dictionaries')
-    ANALYSIS_DIR = os.path.join(DATA_DIR, 'analysis')
+    DATA_DIR = BACKEND_DATA_DIR  # Point to backend data
+    DICTIONARIES_DIR = os.path.join(BACKEND_DATA_DIR, 'dictionaries')
+    ANALYSIS_DIR = os.path.join(BACKEND_DATA_DIR, 'analysis')
     LOGS_DIR = os.path.join(BASE_DIR, 'logs')
     
-    # Define specific sound directories within data/sounds
-    RAW_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'raw_sounds')
-    PENDING_VERIFICATION_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'pending_verification_live_recording_sounds')
-    UPLOADED_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'uploaded_sounds')
-    TEST_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'test_sounds')
-    TRAINING_SOUNDS_DIR = os.path.join(DATA_DIR, 'sounds', 'training_sounds')
+    # Define specific sound directories within backend/data/sounds
+    RAW_SOUNDS_DIR = os.path.join(BACKEND_DATA_DIR, 'sounds', 'raw')
+    PENDING_VERIFICATION_SOUNDS_DIR = os.path.join(BACKEND_DATA_DIR, 'sounds', 'pending')
+    UPLOADED_SOUNDS_DIR = os.path.join(BACKEND_DATA_DIR, 'sounds', 'uploaded')
+    TEST_SOUNDS_DIR = os.path.join(BACKEND_DATA_DIR, 'sounds', 'test')
+    TRAINING_SOUNDS_DIR = os.path.join(BACKEND_DATA_DIR, 'sounds', 'chopped')
+    AUGMENTED_SOUNDS_DIR = os.path.join(BACKEND_DATA_DIR, 'sounds', 'augmented')
     
     # Ensure all directories exist
     for directory in [UPLOAD_DIR, MODELS_DIR, TEMP_DIR, DATA_DIR, DICTIONARIES_DIR, ANALYSIS_DIR,
                       TRAINING_SOUNDS_DIR, RAW_SOUNDS_DIR, PENDING_VERIFICATION_SOUNDS_DIR,
-                      UPLOADED_SOUNDS_DIR, TEST_SOUNDS_DIR, LOGS_DIR]:
+                      UPLOADED_SOUNDS_DIR, TEST_SOUNDS_DIR, LOGS_DIR, AUGMENTED_SOUNDS_DIR]:
         os.makedirs(directory, exist_ok=True)
     
     # Audio processing settings
@@ -96,6 +98,7 @@ class Config:
             cls.UPLOADED_SOUNDS_DIR,
             cls.TEST_SOUNDS_DIR,
             cls.LOGS_DIR,
+            cls.AUGMENTED_SOUNDS_DIR,
         ]
         
         for directory in directories:

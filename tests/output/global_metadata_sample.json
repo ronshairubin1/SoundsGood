@@ -1,0 +1,4541 @@
+{
+  "sounds": {
+    "mah_mah_admin_18": {
+      "id": "mah_mah_admin_18",
+      "file_name": "mah_admin_18.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_18.wav",
+      "duration": 0.3237083333333333,
+      "size_bytes": 31120,
+      "created_at": "2025-02-28T10:00:28.919642"
+    },
+    "mah_mah_admin_19": {
+      "id": "mah_mah_admin_19",
+      "file_name": "mah_admin_19.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_19.wav",
+      "duration": 0.3299375,
+      "size_bytes": 31718,
+      "created_at": "2025-02-28T10:00:28.919868"
+    },
+    "mah_mah_admin_8": {
+      "id": "mah_mah_admin_8",
+      "file_name": "mah_admin_8.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_8.wav",
+      "duration": 0.3837291666666667,
+      "size_bytes": 36882,
+      "created_at": "2025-02-28T10:00:28.920108"
+    },
+    "mah_mah_admin_9": {
+      "id": "mah_mah_admin_9",
+      "file_name": "mah_admin_9.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_9.wav",
+      "duration": 0.3330416666666667,
+      "size_bytes": 32016,
+      "created_at": "2025-02-28T10:00:28.920351"
+    },
+    "mah_mah_admin_21": {
+      "id": "mah_mah_admin_21",
+      "file_name": "mah_admin_21.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_21.wav",
+      "duration": 0.3265416666666667,
+      "size_bytes": 31392,
+      "created_at": "2025-02-28T10:00:28.920550"
+    },
+    "mah_mah_admin_20": {
+      "id": "mah_mah_admin_20",
+      "file_name": "mah_admin_20.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_20.wav",
+      "duration": 0.3438541666666667,
+      "size_bytes": 33054,
+      "created_at": "2025-02-28T10:00:28.920759"
+    },
+    "mah_mah_admin_11": {
+      "id": "mah_mah_admin_11",
+      "file_name": "mah_admin_11.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_11.wav",
+      "duration": 0.32258333333333333,
+      "size_bytes": 31012,
+      "created_at": "2025-02-28T10:00:28.920995"
+    },
+    "mah_mah_admin_2": {
+      "id": "mah_mah_admin_2",
+      "file_name": "mah_admin_2.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_2.wav",
+      "duration": 0.383,
+      "size_bytes": 12300,
+      "created_at": "2025-02-28T10:00:28.921183"
+    },
+    "mah_mah_admin_3": {
+      "id": "mah_mah_admin_3",
+      "file_name": "mah_admin_3.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_3.wav",
+      "duration": 0.63,
+      "size_bytes": 20204,
+      "created_at": "2025-02-28T10:00:28.921368"
+    },
+    "mah_mah_admin_10": {
+      "id": "mah_mah_admin_10",
+      "file_name": "mah_admin_10.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_10.wav",
+      "duration": 0.30120833333333336,
+      "size_bytes": 28960,
+      "created_at": "2025-02-28T10:00:28.921548"
+    },
+    "mah_mah_admin_12": {
+      "id": "mah_mah_admin_12",
+      "file_name": "mah_admin_12.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_12.wav",
+      "duration": 0.30475,
+      "size_bytes": 29300,
+      "created_at": "2025-02-28T10:00:28.921772"
+    },
+    "mah_mah_admin_1": {
+      "id": "mah_mah_admin_1",
+      "file_name": "mah_admin_1.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_1.wav",
+      "duration": 0.4079375,
+      "size_bytes": 13098,
+      "created_at": "2025-02-28T10:00:28.921960"
+    },
+    "mah_mah_admin_13": {
+      "id": "mah_mah_admin_13",
+      "file_name": "mah_admin_13.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_13.wav",
+      "duration": 0.3321875,
+      "size_bytes": 31934,
+      "created_at": "2025-02-28T10:00:28.922151"
+    },
+    "mah_mah_admin_17": {
+      "id": "mah_mah_admin_17",
+      "file_name": "mah_admin_17.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_17.wav",
+      "duration": 0.29741666666666666,
+      "size_bytes": 28596,
+      "created_at": "2025-02-28T10:00:28.922342"
+    },
+    "mah_mah_admin_4": {
+      "id": "mah_mah_admin_4",
+      "file_name": "mah_admin_4.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_4.wav",
+      "duration": 0.4249375,
+      "size_bytes": 13642,
+      "created_at": "2025-02-28T10:00:28.922533"
+    },
+    "mah_mah_admin_5": {
+      "id": "mah_mah_admin_5",
+      "file_name": "mah_admin_5.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_5.wav",
+      "duration": 1.1303125,
+      "size_bytes": 36214,
+      "created_at": "2025-02-28T10:00:28.922751"
+    },
+    "mah_mah_admin_16": {
+      "id": "mah_mah_admin_16",
+      "file_name": "mah_admin_16.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_16.wav",
+      "duration": 0.36935416666666665,
+      "size_bytes": 35502,
+      "created_at": "2025-02-28T10:00:28.922940"
+    },
+    "mah_mah_admin_14": {
+      "id": "mah_mah_admin_14",
+      "file_name": "mah_admin_14.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_14.wav",
+      "duration": 3.3989166666666666,
+      "size_bytes": 326340,
+      "created_at": "2025-02-28T10:00:28.923130"
+    },
+    "mah_mah_admin_7": {
+      "id": "mah_mah_admin_7",
+      "file_name": "mah_admin_7.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_7.wav",
+      "duration": 0.2911458333333333,
+      "size_bytes": 27994,
+      "created_at": "2025-02-28T10:00:28.923344"
+    },
+    "mah_mah_admin_6": {
+      "id": "mah_mah_admin_6",
+      "file_name": "mah_admin_6.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_6.wav",
+      "duration": 0.29189583333333335,
+      "size_bytes": 28066,
+      "created_at": "2025-02-28T10:00:28.923545"
+    },
+    "mah_mah_admin_15": {
+      "id": "mah_mah_admin_15",
+      "file_name": "mah_admin_15.wav",
+      "class": "mah",
+      "path": "data/sounds/training_sounds/mah/mah_admin_15.wav",
+      "duration": 0.31097916666666664,
+      "size_bytes": 29898,
+      "created_at": "2025-02-28T10:00:28.923734"
+    },
+    "lee_lee_admin_6": {
+      "id": "lee_lee_admin_6",
+      "file_name": "lee_admin_6.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_6.wav",
+      "duration": 0.69,
+      "size_bytes": 22124,
+      "created_at": "2025-02-28T10:00:28.905485"
+    },
+    "lee_lee_admin_19": {
+      "id": "lee_lee_admin_19",
+      "file_name": "lee_admin_19.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_19.wav",
+      "duration": 0.6937708333333333,
+      "size_bytes": 66646,
+      "created_at": "2025-02-28T10:00:28.905700"
+    },
+    "lee_lee_admin_18": {
+      "id": "lee_lee_admin_18",
+      "file_name": "lee_admin_18.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_18.wav",
+      "duration": 0.7188333333333333,
+      "size_bytes": 69052,
+      "created_at": "2025-02-28T10:00:28.905923"
+    },
+    "lee_lee_admin_24": {
+      "id": "lee_lee_admin_24",
+      "file_name": "lee_admin_24.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_24.wav",
+      "duration": 0.43952083333333336,
+      "size_bytes": 42238,
+      "created_at": "2025-02-28T10:00:28.906151"
+    },
+    "lee_lee_admin_7": {
+      "id": "lee_lee_admin_7",
+      "file_name": "lee_admin_7.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_7.wav",
+      "duration": 0.939,
+      "size_bytes": 30092,
+      "created_at": "2025-02-28T10:00:28.906379"
+    },
+    "lee_lee_admin_5": {
+      "id": "lee_lee_admin_5",
+      "file_name": "lee_admin_5.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_5.wav",
+      "duration": 0.4110625,
+      "size_bytes": 13198,
+      "created_at": "2025-02-28T10:00:28.906658"
+    },
+    "lee_lee_admin_4": {
+      "id": "lee_lee_admin_4",
+      "file_name": "lee_admin_4.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_4.wav",
+      "duration": 3.6851875,
+      "size_bytes": 117970,
+      "created_at": "2025-02-28T10:00:28.906975"
+    },
+    "lee_lee_admin_23": {
+      "id": "lee_lee_admin_23",
+      "file_name": "lee_admin_23.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_23.wav",
+      "duration": 0.66475,
+      "size_bytes": 63860,
+      "created_at": "2025-02-28T10:00:28.907252"
+    },
+    "lee_lee_admin_22": {
+      "id": "lee_lee_admin_22",
+      "file_name": "lee_admin_22.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_22.wav",
+      "duration": 0.6908541666666667,
+      "size_bytes": 66366,
+      "created_at": "2025-02-28T10:00:28.907566"
+    },
+    "lee_lee_admin_1": {
+      "id": "lee_lee_admin_1",
+      "file_name": "lee_admin_1.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_1.wav",
+      "duration": 1.9835,
+      "size_bytes": 63516,
+      "created_at": "2025-02-28T10:00:28.907868"
+    },
+    "lee_lee_admin_3": {
+      "id": "lee_lee_admin_3",
+      "file_name": "lee_admin_3.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_3.wav",
+      "duration": 1.9780625,
+      "size_bytes": 63342,
+      "created_at": "2025-02-28T10:00:28.908142"
+    },
+    "lee_lee_admin_20": {
+      "id": "lee_lee_admin_20",
+      "file_name": "lee_admin_20.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_20.wav",
+      "duration": 2.8238541666666666,
+      "size_bytes": 271134,
+      "created_at": "2025-02-28T10:00:28.908409"
+    },
+    "lee_lee_admin_21": {
+      "id": "lee_lee_admin_21",
+      "file_name": "lee_admin_21.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_21.wav",
+      "duration": 0.7076875,
+      "size_bytes": 67982,
+      "created_at": "2025-02-28T10:00:28.908698"
+    },
+    "lee_lee_admin_2": {
+      "id": "lee_lee_admin_2",
+      "file_name": "lee_admin_2.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_2.wav",
+      "duration": 0.438375,
+      "size_bytes": 14072,
+      "created_at": "2025-02-28T10:00:28.908985"
+    },
+    "lee_lee_admin_10": {
+      "id": "lee_lee_admin_10",
+      "file_name": "lee_admin_10.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_10.wav",
+      "duration": 0.4085625,
+      "size_bytes": 13118,
+      "created_at": "2025-02-28T10:00:28.909243"
+    },
+    "lee_lee_admin_11": {
+      "id": "lee_lee_admin_11",
+      "file_name": "lee_admin_11.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_11.wav",
+      "duration": 1.9780625,
+      "size_bytes": 63342,
+      "created_at": "2025-02-28T10:00:28.909431"
+    },
+    "lee_lee_admin_13": {
+      "id": "lee_lee_admin_13",
+      "file_name": "lee_admin_13.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_13.wav",
+      "duration": 0.3757916666666667,
+      "size_bytes": 36120,
+      "created_at": "2025-02-28T10:00:28.909664"
+    },
+    "lee_lee_admin_12": {
+      "id": "lee_lee_admin_12",
+      "file_name": "lee_admin_12.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_12.wav",
+      "duration": 0.39908333333333335,
+      "size_bytes": 38356,
+      "created_at": "2025-02-28T10:00:28.909870"
+    },
+    "lee_lee_admin_9": {
+      "id": "lee_lee_admin_9",
+      "file_name": "lee_admin_9.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_9.wav",
+      "duration": 0.46025,
+      "size_bytes": 14772,
+      "created_at": "2025-02-28T10:00:28.910076"
+    },
+    "lee_lee_admin_16": {
+      "id": "lee_lee_admin_16",
+      "file_name": "lee_admin_16.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_16.wav",
+      "duration": 0.6463333333333333,
+      "size_bytes": 62092,
+      "created_at": "2025-02-28T10:00:28.910269"
+    },
+    "lee_lee_admin_17": {
+      "id": "lee_lee_admin_17",
+      "file_name": "lee_admin_17.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_17.wav",
+      "duration": 0.5075416666666667,
+      "size_bytes": 48768,
+      "created_at": "2025-02-28T10:00:28.910476"
+    },
+    "lee_lee_admin_8": {
+      "id": "lee_lee_admin_8",
+      "file_name": "lee_admin_8.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_8.wav",
+      "duration": 1.9835,
+      "size_bytes": 63516,
+      "created_at": "2025-02-28T10:00:28.910691"
+    },
+    "lee_lee_admin_15": {
+      "id": "lee_lee_admin_15",
+      "file_name": "lee_admin_15.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_15.wav",
+      "duration": 1.2288958333333333,
+      "size_bytes": 118018,
+      "created_at": "2025-02-28T10:00:28.910925"
+    },
+    "lee_lee_admin_14": {
+      "id": "lee_lee_admin_14",
+      "file_name": "lee_admin_14.wav",
+      "class": "lee",
+      "path": "data/sounds/training_sounds/lee/lee_admin_14.wav",
+      "duration": 0.6560833333333334,
+      "size_bytes": 63028,
+      "created_at": "2025-02-28T10:00:28.911118"
+    },
+    "bee_bee_da9d52bd": {
+      "id": "bee_bee_da9d52bd",
+      "file_name": "bee_da9d52bd.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_da9d52bd.wav",
+      "duration": 0.308,
+      "size_bytes": 9900,
+      "created_at": "2025-02-28T14:02:45.014736"
+    },
+    "bee_bee_admin_19": {
+      "id": "bee_bee_admin_19",
+      "file_name": "bee_admin_19.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_19.wav",
+      "duration": 0.35025,
+      "size_bytes": 33668,
+      "created_at": "2025-02-28T10:00:28.893005"
+    },
+    "bee_bee_admin_18": {
+      "id": "bee_bee_admin_18",
+      "file_name": "bee_admin_18.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_18.wav",
+      "duration": 0.3704375,
+      "size_bytes": 35606,
+      "created_at": "2025-02-28T10:00:28.893233"
+    },
+    "bee_bee_admin_3": {
+      "id": "bee_bee_admin_3",
+      "file_name": "bee_admin_3.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_3.wav",
+      "duration": 0.4530416666666667,
+      "size_bytes": 43536,
+      "created_at": "2025-02-28T10:00:28.893461"
+    },
+    "bee_bee_admin_2": {
+      "id": "bee_bee_admin_2",
+      "file_name": "bee_admin_2.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_2.wav",
+      "duration": 0.38708333333333333,
+      "size_bytes": 37204,
+      "created_at": "2025-02-28T10:00:28.893698"
+    },
+    "bee_bee_6db0817f": {
+      "id": "bee_bee_6db0817f",
+      "file_name": "bee_6db0817f.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_6db0817f.wav",
+      "duration": 0.372,
+      "size_bytes": 11948,
+      "created_at": "2025-02-28T14:02:45.933472"
+    },
+    "bee_bee_admin_1": {
+      "id": "bee_bee_admin_1",
+      "file_name": "bee_admin_1.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_1.wav",
+      "duration": 0.7695625,
+      "size_bytes": 24670,
+      "created_at": "2025-02-28T10:00:28.893908"
+    },
+    "bee_bee_30faebf3": {
+      "id": "bee_bee_30faebf3",
+      "file_name": "bee_30faebf3.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_30faebf3.wav",
+      "duration": 1.1392708333333332,
+      "size_bytes": 109414,
+      "created_at": "2025-02-28T10:00:28.894157"
+    },
+    "bee_bee_admin_5": {
+      "id": "bee_bee_admin_5",
+      "file_name": "bee_admin_5.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_5.wav",
+      "duration": 0.32639583333333333,
+      "size_bytes": 31378,
+      "created_at": "2025-02-28T10:00:28.894409"
+    },
+    "bee_bee_admin_4": {
+      "id": "bee_bee_admin_4",
+      "file_name": "bee_admin_4.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_4.wav",
+      "duration": 0.3127916666666667,
+      "size_bytes": 30072,
+      "created_at": "2025-02-28T10:00:28.894606"
+    },
+    "bee_bee_admin_6": {
+      "id": "bee_bee_admin_6",
+      "file_name": "bee_admin_6.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_6.wav",
+      "duration": 0.357125,
+      "size_bytes": 34328,
+      "created_at": "2025-02-28T10:00:28.894798"
+    },
+    "bee_bee_dbe0f409": {
+      "id": "bee_bee_dbe0f409",
+      "file_name": "bee_dbe0f409.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_dbe0f409.wav",
+      "duration": 0.404,
+      "size_bytes": 12972,
+      "created_at": "2025-02-28T14:02:44.111941"
+    },
+    "bee_bee_admin_7": {
+      "id": "bee_bee_admin_7",
+      "file_name": "bee_admin_7.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_7.wav",
+      "duration": 0.4,
+      "size_bytes": 38444,
+      "created_at": "2025-02-28T10:00:28.894985"
+    },
+    "bee_bee_admin_9": {
+      "id": "bee_bee_admin_9",
+      "file_name": "bee_admin_9.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_9.wav",
+      "duration": 0.463125,
+      "size_bytes": 44504,
+      "created_at": "2025-02-28T10:00:28.895174"
+    },
+    "bee_bee_admin_8": {
+      "id": "bee_bee_admin_8",
+      "file_name": "bee_admin_8.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_8.wav",
+      "duration": 0.3420416666666667,
+      "size_bytes": 32880,
+      "created_at": "2025-02-28T10:00:28.895368"
+    },
+    "bee_bee_admin_16": {
+      "id": "bee_bee_admin_16",
+      "file_name": "bee_admin_16.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_16.wav",
+      "duration": 0.32385416666666667,
+      "size_bytes": 31134,
+      "created_at": "2025-02-28T10:00:28.895559"
+    },
+    "bee_bee_admin_17": {
+      "id": "bee_bee_admin_17",
+      "file_name": "bee_admin_17.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_17.wav",
+      "duration": 0.5196875,
+      "size_bytes": 49934,
+      "created_at": "2025-02-28T10:00:28.895746"
+    },
+    "bee_bee_admin_15": {
+      "id": "bee_bee_admin_15",
+      "file_name": "bee_admin_15.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_15.wav",
+      "duration": 0.28841666666666665,
+      "size_bytes": 27732,
+      "created_at": "2025-02-28T10:00:28.895919"
+    },
+    "bee_bee_admin_14": {
+      "id": "bee_bee_admin_14",
+      "file_name": "bee_admin_14.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_14.wav",
+      "duration": 0.33047916666666666,
+      "size_bytes": 31770,
+      "created_at": "2025-02-28T10:00:28.896137"
+    },
+    "bee_bee_admin_10": {
+      "id": "bee_bee_admin_10",
+      "file_name": "bee_admin_10.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_10.wav",
+      "duration": 0.32175,
+      "size_bytes": 30932,
+      "created_at": "2025-02-28T10:00:28.896328"
+    },
+    "bee_bee_admin_11": {
+      "id": "bee_bee_admin_11",
+      "file_name": "bee_admin_11.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_11.wav",
+      "duration": 0.31172916666666667,
+      "size_bytes": 29970,
+      "created_at": "2025-02-28T10:00:28.896520"
+    },
+    "bee_bee_admin_13": {
+      "id": "bee_bee_admin_13",
+      "file_name": "bee_admin_13.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_13.wav",
+      "duration": 0.201,
+      "size_bytes": 19340,
+      "created_at": "2025-02-28T10:00:28.896706"
+    },
+    "bee_bee_admin_12": {
+      "id": "bee_bee_admin_12",
+      "file_name": "bee_admin_12.wav",
+      "class": "bee",
+      "path": "data/sounds/training_sounds/bee/bee_admin_12.wav",
+      "duration": 0.9260208333333333,
+      "size_bytes": 88942,
+      "created_at": "2025-02-28T10:00:28.896884"
+    },
+    "ee_ee_admin_18": {
+      "id": "ee_ee_admin_18",
+      "file_name": "ee_admin_18.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_18.wav",
+      "duration": 0.41229166666666667,
+      "size_bytes": 39624,
+      "created_at": "2025-02-28T10:00:28.880810"
+    },
+    "ee_ee_admin_1": {
+      "id": "ee_ee_admin_1",
+      "file_name": "ee_admin_1.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_1.wav",
+      "duration": 0.5574166666666667,
+      "size_bytes": 53556,
+      "created_at": "2025-02-28T10:00:28.881043"
+    },
+    "ee_ee_admin_19": {
+      "id": "ee_ee_admin_19",
+      "file_name": "ee_admin_19.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_19.wav",
+      "duration": 0.37577083333333333,
+      "size_bytes": 36118,
+      "created_at": "2025-02-28T10:00:28.881273"
+    },
+    "ee_ee_admin_3": {
+      "id": "ee_ee_admin_3",
+      "file_name": "ee_admin_3.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_3.wav",
+      "duration": 0.2904583333333333,
+      "size_bytes": 27928,
+      "created_at": "2025-02-28T10:00:28.881516"
+    },
+    "ee_ee_admin_2": {
+      "id": "ee_ee_admin_2",
+      "file_name": "ee_admin_2.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_2.wav",
+      "duration": 0.3632916666666667,
+      "size_bytes": 34920,
+      "created_at": "2025-02-28T10:00:28.881730"
+    },
+    "ee_ee_admin_6": {
+      "id": "ee_ee_admin_6",
+      "file_name": "ee_admin_6.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_6.wav",
+      "duration": 0.42841666666666667,
+      "size_bytes": 41172,
+      "created_at": "2025-02-28T10:00:28.881961"
+    },
+    "ee_ee_admin_7": {
+      "id": "ee_ee_admin_7",
+      "file_name": "ee_admin_7.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_7.wav",
+      "duration": 0.43527083333333333,
+      "size_bytes": 41830,
+      "created_at": "2025-02-28T10:00:28.882179"
+    },
+    "ee_ee_admin_21": {
+      "id": "ee_ee_admin_21",
+      "file_name": "ee_admin_21.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_21.wav",
+      "duration": 0.4138125,
+      "size_bytes": 39770,
+      "created_at": "2025-02-28T10:00:28.882361"
+    },
+    "ee_ee_admin_5": {
+      "id": "ee_ee_admin_5",
+      "file_name": "ee_admin_5.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_5.wav",
+      "duration": 0.41920833333333335,
+      "size_bytes": 40288,
+      "created_at": "2025-02-28T10:00:28.882544"
+    },
+    "ee_ee_admin_4": {
+      "id": "ee_ee_admin_4",
+      "file_name": "ee_admin_4.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_4.wav",
+      "duration": 0.45997916666666666,
+      "size_bytes": 44202,
+      "created_at": "2025-02-28T10:00:28.882722"
+    },
+    "ee_ee_admin_20": {
+      "id": "ee_ee_admin_20",
+      "file_name": "ee_admin_20.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_20.wav",
+      "duration": 0.4533333333333333,
+      "size_bytes": 43564,
+      "created_at": "2025-02-28T10:00:28.882951"
+    },
+    "ee_ee_admin_11": {
+      "id": "ee_ee_admin_11",
+      "file_name": "ee_admin_11.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_11.wav",
+      "duration": 0.378,
+      "size_bytes": 36332,
+      "created_at": "2025-02-28T10:00:28.883133"
+    },
+    "ee_ee_admin_9": {
+      "id": "ee_ee_admin_9",
+      "file_name": "ee_admin_9.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_9.wav",
+      "duration": 0.3708125,
+      "size_bytes": 35642,
+      "created_at": "2025-02-28T10:00:28.883325"
+    },
+    "ee_ee_admin_8": {
+      "id": "ee_ee_admin_8",
+      "file_name": "ee_admin_8.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_8.wav",
+      "duration": 0.4756875,
+      "size_bytes": 45710,
+      "created_at": "2025-02-28T10:00:28.883513"
+    },
+    "ee_ee_admin_10": {
+      "id": "ee_ee_admin_10",
+      "file_name": "ee_admin_10.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_10.wav",
+      "duration": 1.3824375,
+      "size_bytes": 132758,
+      "created_at": "2025-02-28T10:00:28.883705"
+    },
+    "ee_ee_admin_12": {
+      "id": "ee_ee_admin_12",
+      "file_name": "ee_admin_12.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_12.wav",
+      "duration": 0.392625,
+      "size_bytes": 37736,
+      "created_at": "2025-02-28T10:00:28.883919"
+    },
+    "ee_ee_admin_13": {
+      "id": "ee_ee_admin_13",
+      "file_name": "ee_admin_13.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_13.wav",
+      "duration": 0.36502083333333335,
+      "size_bytes": 35086,
+      "created_at": "2025-02-28T10:00:28.884105"
+    },
+    "ee_ee_admin_17": {
+      "id": "ee_ee_admin_17",
+      "file_name": "ee_admin_17.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_17.wav",
+      "duration": 0.3726041666666667,
+      "size_bytes": 35814,
+      "created_at": "2025-02-28T10:00:28.884296"
+    },
+    "ee_ee_admin_16": {
+      "id": "ee_ee_admin_16",
+      "file_name": "ee_admin_16.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_16.wav",
+      "duration": 0.39479166666666665,
+      "size_bytes": 37944,
+      "created_at": "2025-02-28T10:00:28.884479"
+    },
+    "ee_ee_admin_14": {
+      "id": "ee_ee_admin_14",
+      "file_name": "ee_admin_14.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_14.wav",
+      "duration": 0.36804166666666666,
+      "size_bytes": 35376,
+      "created_at": "2025-02-28T10:00:28.884663"
+    },
+    "ee_ee_admin_15": {
+      "id": "ee_ee_admin_15",
+      "file_name": "ee_admin_15.wav",
+      "class": "ee",
+      "path": "data/sounds/training_sounds/ee/ee_admin_15.wav",
+      "duration": 0.4074583333333333,
+      "size_bytes": 39160,
+      "created_at": "2025-02-28T10:00:28.884855"
+    },
+    "meh_meh_admin_3": {
+      "id": "meh_meh_admin_3",
+      "file_name": "meh_admin_3.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_3.wav",
+      "duration": 0.3614375,
+      "size_bytes": 34742,
+      "created_at": "2025-02-28T10:00:28.865789"
+    },
+    "meh_meh_admin_25": {
+      "id": "meh_meh_admin_25",
+      "file_name": "meh_admin_25.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_25.wav",
+      "duration": 0.46129166666666666,
+      "size_bytes": 44328,
+      "created_at": "2025-02-28T10:00:28.866013"
+    },
+    "meh_meh_admin_31": {
+      "id": "meh_meh_admin_31",
+      "file_name": "meh_admin_31.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_31.wav",
+      "duration": 0.4335833333333333,
+      "size_bytes": 41668,
+      "created_at": "2025-02-28T10:00:28.866241"
+    },
+    "meh_meh_admin_19": {
+      "id": "meh_meh_admin_19",
+      "file_name": "meh_admin_19.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_19.wav",
+      "duration": 0.4449375,
+      "size_bytes": 42758,
+      "created_at": "2025-02-28T10:00:28.866480"
+    },
+    "meh_meh_admin_18": {
+      "id": "meh_meh_admin_18",
+      "file_name": "meh_admin_18.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_18.wav",
+      "duration": 0.5088541666666667,
+      "size_bytes": 48894,
+      "created_at": "2025-02-28T10:00:28.866720"
+    },
+    "meh_meh_admin_30": {
+      "id": "meh_meh_admin_30",
+      "file_name": "meh_admin_30.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_30.wav",
+      "duration": 0.385875,
+      "size_bytes": 37088,
+      "created_at": "2025-02-28T10:00:28.866959"
+    },
+    "meh_meh_admin_24": {
+      "id": "meh_meh_admin_24",
+      "file_name": "meh_admin_24.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_24.wav",
+      "duration": 1.8236875,
+      "size_bytes": 175118,
+      "created_at": "2025-02-28T10:00:28.867150"
+    },
+    "meh_meh_admin_2": {
+      "id": "meh_meh_admin_2",
+      "file_name": "meh_admin_2.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_2.wav",
+      "duration": 0.3433333333333333,
+      "size_bytes": 33004,
+      "created_at": "2025-02-28T10:00:28.867336"
+    },
+    "meh_meh_admin_32": {
+      "id": "meh_meh_admin_32",
+      "file_name": "meh_admin_32.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_32.wav",
+      "duration": 0.3495,
+      "size_bytes": 33596,
+      "created_at": "2025-02-28T10:00:28.867517"
+    },
+    "meh_meh_admin_26": {
+      "id": "meh_meh_admin_26",
+      "file_name": "meh_admin_26.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_26.wav",
+      "duration": 0.5284791666666667,
+      "size_bytes": 50778,
+      "created_at": "2025-02-28T10:00:28.867702"
+    },
+    "meh_meh_admin_27": {
+      "id": "meh_meh_admin_27",
+      "file_name": "meh_admin_27.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_27.wav",
+      "duration": 0.46410416666666665,
+      "size_bytes": 44598,
+      "created_at": "2025-02-28T10:00:28.867936"
+    },
+    "meh_meh_admin_1": {
+      "id": "meh_meh_admin_1",
+      "file_name": "meh_admin_1.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_1.wav",
+      "duration": 0.34202083333333333,
+      "size_bytes": 32878,
+      "created_at": "2025-02-28T10:00:28.868135"
+    },
+    "meh_meh_admin_5": {
+      "id": "meh_meh_admin_5",
+      "file_name": "meh_admin_5.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_5.wav",
+      "duration": 0.3716041666666667,
+      "size_bytes": 35718,
+      "created_at": "2025-02-28T10:00:28.868340"
+    },
+    "meh_meh_admin_23": {
+      "id": "meh_meh_admin_23",
+      "file_name": "meh_admin_23.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_23.wav",
+      "duration": 0.582125,
+      "size_bytes": 55928,
+      "created_at": "2025-02-28T10:00:28.868539"
+    },
+    "meh_meh_admin_22": {
+      "id": "meh_meh_admin_22",
+      "file_name": "meh_admin_22.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_22.wav",
+      "duration": 0.4121458333333333,
+      "size_bytes": 39610,
+      "created_at": "2025-02-28T10:00:28.868731"
+    },
+    "meh_meh_admin_4": {
+      "id": "meh_meh_admin_4",
+      "file_name": "meh_admin_4.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_4.wav",
+      "duration": 0.34672916666666664,
+      "size_bytes": 33330,
+      "created_at": "2025-02-28T10:00:28.868955"
+    },
+    "meh_meh_admin_6": {
+      "id": "meh_meh_admin_6",
+      "file_name": "meh_admin_6.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_6.wav",
+      "duration": 0.31016666666666665,
+      "size_bytes": 29820,
+      "created_at": "2025-02-28T10:00:28.869137"
+    },
+    "meh_meh_admin_20": {
+      "id": "meh_meh_admin_20",
+      "file_name": "meh_admin_20.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_20.wav",
+      "duration": 0.40797916666666667,
+      "size_bytes": 39210,
+      "created_at": "2025-02-28T10:00:28.869333"
+    },
+    "meh_meh_admin_21": {
+      "id": "meh_meh_admin_21",
+      "file_name": "meh_admin_21.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_21.wav",
+      "duration": 0.6116458333333333,
+      "size_bytes": 58762,
+      "created_at": "2025-02-28T10:00:28.869525"
+    },
+    "meh_meh_admin_7": {
+      "id": "meh_meh_admin_7",
+      "file_name": "meh_admin_7.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_7.wav",
+      "duration": 0.37383333333333335,
+      "size_bytes": 35932,
+      "created_at": "2025-02-28T10:00:28.869715"
+    },
+    "meh_meh_admin_10": {
+      "id": "meh_meh_admin_10",
+      "file_name": "meh_admin_10.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_10.wav",
+      "duration": 0.29885416666666664,
+      "size_bytes": 28734,
+      "created_at": "2025-02-28T10:00:28.869908"
+    },
+    "meh_meh_admin_11": {
+      "id": "meh_meh_admin_11",
+      "file_name": "meh_admin_11.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_11.wav",
+      "duration": 0.3836875,
+      "size_bytes": 36878,
+      "created_at": "2025-02-28T10:00:28.870101"
+    },
+    "meh_meh_admin_9": {
+      "id": "meh_meh_admin_9",
+      "file_name": "meh_admin_9.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_9.wav",
+      "duration": 0.30754166666666666,
+      "size_bytes": 29568,
+      "created_at": "2025-02-28T10:00:28.870314"
+    },
+    "meh_meh_admin_13": {
+      "id": "meh_meh_admin_13",
+      "file_name": "meh_admin_13.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_13.wav",
+      "duration": 0.5185833333333333,
+      "size_bytes": 49828,
+      "created_at": "2025-02-28T10:00:28.870537"
+    },
+    "meh_meh_admin_12": {
+      "id": "meh_meh_admin_12",
+      "file_name": "meh_admin_12.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_12.wav",
+      "duration": 0.3658125,
+      "size_bytes": 35162,
+      "created_at": "2025-02-28T10:00:28.870767"
+    },
+    "meh_meh_admin_8": {
+      "id": "meh_meh_admin_8",
+      "file_name": "meh_admin_8.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_8.wav",
+      "duration": 0.3156875,
+      "size_bytes": 30350,
+      "created_at": "2025-02-28T10:00:28.871002"
+    },
+    "meh_meh_admin_16": {
+      "id": "meh_meh_admin_16",
+      "file_name": "meh_admin_16.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_16.wav",
+      "duration": 0.4131666666666667,
+      "size_bytes": 39708,
+      "created_at": "2025-02-28T10:00:28.871266"
+    },
+    "meh_meh_admin_17": {
+      "id": "meh_meh_admin_17",
+      "file_name": "meh_admin_17.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_17.wav",
+      "duration": 0.537375,
+      "size_bytes": 51632,
+      "created_at": "2025-02-28T10:00:28.871499"
+    },
+    "meh_meh_admin_29": {
+      "id": "meh_meh_admin_29",
+      "file_name": "meh_admin_29.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_29.wav",
+      "duration": 0.3994375,
+      "size_bytes": 38390,
+      "created_at": "2025-02-28T10:00:28.871732"
+    },
+    "meh_meh_admin_15": {
+      "id": "meh_meh_admin_15",
+      "file_name": "meh_admin_15.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_15.wav",
+      "duration": 0.366,
+      "size_bytes": 35180,
+      "created_at": "2025-02-28T10:00:28.871969"
+    },
+    "meh_meh_admin_14": {
+      "id": "meh_meh_admin_14",
+      "file_name": "meh_admin_14.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_14.wav",
+      "duration": 0.32985416666666667,
+      "size_bytes": 31710,
+      "created_at": "2025-02-28T10:00:28.872212"
+    },
+    "meh_meh_admin_28": {
+      "id": "meh_meh_admin_28",
+      "file_name": "meh_admin_28.wav",
+      "class": "meh",
+      "path": "data/sounds/training_sounds/meh/meh_admin_28.wav",
+      "duration": 0.388625,
+      "size_bytes": 37352,
+      "created_at": "2025-02-28T10:00:28.872455"
+    },
+    "moh_moh_admin_7": {
+      "id": "moh_moh_admin_7",
+      "file_name": "moh_admin_7.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_7.wav",
+      "duration": 0.2264375,
+      "size_bytes": 21782,
+      "created_at": "2025-02-28T10:00:28.853271"
+    },
+    "moh_moh_admin_6": {
+      "id": "moh_moh_admin_6",
+      "file_name": "moh_admin_6.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_6.wav",
+      "duration": 0.232,
+      "size_bytes": 22316,
+      "created_at": "2025-02-28T10:00:28.853492"
+    },
+    "moh_moh_admin_20": {
+      "id": "moh_moh_admin_20",
+      "file_name": "moh_admin_20.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_20.wav",
+      "duration": 0.5069583333333333,
+      "size_bytes": 48712,
+      "created_at": "2025-02-28T10:00:28.853738"
+    },
+    "moh_moh_admin_4": {
+      "id": "moh_moh_admin_4",
+      "file_name": "moh_admin_4.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_4.wav",
+      "duration": 0.32129166666666664,
+      "size_bytes": 30888,
+      "created_at": "2025-02-28T10:00:28.853959"
+    },
+    "moh_moh_admin_5": {
+      "id": "moh_moh_admin_5",
+      "file_name": "moh_admin_5.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_5.wav",
+      "duration": 0.47822916666666665,
+      "size_bytes": 45954,
+      "created_at": "2025-02-28T10:00:28.854159"
+    },
+    "moh_moh_admin_1": {
+      "id": "moh_moh_admin_1",
+      "file_name": "moh_admin_1.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_1.wav",
+      "duration": 0.4930625,
+      "size_bytes": 15822,
+      "created_at": "2025-02-28T10:00:28.854353"
+    },
+    "moh_moh_admin_18": {
+      "id": "moh_moh_admin_18",
+      "file_name": "moh_admin_18.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_18.wav",
+      "duration": 0.4144791666666667,
+      "size_bytes": 39834,
+      "created_at": "2025-02-28T10:00:28.854596"
+    },
+    "moh_moh_admin_2": {
+      "id": "moh_moh_admin_2",
+      "file_name": "moh_admin_2.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_2.wav",
+      "duration": 0.43735416666666665,
+      "size_bytes": 42030,
+      "created_at": "2025-02-28T10:00:28.854790"
+    },
+    "moh_moh_admin_3": {
+      "id": "moh_moh_admin_3",
+      "file_name": "moh_admin_3.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_3.wav",
+      "duration": 0.532375,
+      "size_bytes": 51152,
+      "created_at": "2025-02-28T10:00:28.854970"
+    },
+    "moh_moh_admin_19": {
+      "id": "moh_moh_admin_19",
+      "file_name": "moh_admin_19.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_19.wav",
+      "duration": 0.38045833333333334,
+      "size_bytes": 36568,
+      "created_at": "2025-02-28T10:00:28.855169"
+    },
+    "moh_moh_admin_14": {
+      "id": "moh_moh_admin_14",
+      "file_name": "moh_admin_14.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_14.wav",
+      "duration": 0.4626875,
+      "size_bytes": 44462,
+      "created_at": "2025-02-28T10:00:28.855388"
+    },
+    "moh_moh_admin_15": {
+      "id": "moh_moh_admin_15",
+      "file_name": "moh_admin_15.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_15.wav",
+      "duration": 0.46710416666666665,
+      "size_bytes": 44886,
+      "created_at": "2025-02-28T10:00:28.855577"
+    },
+    "moh_moh_admin_17": {
+      "id": "moh_moh_admin_17",
+      "file_name": "moh_admin_17.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_17.wav",
+      "duration": 0.45045833333333335,
+      "size_bytes": 43288,
+      "created_at": "2025-02-28T10:00:28.855768"
+    },
+    "moh_moh_admin_16": {
+      "id": "moh_moh_admin_16",
+      "file_name": "moh_admin_16.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_16.wav",
+      "duration": 0.36695833333333333,
+      "size_bytes": 35272,
+      "created_at": "2025-02-28T10:00:28.855963"
+    },
+    "moh_moh_admin_12": {
+      "id": "moh_moh_admin_12",
+      "file_name": "moh_admin_12.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_12.wav",
+      "duration": 0.4017291666666667,
+      "size_bytes": 38610,
+      "created_at": "2025-02-28T10:00:28.856150"
+    },
+    "moh_moh_admin_8": {
+      "id": "moh_moh_admin_8",
+      "file_name": "moh_admin_8.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_8.wav",
+      "duration": 0.3481458333333333,
+      "size_bytes": 33466,
+      "created_at": "2025-02-28T10:00:28.856373"
+    },
+    "moh_moh_admin_9": {
+      "id": "moh_moh_admin_9",
+      "file_name": "moh_admin_9.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_9.wav",
+      "duration": 0.36404166666666665,
+      "size_bytes": 34992,
+      "created_at": "2025-02-28T10:00:28.856552"
+    },
+    "moh_moh_admin_13": {
+      "id": "moh_moh_admin_13",
+      "file_name": "moh_admin_13.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_13.wav",
+      "duration": 0.5111875,
+      "size_bytes": 49118,
+      "created_at": "2025-02-28T10:00:28.856747"
+    },
+    "moh_moh_admin_11": {
+      "id": "moh_moh_admin_11",
+      "file_name": "moh_admin_11.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_11.wav",
+      "duration": 0.389,
+      "size_bytes": 37388,
+      "created_at": "2025-02-28T10:00:28.856936"
+    },
+    "moh_moh_admin_10": {
+      "id": "moh_moh_admin_10",
+      "file_name": "moh_admin_10.wav",
+      "class": "moh",
+      "path": "data/sounds/training_sounds/moh/moh_admin_10.wav",
+      "duration": 0.37445833333333334,
+      "size_bytes": 35992,
+      "created_at": "2025-02-28T10:00:28.857138"
+    },
+    "moo_moo_admin_21": {
+      "id": "moo_moo_admin_21",
+      "file_name": "moo_admin_21.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_21.wav",
+      "duration": 0.4237708333333333,
+      "size_bytes": 40726,
+      "created_at": "2025-02-28T10:00:28.839054"
+    },
+    "moo_moo_admin_20": {
+      "id": "moo_moo_admin_20",
+      "file_name": "moo_admin_20.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_20.wav",
+      "duration": 0.4951041666666667,
+      "size_bytes": 47574,
+      "created_at": "2025-02-28T10:00:28.839301"
+    },
+    "moo_moo_admin_22": {
+      "id": "moo_moo_admin_22",
+      "file_name": "moo_admin_22.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_22.wav",
+      "duration": 0.48489583333333336,
+      "size_bytes": 46594,
+      "created_at": "2025-02-28T10:00:28.839550"
+    },
+    "moo_moo_admin_8": {
+      "id": "moo_moo_admin_8",
+      "file_name": "moo_admin_8.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_8.wav",
+      "duration": 0.5273958333333333,
+      "size_bytes": 50674,
+      "created_at": "2025-02-28T10:00:28.839777"
+    },
+    "moo_moo_admin_9": {
+      "id": "moo_moo_admin_9",
+      "file_name": "moo_admin_9.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_9.wav",
+      "duration": 0.45375,
+      "size_bytes": 43604,
+      "created_at": "2025-02-28T10:00:28.839986"
+    },
+    "moo_moo_admin_23": {
+      "id": "moo_moo_admin_23",
+      "file_name": "moo_admin_23.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_23.wav",
+      "duration": 0.3645625,
+      "size_bytes": 35042,
+      "created_at": "2025-02-28T10:00:28.840194"
+    },
+    "moo_moo_admin_27": {
+      "id": "moo_moo_admin_27",
+      "file_name": "moo_admin_27.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_27.wav",
+      "duration": 0.38647916666666665,
+      "size_bytes": 37146,
+      "created_at": "2025-02-28T10:00:28.840435"
+    },
+    "moo_moo_admin_26": {
+      "id": "moo_moo_admin_26",
+      "file_name": "moo_admin_26.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_26.wav",
+      "duration": 0.6883541666666667,
+      "size_bytes": 66126,
+      "created_at": "2025-02-28T10:00:28.840624"
+    },
+    "moo_moo_admin_32": {
+      "id": "moo_moo_admin_32",
+      "file_name": "moo_admin_32.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_32.wav",
+      "duration": 0.35020833333333334,
+      "size_bytes": 33664,
+      "created_at": "2025-02-28T10:00:28.840819"
+    },
+    "moo_moo_admin_24": {
+      "id": "moo_moo_admin_24",
+      "file_name": "moo_admin_24.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_24.wav",
+      "duration": 0.6520416666666666,
+      "size_bytes": 62640,
+      "created_at": "2025-02-28T10:00:28.841012"
+    },
+    "moo_moo_admin_30": {
+      "id": "moo_moo_admin_30",
+      "file_name": "moo_admin_30.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_30.wav",
+      "duration": 0.30545833333333333,
+      "size_bytes": 29368,
+      "created_at": "2025-02-28T10:00:28.841246"
+    },
+    "moo_moo_admin_18": {
+      "id": "moo_moo_admin_18",
+      "file_name": "moo_admin_18.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_18.wav",
+      "duration": 0.41229166666666667,
+      "size_bytes": 39624,
+      "created_at": "2025-02-28T10:00:28.841441"
+    },
+    "moo_moo_admin_19": {
+      "id": "moo_moo_admin_19",
+      "file_name": "moo_admin_19.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_19.wav",
+      "duration": 0.44714583333333335,
+      "size_bytes": 42970,
+      "created_at": "2025-02-28T10:00:28.841638"
+    },
+    "moo_moo_admin_31": {
+      "id": "moo_moo_admin_31",
+      "file_name": "moo_admin_31.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_31.wav",
+      "duration": 0.3993125,
+      "size_bytes": 38378,
+      "created_at": "2025-02-28T10:00:28.841841"
+    },
+    "moo_moo_admin_25": {
+      "id": "moo_moo_admin_25",
+      "file_name": "moo_admin_25.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_25.wav",
+      "duration": 0.3378541666666667,
+      "size_bytes": 32478,
+      "created_at": "2025-02-28T10:00:28.842034"
+    },
+    "moo_moo_admin_28": {
+      "id": "moo_moo_admin_28",
+      "file_name": "moo_admin_28.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_28.wav",
+      "duration": 0.72375,
+      "size_bytes": 69524,
+      "created_at": "2025-02-28T10:00:28.842257"
+    },
+    "moo_moo_admin_14": {
+      "id": "moo_moo_admin_14",
+      "file_name": "moo_admin_14.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_14.wav",
+      "duration": 0.461125,
+      "size_bytes": 44312,
+      "created_at": "2025-02-28T10:00:28.842454"
+    },
+    "moo_moo_admin_2": {
+      "id": "moo_moo_admin_2",
+      "file_name": "moo_admin_2.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_2.wav",
+      "duration": 0.5007916666666666,
+      "size_bytes": 48120,
+      "created_at": "2025-02-28T10:00:28.842650"
+    },
+    "moo_moo_admin_3": {
+      "id": "moo_moo_admin_3",
+      "file_name": "moo_admin_3.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_3.wav",
+      "duration": 0.48470833333333335,
+      "size_bytes": 46576,
+      "created_at": "2025-02-28T10:00:28.842842"
+    },
+    "moo_moo_admin_15": {
+      "id": "moo_moo_admin_15",
+      "file_name": "moo_admin_15.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_15.wav",
+      "duration": 0.45164583333333336,
+      "size_bytes": 43402,
+      "created_at": "2025-02-28T10:00:28.843024"
+    },
+    "moo_moo_admin_29": {
+      "id": "moo_moo_admin_29",
+      "file_name": "moo_admin_29.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_29.wav",
+      "duration": 0.370875,
+      "size_bytes": 35648,
+      "created_at": "2025-02-28T10:00:28.843218"
+    },
+    "moo_moo_admin_17": {
+      "id": "moo_moo_admin_17",
+      "file_name": "moo_admin_17.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_17.wav",
+      "duration": 0.3624375,
+      "size_bytes": 34838,
+      "created_at": "2025-02-28T10:00:28.843409"
+    },
+    "moo_moo_admin_1": {
+      "id": "moo_moo_admin_1",
+      "file_name": "moo_admin_1.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_1.wav",
+      "duration": 0.8319375,
+      "size_bytes": 26666,
+      "created_at": "2025-02-28T10:00:28.843596"
+    },
+    "moo_moo_admin_16": {
+      "id": "moo_moo_admin_16",
+      "file_name": "moo_admin_16.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_16.wav",
+      "duration": 0.6440625,
+      "size_bytes": 61874,
+      "created_at": "2025-02-28T10:00:28.843770"
+    },
+    "moo_moo_admin_12": {
+      "id": "moo_moo_admin_12",
+      "file_name": "moo_admin_12.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_12.wav",
+      "duration": 0.5481041666666666,
+      "size_bytes": 52662,
+      "created_at": "2025-02-28T10:00:28.843947"
+    },
+    "moo_moo_admin_4": {
+      "id": "moo_moo_admin_4",
+      "file_name": "moo_admin_4.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_4.wav",
+      "duration": 0.37354166666666666,
+      "size_bytes": 35904,
+      "created_at": "2025-02-28T10:00:28.844162"
+    },
+    "moo_moo_admin_5": {
+      "id": "moo_moo_admin_5",
+      "file_name": "moo_admin_5.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_5.wav",
+      "duration": 0.37314583333333334,
+      "size_bytes": 35866,
+      "created_at": "2025-02-28T10:00:28.844373"
+    },
+    "moo_moo_admin_13": {
+      "id": "moo_moo_admin_13",
+      "file_name": "moo_admin_13.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_13.wav",
+      "duration": 0.5733333333333334,
+      "size_bytes": 55084,
+      "created_at": "2025-02-28T10:00:28.844566"
+    },
+    "moo_moo_admin_11": {
+      "id": "moo_moo_admin_11",
+      "file_name": "moo_admin_11.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_11.wav",
+      "duration": 0.5178125,
+      "size_bytes": 49754,
+      "created_at": "2025-02-28T10:00:28.844755"
+    },
+    "moo_moo_admin_7": {
+      "id": "moo_moo_admin_7",
+      "file_name": "moo_admin_7.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_7.wav",
+      "duration": 0.48160416666666667,
+      "size_bytes": 46278,
+      "created_at": "2025-02-28T10:00:28.844947"
+    },
+    "moo_moo_admin_6": {
+      "id": "moo_moo_admin_6",
+      "file_name": "moo_admin_6.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_6.wav",
+      "duration": 0.3703958333333333,
+      "size_bytes": 35602,
+      "created_at": "2025-02-28T10:00:28.845127"
+    },
+    "moo_moo_admin_10": {
+      "id": "moo_moo_admin_10",
+      "file_name": "moo_admin_10.wav",
+      "class": "moo",
+      "path": "data/sounds/training_sounds/moo/moo_admin_10.wav",
+      "duration": 0.5229791666666667,
+      "size_bytes": 50250,
+      "created_at": "2025-02-28T10:00:28.845321"
+    },
+    "leh_leh_admin_21": {
+      "id": "leh_leh_admin_21",
+      "file_name": "leh_admin_21.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_21.wav",
+      "duration": 0.6721458333333333,
+      "size_bytes": 64570,
+      "created_at": "2025-02-28T10:00:28.826308"
+    },
+    "leh_leh_admin_20": {
+      "id": "leh_leh_admin_20",
+      "file_name": "leh_admin_20.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_20.wav",
+      "duration": 0.6575,
+      "size_bytes": 63164,
+      "created_at": "2025-02-28T10:00:28.826533"
+    },
+    "leh_leh_admin_22": {
+      "id": "leh_leh_admin_22",
+      "file_name": "leh_admin_22.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_22.wav",
+      "duration": 0.7554583333333333,
+      "size_bytes": 72568,
+      "created_at": "2025-02-28T10:00:28.826763"
+    },
+    "leh_leh_admin_8": {
+      "id": "leh_leh_admin_8",
+      "file_name": "leh_admin_8.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_8.wav",
+      "duration": 0.5573958333333333,
+      "size_bytes": 53554,
+      "created_at": "2025-02-28T10:00:28.827018"
+    },
+    "leh_leh_admin_18": {
+      "id": "leh_leh_admin_18",
+      "file_name": "leh_admin_18.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_18.wav",
+      "duration": 0.5767708333333333,
+      "size_bytes": 55414,
+      "created_at": "2025-02-28T10:00:28.827246"
+    },
+    "leh_leh_admin_19": {
+      "id": "leh_leh_admin_19",
+      "file_name": "leh_admin_19.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_19.wav",
+      "duration": 0.6135,
+      "size_bytes": 58940,
+      "created_at": "2025-02-28T10:00:28.827481"
+    },
+    "leh_leh_admin_9": {
+      "id": "leh_leh_admin_9",
+      "file_name": "leh_admin_9.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_9.wav",
+      "duration": 0.5458958333333334,
+      "size_bytes": 52450,
+      "created_at": "2025-02-28T10:00:28.827724"
+    },
+    "leh_leh_admin_4": {
+      "id": "leh_leh_admin_4",
+      "file_name": "leh_admin_4.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_4.wav",
+      "duration": 0.9439791666666667,
+      "size_bytes": 90666,
+      "created_at": "2025-02-28T10:00:28.827927"
+    },
+    "leh_leh_admin_14": {
+      "id": "leh_leh_admin_14",
+      "file_name": "leh_admin_14.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_14.wav",
+      "duration": 0.5713541666666667,
+      "size_bytes": 54894,
+      "created_at": "2025-02-28T10:00:28.828121"
+    },
+    "leh_leh_admin_15": {
+      "id": "leh_leh_admin_15",
+      "file_name": "leh_admin_15.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_15.wav",
+      "duration": 0.5700208333333333,
+      "size_bytes": 54766,
+      "created_at": "2025-02-28T10:00:28.828301"
+    },
+    "leh_leh_admin_5": {
+      "id": "leh_leh_admin_5",
+      "file_name": "leh_admin_5.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_5.wav",
+      "duration": 0.9925,
+      "size_bytes": 95324,
+      "created_at": "2025-02-28T10:00:28.828522"
+    },
+    "leh_leh_admin_7": {
+      "id": "leh_leh_admin_7",
+      "file_name": "leh_admin_7.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_7.wav",
+      "duration": 0.9255625,
+      "size_bytes": 88898,
+      "created_at": "2025-02-28T10:00:28.828718"
+    },
+    "leh_leh_admin_17": {
+      "id": "leh_leh_admin_17",
+      "file_name": "leh_admin_17.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_17.wav",
+      "duration": 0.5719791666666667,
+      "size_bytes": 54954,
+      "created_at": "2025-02-28T10:00:28.828905"
+    },
+    "leh_leh_admin_16": {
+      "id": "leh_leh_admin_16",
+      "file_name": "leh_admin_16.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_16.wav",
+      "duration": 0.526375,
+      "size_bytes": 50576,
+      "created_at": "2025-02-28T10:00:28.829095"
+    },
+    "leh_leh_admin_6": {
+      "id": "leh_leh_admin_6",
+      "file_name": "leh_admin_6.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_6.wav",
+      "duration": 0.9189375,
+      "size_bytes": 88262,
+      "created_at": "2025-02-28T10:00:28.829290"
+    },
+    "leh_leh_admin_12": {
+      "id": "leh_leh_admin_12",
+      "file_name": "leh_admin_12.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_12.wav",
+      "duration": 0.5942708333333333,
+      "size_bytes": 57094,
+      "created_at": "2025-02-28T10:00:28.829502"
+    },
+    "leh_leh_admin_2": {
+      "id": "leh_leh_admin_2",
+      "file_name": "leh_admin_2.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_2.wav",
+      "duration": 2.6381666666666668,
+      "size_bytes": 253308,
+      "created_at": "2025-02-28T10:00:28.829690"
+    },
+    "leh_leh_admin_3": {
+      "id": "leh_leh_admin_3",
+      "file_name": "leh_admin_3.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_3.wav",
+      "duration": 0.8790625,
+      "size_bytes": 84434,
+      "created_at": "2025-02-28T10:00:28.829880"
+    },
+    "leh_leh_admin_13": {
+      "id": "leh_leh_admin_13",
+      "file_name": "leh_admin_13.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_13.wav",
+      "duration": 0.5585208333333334,
+      "size_bytes": 53662,
+      "created_at": "2025-02-28T10:00:28.830091"
+    },
+    "leh_leh_admin_11": {
+      "id": "leh_leh_admin_11",
+      "file_name": "leh_admin_11.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_11.wav",
+      "duration": 0.548375,
+      "size_bytes": 52688,
+      "created_at": "2025-02-28T10:00:28.830318"
+    },
+    "leh_leh_admin_1": {
+      "id": "leh_leh_admin_1",
+      "file_name": "leh_admin_1.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_1.wav",
+      "duration": 1.1837291666666667,
+      "size_bytes": 113682,
+      "created_at": "2025-02-28T10:00:28.830554"
+    },
+    "leh_leh_admin_10": {
+      "id": "leh_leh_admin_10",
+      "file_name": "leh_admin_10.wav",
+      "class": "leh",
+      "path": "data/sounds/training_sounds/leh/leh_admin_10.wav",
+      "duration": 0.5588125,
+      "size_bytes": 53690,
+      "created_at": "2025-02-28T10:00:28.830786"
+    },
+    "loo_loo_admin_19": {
+      "id": "loo_loo_admin_19",
+      "file_name": "loo_admin_19.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_19.wav",
+      "duration": 0.3960625,
+      "size_bytes": 38066,
+      "created_at": "2025-02-28T10:00:28.813224"
+    },
+    "loo_loo_admin_5": {
+      "id": "loo_loo_admin_5",
+      "file_name": "loo_admin_5.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_5.wav",
+      "duration": 0.5741875,
+      "size_bytes": 55166,
+      "created_at": "2025-02-28T10:00:28.813483"
+    },
+    "loo_loo_admin_4": {
+      "id": "loo_loo_admin_4",
+      "file_name": "loo_admin_4.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_4.wav",
+      "duration": 0.4259375,
+      "size_bytes": 40934,
+      "created_at": "2025-02-28T10:00:28.813727"
+    },
+    "loo_loo_admin_18": {
+      "id": "loo_loo_admin_18",
+      "file_name": "loo_admin_18.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_18.wav",
+      "duration": 0.39525,
+      "size_bytes": 37988,
+      "created_at": "2025-02-28T10:00:28.813975"
+    },
+    "loo_loo_admin_6": {
+      "id": "loo_loo_admin_6",
+      "file_name": "loo_admin_6.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_6.wav",
+      "duration": 0.35789583333333336,
+      "size_bytes": 34402,
+      "created_at": "2025-02-28T10:00:28.814191"
+    },
+    "loo_loo_admin_7": {
+      "id": "loo_loo_admin_7",
+      "file_name": "loo_admin_7.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_7.wav",
+      "duration": 0.3387291666666667,
+      "size_bytes": 32562,
+      "created_at": "2025-02-28T10:00:28.814463"
+    },
+    "loo_loo_admin_23": {
+      "id": "loo_loo_admin_23",
+      "file_name": "loo_admin_23.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_23.wav",
+      "duration": 0.22116666666666668,
+      "size_bytes": 21276,
+      "created_at": "2025-02-28T10:00:28.814723"
+    },
+    "loo_loo_admin_3": {
+      "id": "loo_loo_admin_3",
+      "file_name": "loo_admin_3.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_3.wav",
+      "duration": 0.36695833333333333,
+      "size_bytes": 35272,
+      "created_at": "2025-02-28T10:00:28.814926"
+    },
+    "loo_loo_admin_2": {
+      "id": "loo_loo_admin_2",
+      "file_name": "loo_admin_2.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_2.wav",
+      "duration": 0.3229166666666667,
+      "size_bytes": 31044,
+      "created_at": "2025-02-28T10:00:28.815111"
+    },
+    "loo_loo_admin_22": {
+      "id": "loo_loo_admin_22",
+      "file_name": "loo_admin_22.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_22.wav",
+      "duration": 0.2423125,
+      "size_bytes": 23306,
+      "created_at": "2025-02-28T10:00:28.815300"
+    },
+    "loo_loo_admin_20": {
+      "id": "loo_loo_admin_20",
+      "file_name": "loo_admin_20.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_20.wav",
+      "duration": 0.4381041666666667,
+      "size_bytes": 42102,
+      "created_at": "2025-02-28T10:00:28.815506"
+    },
+    "loo_loo_admin_1": {
+      "id": "loo_loo_admin_1",
+      "file_name": "loo_admin_1.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_1.wav",
+      "duration": 0.63725,
+      "size_bytes": 20436,
+      "created_at": "2025-02-28T10:00:28.815693"
+    },
+    "loo_loo_admin_21": {
+      "id": "loo_loo_admin_21",
+      "file_name": "loo_admin_21.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_21.wav",
+      "duration": 0.304,
+      "size_bytes": 29228,
+      "created_at": "2025-02-28T10:00:28.815891"
+    },
+    "loo_loo_admin_10": {
+      "id": "loo_loo_admin_10",
+      "file_name": "loo_admin_10.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_10.wav",
+      "duration": 0.5351458333333333,
+      "size_bytes": 51418,
+      "created_at": "2025-02-28T10:00:28.816072"
+    },
+    "loo_loo_admin_11": {
+      "id": "loo_loo_admin_11",
+      "file_name": "loo_admin_11.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_11.wav",
+      "duration": 0.4640208333333333,
+      "size_bytes": 44590,
+      "created_at": "2025-02-28T10:00:28.816248"
+    },
+    "loo_loo_admin_13": {
+      "id": "loo_loo_admin_13",
+      "file_name": "loo_admin_13.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_13.wav",
+      "duration": 0.4319375,
+      "size_bytes": 41510,
+      "created_at": "2025-02-28T10:00:28.816475"
+    },
+    "loo_loo_admin_12": {
+      "id": "loo_loo_admin_12",
+      "file_name": "loo_admin_12.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_12.wav",
+      "duration": 0.458625,
+      "size_bytes": 44072,
+      "created_at": "2025-02-28T10:00:28.816670"
+    },
+    "loo_loo_admin_16": {
+      "id": "loo_loo_admin_16",
+      "file_name": "loo_admin_16.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_16.wav",
+      "duration": 0.7310833333333333,
+      "size_bytes": 70228,
+      "created_at": "2025-02-28T10:00:28.816867"
+    },
+    "loo_loo_admin_17": {
+      "id": "loo_loo_admin_17",
+      "file_name": "loo_admin_17.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_17.wav",
+      "duration": 0.5762916666666666,
+      "size_bytes": 55368,
+      "created_at": "2025-02-28T10:00:28.817081"
+    },
+    "loo_loo_admin_15": {
+      "id": "loo_loo_admin_15",
+      "file_name": "loo_admin_15.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_15.wav",
+      "duration": 0.5124791666666667,
+      "size_bytes": 49242,
+      "created_at": "2025-02-28T10:00:28.817271"
+    },
+    "loo_loo_admin_9": {
+      "id": "loo_loo_admin_9",
+      "file_name": "loo_admin_9.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_9.wav",
+      "duration": 2.5907916666666666,
+      "size_bytes": 248760,
+      "created_at": "2025-02-28T10:00:28.817471"
+    },
+    "loo_loo_admin_8": {
+      "id": "loo_loo_admin_8",
+      "file_name": "loo_admin_8.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_8.wav",
+      "duration": 0.4763125,
+      "size_bytes": 45770,
+      "created_at": "2025-02-28T10:00:28.817664"
+    },
+    "loo_loo_admin_14": {
+      "id": "loo_loo_admin_14",
+      "file_name": "loo_admin_14.wav",
+      "class": "loo",
+      "path": "data/sounds/training_sounds/loo/loo_admin_14.wav",
+      "duration": 0.5635208333333334,
+      "size_bytes": 54142,
+      "created_at": "2025-02-28T10:00:28.817901"
+    },
+    "loh_loh_admin_9": {
+      "id": "loh_loh_admin_9",
+      "file_name": "loh_admin_9.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_9.wav",
+      "duration": 0.45310416666666664,
+      "size_bytes": 43542,
+      "created_at": "2025-02-28T10:00:28.801590"
+    },
+    "loh_loh_admin_19": {
+      "id": "loh_loh_admin_19",
+      "file_name": "loh_admin_19.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_19.wav",
+      "duration": 0.304625,
+      "size_bytes": 29288,
+      "created_at": "2025-02-28T10:00:28.801831"
+    },
+    "loh_loh_admin_18": {
+      "id": "loh_loh_admin_18",
+      "file_name": "loh_admin_18.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_18.wav",
+      "duration": 0.2116875,
+      "size_bytes": 20366,
+      "created_at": "2025-02-28T10:00:28.802072"
+    },
+    "loh_loh_admin_8": {
+      "id": "loh_loh_admin_8",
+      "file_name": "loh_admin_8.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_8.wav",
+      "duration": 0.2552083333333333,
+      "size_bytes": 24544,
+      "created_at": "2025-02-28T10:00:28.802303"
+    },
+    "loh_loh_admin_10": {
+      "id": "loh_loh_admin_10",
+      "file_name": "loh_admin_10.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_10.wav",
+      "duration": 0.41541666666666666,
+      "size_bytes": 39924,
+      "created_at": "2025-02-28T10:00:28.802520"
+    },
+    "loh_loh_admin_1": {
+      "id": "loh_loh_admin_1",
+      "file_name": "loh_admin_1.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_1.wav",
+      "duration": 0.3396458333333333,
+      "size_bytes": 32650,
+      "created_at": "2025-02-28T10:00:28.802756"
+    },
+    "loh_loh_admin_11": {
+      "id": "loh_loh_admin_11",
+      "file_name": "loh_admin_11.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_11.wav",
+      "duration": 0.3955208333333333,
+      "size_bytes": 38014,
+      "created_at": "2025-02-28T10:00:28.802962"
+    },
+    "loh_loh_admin_13": {
+      "id": "loh_loh_admin_13",
+      "file_name": "loh_admin_13.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_13.wav",
+      "duration": 0.29860416666666667,
+      "size_bytes": 28710,
+      "created_at": "2025-02-28T10:00:28.803142"
+    },
+    "loh_loh_admin_3": {
+      "id": "loh_loh_admin_3",
+      "file_name": "loh_admin_3.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_3.wav",
+      "duration": 1.3488333333333333,
+      "size_bytes": 129532,
+      "created_at": "2025-02-28T10:00:28.803319"
+    },
+    "loh_loh_admin_2": {
+      "id": "loh_loh_admin_2",
+      "file_name": "loh_admin_2.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_2.wav",
+      "duration": 0.4550416666666667,
+      "size_bytes": 43728,
+      "created_at": "2025-02-28T10:00:28.803503"
+    },
+    "loh_loh_admin_12": {
+      "id": "loh_loh_admin_12",
+      "file_name": "loh_admin_12.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_12.wav",
+      "duration": 0.3205,
+      "size_bytes": 30812,
+      "created_at": "2025-02-28T10:00:28.803710"
+    },
+    "loh_loh_admin_6": {
+      "id": "loh_loh_admin_6",
+      "file_name": "loh_admin_6.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_6.wav",
+      "duration": 0.5359583333333333,
+      "size_bytes": 51496,
+      "created_at": "2025-02-28T10:00:28.803904"
+    },
+    "loh_loh_admin_16": {
+      "id": "loh_loh_admin_16",
+      "file_name": "loh_admin_16.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_16.wav",
+      "duration": 0.42341666666666666,
+      "size_bytes": 40692,
+      "created_at": "2025-02-28T10:00:28.804101"
+    },
+    "loh_loh_admin_17": {
+      "id": "loh_loh_admin_17",
+      "file_name": "loh_admin_17.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_17.wav",
+      "duration": 0.404875,
+      "size_bytes": 38912,
+      "created_at": "2025-02-28T10:00:28.804290"
+    },
+    "loh_loh_admin_7": {
+      "id": "loh_loh_admin_7",
+      "file_name": "loh_admin_7.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_7.wav",
+      "duration": 0.33395833333333336,
+      "size_bytes": 32104,
+      "created_at": "2025-02-28T10:00:28.804476"
+    },
+    "loh_loh_admin_5": {
+      "id": "loh_loh_admin_5",
+      "file_name": "loh_admin_5.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_5.wav",
+      "duration": 0.3203958333333333,
+      "size_bytes": 30802,
+      "created_at": "2025-02-28T10:00:28.804686"
+    },
+    "loh_loh_admin_15": {
+      "id": "loh_loh_admin_15",
+      "file_name": "loh_admin_15.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_15.wav",
+      "duration": 0.27779166666666666,
+      "size_bytes": 26712,
+      "created_at": "2025-02-28T10:00:28.804897"
+    },
+    "loh_loh_admin_14": {
+      "id": "loh_loh_admin_14",
+      "file_name": "loh_admin_14.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_14.wav",
+      "duration": 0.3119375,
+      "size_bytes": 29990,
+      "created_at": "2025-02-28T10:00:28.805082"
+    },
+    "loh_loh_admin_4": {
+      "id": "loh_loh_admin_4",
+      "file_name": "loh_admin_4.wav",
+      "class": "loh",
+      "path": "data/sounds/training_sounds/loh/loh_admin_4.wav",
+      "duration": 0.32677083333333334,
+      "size_bytes": 31414,
+      "created_at": "2025-02-28T10:00:28.805301"
+    },
+    "ah_ah_admin_21": {
+      "id": "ah_ah_admin_21",
+      "file_name": "ah_admin_21.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_21.wav",
+      "duration": 0.4250625,
+      "size_bytes": 40850,
+      "created_at": "2025-02-28T10:00:28.788325"
+    },
+    "ah_ah_admin_3": {
+      "id": "ah_ah_admin_3",
+      "file_name": "ah_admin_3.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_3.wav",
+      "duration": 0.2266875,
+      "size_bytes": 21806,
+      "created_at": "2025-02-28T10:00:28.788561"
+    },
+    "ah_ah_admin_2": {
+      "id": "ah_ah_admin_2",
+      "file_name": "ah_admin_2.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_2.wav",
+      "duration": 0.24485416666666668,
+      "size_bytes": 23550,
+      "created_at": "2025-02-28T10:00:28.788808"
+    },
+    "ah_ah_admin_20": {
+      "id": "ah_ah_admin_20",
+      "file_name": "ah_admin_20.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_20.wav",
+      "duration": 1.954625,
+      "size_bytes": 187688,
+      "created_at": "2025-02-28T10:00:28.789041"
+    },
+    "ah_ah_admin_22": {
+      "id": "ah_ah_admin_22",
+      "file_name": "ah_admin_22.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_22.wav",
+      "duration": 0.3649375,
+      "size_bytes": 35078,
+      "created_at": "2025-02-28T10:00:28.789250"
+    },
+    "ah_ah_admin_1": {
+      "id": "ah_ah_admin_1",
+      "file_name": "ah_admin_1.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_1.wav",
+      "duration": 0.25275,
+      "size_bytes": 24308,
+      "created_at": "2025-02-28T10:00:28.789488"
+    },
+    "ah_ah_admin_5": {
+      "id": "ah_ah_admin_5",
+      "file_name": "ah_admin_5.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_5.wav",
+      "duration": 0.26477083333333334,
+      "size_bytes": 25462,
+      "created_at": "2025-02-28T10:00:28.789773"
+    },
+    "ah_ah_admin_4": {
+      "id": "ah_ah_admin_4",
+      "file_name": "ah_admin_4.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_4.wav",
+      "duration": 0.2657083333333333,
+      "size_bytes": 25552,
+      "created_at": "2025-02-28T10:00:28.790073"
+    },
+    "ah_ah_admin_18": {
+      "id": "ah_ah_admin_18",
+      "file_name": "ah_admin_18.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_18.wav",
+      "duration": 0.39697916666666666,
+      "size_bytes": 38154,
+      "created_at": "2025-02-28T10:00:28.790332"
+    },
+    "ah_ah_admin_6": {
+      "id": "ah_ah_admin_6",
+      "file_name": "ah_admin_6.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_6.wav",
+      "duration": 0.2519375,
+      "size_bytes": 24230,
+      "created_at": "2025-02-28T10:00:28.790592"
+    },
+    "ah_ah_admin_7": {
+      "id": "ah_ah_admin_7",
+      "file_name": "ah_admin_7.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_7.wav",
+      "duration": 0.2507916666666667,
+      "size_bytes": 24120,
+      "created_at": "2025-02-28T10:00:28.790833"
+    },
+    "ah_ah_admin_19": {
+      "id": "ah_ah_admin_19",
+      "file_name": "ah_admin_19.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_19.wav",
+      "duration": 0.3672708333333333,
+      "size_bytes": 35302,
+      "created_at": "2025-02-28T10:00:28.791078"
+    },
+    "ah_ah_admin_14": {
+      "id": "ah_ah_admin_14",
+      "file_name": "ah_admin_14.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_14.wav",
+      "duration": 0.3890416666666667,
+      "size_bytes": 37392,
+      "created_at": "2025-02-28T10:00:28.791353"
+    },
+    "ah_ah_admin_15": {
+      "id": "ah_ah_admin_15",
+      "file_name": "ah_admin_15.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_15.wav",
+      "duration": 0.3178125,
+      "size_bytes": 30554,
+      "created_at": "2025-02-28T10:00:28.791616"
+    },
+    "ah_ah_admin_17": {
+      "id": "ah_ah_admin_17",
+      "file_name": "ah_admin_17.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_17.wav",
+      "duration": 0.356375,
+      "size_bytes": 34256,
+      "created_at": "2025-02-28T10:00:28.791860"
+    },
+    "ah_ah_admin_9": {
+      "id": "ah_ah_admin_9",
+      "file_name": "ah_admin_9.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_9.wav",
+      "duration": 0.5393541666666667,
+      "size_bytes": 51822,
+      "created_at": "2025-02-28T10:00:28.792081"
+    },
+    "ah_ah_admin_8": {
+      "id": "ah_ah_admin_8",
+      "file_name": "ah_admin_8.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_8.wav",
+      "duration": 1.9051875,
+      "size_bytes": 182942,
+      "created_at": "2025-02-28T10:00:28.792282"
+    },
+    "ah_ah_admin_16": {
+      "id": "ah_ah_admin_16",
+      "file_name": "ah_admin_16.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_16.wav",
+      "duration": 3.5639583333333333,
+      "size_bytes": 342184,
+      "created_at": "2025-02-28T10:00:28.792485"
+    },
+    "ah_ah_admin_12": {
+      "id": "ah_ah_admin_12",
+      "file_name": "ah_admin_12.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_12.wav",
+      "duration": 0.3334375,
+      "size_bytes": 32054,
+      "created_at": "2025-02-28T10:00:28.792711"
+    },
+    "ah_ah_admin_13": {
+      "id": "ah_ah_admin_13",
+      "file_name": "ah_admin_13.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_13.wav",
+      "duration": 0.48770833333333335,
+      "size_bytes": 46864,
+      "created_at": "2025-02-28T10:00:28.792914"
+    },
+    "ah_ah_admin_11": {
+      "id": "ah_ah_admin_11",
+      "file_name": "ah_admin_11.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_11.wav",
+      "duration": 0.5991458333333334,
+      "size_bytes": 57562,
+      "created_at": "2025-02-28T10:00:28.793121"
+    },
+    "ah_ah_admin_10": {
+      "id": "ah_ah_admin_10",
+      "file_name": "ah_admin_10.wav",
+      "class": "ah",
+      "path": "data/sounds/training_sounds/ah/ah_admin_10.wav",
+      "duration": 0.5519166666666667,
+      "size_bytes": 53028,
+      "created_at": "2025-02-28T10:00:28.793331"
+    },
+    "boo_boo_admin_18": {
+      "id": "boo_boo_admin_18",
+      "file_name": "boo_admin_18.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_18.wav",
+      "duration": 0.46847916666666667,
+      "size_bytes": 45018,
+      "created_at": "2025-02-28T10:00:28.774666"
+    },
+    "boo_boo_admin_1": {
+      "id": "boo_boo_admin_1",
+      "file_name": "boo_admin_1.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_1.wav",
+      "duration": 0.8175208333333334,
+      "size_bytes": 78526,
+      "created_at": "2025-02-28T10:00:28.774901"
+    },
+    "boo_boo_admin_3": {
+      "id": "boo_boo_admin_3",
+      "file_name": "boo_admin_3.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_3.wav",
+      "duration": 0.33320833333333333,
+      "size_bytes": 32032,
+      "created_at": "2025-02-28T10:00:28.775141"
+    },
+    "boo_boo_admin_2": {
+      "id": "boo_boo_admin_2",
+      "file_name": "boo_admin_2.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_2.wav",
+      "duration": 0.374625,
+      "size_bytes": 36008,
+      "created_at": "2025-02-28T10:00:28.775376"
+    },
+    "boo_boo_admin_6": {
+      "id": "boo_boo_admin_6",
+      "file_name": "boo_admin_6.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_6.wav",
+      "duration": 0.5937916666666667,
+      "size_bytes": 57048,
+      "created_at": "2025-02-28T10:00:28.775604"
+    },
+    "boo_boo_admin_7": {
+      "id": "boo_boo_admin_7",
+      "file_name": "boo_admin_7.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_7.wav",
+      "duration": 0.6030833333333333,
+      "size_bytes": 57940,
+      "created_at": "2025-02-28T10:00:28.775958"
+    },
+    "boo_boo_admin_5": {
+      "id": "boo_boo_admin_5",
+      "file_name": "boo_admin_5.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_5.wav",
+      "duration": 0.5491875,
+      "size_bytes": 52766,
+      "created_at": "2025-02-28T10:00:28.776264"
+    },
+    "boo_boo_admin_4": {
+      "id": "boo_boo_admin_4",
+      "file_name": "boo_admin_4.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_4.wav",
+      "duration": 0.35425,
+      "size_bytes": 34052,
+      "created_at": "2025-02-28T10:00:28.776556"
+    },
+    "boo_boo_admin_9": {
+      "id": "boo_boo_admin_9",
+      "file_name": "boo_admin_9.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_9.wav",
+      "duration": 0.46639583333333334,
+      "size_bytes": 44818,
+      "created_at": "2025-02-28T10:00:28.776873"
+    },
+    "boo_boo_admin_8": {
+      "id": "boo_boo_admin_8",
+      "file_name": "boo_admin_8.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_8.wav",
+      "duration": 0.28520833333333334,
+      "size_bytes": 27424,
+      "created_at": "2025-02-28T10:00:28.777174"
+    },
+    "boo_boo_admin_16": {
+      "id": "boo_boo_admin_16",
+      "file_name": "boo_admin_16.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_16.wav",
+      "duration": 0.3490625,
+      "size_bytes": 33554,
+      "created_at": "2025-02-28T10:00:28.777478"
+    },
+    "boo_boo_admin_17": {
+      "id": "boo_boo_admin_17",
+      "file_name": "boo_admin_17.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_17.wav",
+      "duration": 0.48754166666666665,
+      "size_bytes": 46848,
+      "created_at": "2025-02-28T10:00:28.777771"
+    },
+    "boo_boo_admin_15": {
+      "id": "boo_boo_admin_15",
+      "file_name": "boo_admin_15.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_15.wav",
+      "duration": 0.36214583333333333,
+      "size_bytes": 34810,
+      "created_at": "2025-02-28T10:00:28.778069"
+    },
+    "boo_boo_admin_14": {
+      "id": "boo_boo_admin_14",
+      "file_name": "boo_admin_14.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_14.wav",
+      "duration": 0.35914583333333333,
+      "size_bytes": 34522,
+      "created_at": "2025-02-28T10:00:28.778373"
+    },
+    "boo_boo_admin_10": {
+      "id": "boo_boo_admin_10",
+      "file_name": "boo_admin_10.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_10.wav",
+      "duration": 0.9274791666666666,
+      "size_bytes": 89082,
+      "created_at": "2025-02-28T10:00:28.778646"
+    },
+    "boo_boo_admin_11": {
+      "id": "boo_boo_admin_11",
+      "file_name": "boo_admin_11.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_11.wav",
+      "duration": 0.4475625,
+      "size_bytes": 43010,
+      "created_at": "2025-02-28T10:00:28.778889"
+    },
+    "boo_boo_admin_13": {
+      "id": "boo_boo_admin_13",
+      "file_name": "boo_admin_13.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_13.wav",
+      "duration": 0.4005,
+      "size_bytes": 38492,
+      "created_at": "2025-02-28T10:00:28.779131"
+    },
+    "boo_boo_admin_12": {
+      "id": "boo_boo_admin_12",
+      "file_name": "boo_admin_12.wav",
+      "class": "boo",
+      "path": "data/sounds/training_sounds/boo/boo_admin_12.wav",
+      "duration": 0.519,
+      "size_bytes": 49868,
+      "created_at": "2025-02-28T10:00:28.779351"
+    },
+    "boh_boh_admin_23": {
+      "id": "boh_boh_admin_23",
+      "file_name": "boh_admin_23.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_23.wav",
+      "duration": 2.2441875,
+      "size_bytes": 215486,
+      "created_at": "2025-02-28T10:00:28.761728"
+    },
+    "boh_boh_admin_22": {
+      "id": "boh_boh_admin_22",
+      "file_name": "boh_admin_22.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_22.wav",
+      "duration": 0.348875,
+      "size_bytes": 33536,
+      "created_at": "2025-02-28T10:00:28.761968"
+    },
+    "boh_boh_admin_20": {
+      "id": "boh_boh_admin_20",
+      "file_name": "boh_admin_20.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_20.wav",
+      "duration": 0.46858333333333335,
+      "size_bytes": 45028,
+      "created_at": "2025-02-28T10:00:28.762198"
+    },
+    "boh_boh_admin_21": {
+      "id": "boh_boh_admin_21",
+      "file_name": "boh_admin_21.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_21.wav",
+      "duration": 0.37472916666666667,
+      "size_bytes": 36018,
+      "created_at": "2025-02-28T10:00:28.762422"
+    },
+    "boh_boh_admin_19": {
+      "id": "boh_boh_admin_19",
+      "file_name": "boh_admin_19.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_19.wav",
+      "duration": 0.2384375,
+      "size_bytes": 22934,
+      "created_at": "2025-02-28T10:00:28.762635"
+    },
+    "boh_boh_admin_24": {
+      "id": "boh_boh_admin_24",
+      "file_name": "boh_admin_24.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_24.wav",
+      "duration": 0.207625,
+      "size_bytes": 19976,
+      "created_at": "2025-02-28T10:00:28.762901"
+    },
+    "boh_boh_admin_18": {
+      "id": "boh_boh_admin_18",
+      "file_name": "boh_admin_18.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_18.wav",
+      "duration": 0.30472916666666666,
+      "size_bytes": 29298,
+      "created_at": "2025-02-28T10:00:28.763163"
+    },
+    "boh_boh_admin_9": {
+      "id": "boh_boh_admin_9",
+      "file_name": "boh_admin_9.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_9.wav",
+      "duration": 0.4990833333333333,
+      "size_bytes": 47956,
+      "created_at": "2025-02-28T10:00:28.763391"
+    },
+    "boh_boh_admin_8": {
+      "id": "boh_boh_admin_8",
+      "file_name": "boh_admin_8.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_8.wav",
+      "duration": 0.3175208333333333,
+      "size_bytes": 30526,
+      "created_at": "2025-02-28T10:00:28.763603"
+    },
+    "boh_boh_admin_5": {
+      "id": "boh_boh_admin_5",
+      "file_name": "boh_admin_5.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_5.wav",
+      "duration": 0.4332083333333333,
+      "size_bytes": 41632,
+      "created_at": "2025-02-28T10:00:28.763847"
+    },
+    "boh_boh_admin_4": {
+      "id": "boh_boh_admin_4",
+      "file_name": "boh_admin_4.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_4.wav",
+      "duration": 0.4598125,
+      "size_bytes": 44186,
+      "created_at": "2025-02-28T10:00:28.764071"
+    },
+    "boh_boh_admin_6": {
+      "id": "boh_boh_admin_6",
+      "file_name": "boh_admin_6.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_6.wav",
+      "duration": 0.42822916666666666,
+      "size_bytes": 41154,
+      "created_at": "2025-02-28T10:00:28.764295"
+    },
+    "boh_boh_admin_7": {
+      "id": "boh_boh_admin_7",
+      "file_name": "boh_admin_7.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_7.wav",
+      "duration": 0.49302083333333335,
+      "size_bytes": 47374,
+      "created_at": "2025-02-28T10:00:28.764503"
+    },
+    "boh_boh_admin_3": {
+      "id": "boh_boh_admin_3",
+      "file_name": "boh_admin_3.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_3.wav",
+      "duration": 0.5349166666666667,
+      "size_bytes": 51396,
+      "created_at": "2025-02-28T10:00:28.764739"
+    },
+    "boh_boh_admin_2": {
+      "id": "boh_boh_admin_2",
+      "file_name": "boh_admin_2.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_2.wav",
+      "duration": 0.4578125,
+      "size_bytes": 43994,
+      "created_at": "2025-02-28T10:00:28.764968"
+    },
+    "boh_boh_admin_1": {
+      "id": "boh_boh_admin_1",
+      "file_name": "boh_admin_1.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_1.wav",
+      "duration": 0.5069166666666667,
+      "size_bytes": 48708,
+      "created_at": "2025-02-28T10:00:28.765169"
+    },
+    "boh_boh_admin_16": {
+      "id": "boh_boh_admin_16",
+      "file_name": "boh_admin_16.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_16.wav",
+      "duration": 0.27339583333333334,
+      "size_bytes": 26290,
+      "created_at": "2025-02-28T10:00:28.765370"
+    },
+    "boh_boh_admin_17": {
+      "id": "boh_boh_admin_17",
+      "file_name": "boh_admin_17.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_17.wav",
+      "duration": 0.41402083333333334,
+      "size_bytes": 39790,
+      "created_at": "2025-02-28T10:00:28.765572"
+    },
+    "boh_boh_admin_15": {
+      "id": "boh_boh_admin_15",
+      "file_name": "boh_admin_15.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_15.wav",
+      "duration": 0.365625,
+      "size_bytes": 35144,
+      "created_at": "2025-02-28T10:00:28.765814"
+    },
+    "boh_boh_admin_14": {
+      "id": "boh_boh_admin_14",
+      "file_name": "boh_admin_14.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_14.wav",
+      "duration": 0.3742916666666667,
+      "size_bytes": 35976,
+      "created_at": "2025-02-28T10:00:28.766052"
+    },
+    "boh_boh_admin_10": {
+      "id": "boh_boh_admin_10",
+      "file_name": "boh_admin_10.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_10.wav",
+      "duration": 0.33097916666666666,
+      "size_bytes": 31818,
+      "created_at": "2025-02-28T10:00:28.766252"
+    },
+    "boh_boh_admin_11": {
+      "id": "boh_boh_admin_11",
+      "file_name": "boh_admin_11.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_11.wav",
+      "duration": 0.29552083333333334,
+      "size_bytes": 28414,
+      "created_at": "2025-02-28T10:00:28.766479"
+    },
+    "boh_boh_admin_13": {
+      "id": "boh_boh_admin_13",
+      "file_name": "boh_admin_13.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_13.wav",
+      "duration": 0.25558333333333333,
+      "size_bytes": 24580,
+      "created_at": "2025-02-28T10:00:28.766693"
+    },
+    "boh_boh_admin_12": {
+      "id": "boh_boh_admin_12",
+      "file_name": "boh_admin_12.wav",
+      "class": "boh",
+      "path": "data/sounds/training_sounds/boh/boh_admin_12.wav",
+      "duration": 0.299625,
+      "size_bytes": 28808,
+      "created_at": "2025-02-28T10:00:28.766891"
+    },
+    "beh_beh_admin_8": {
+      "id": "beh_beh_admin_8",
+      "file_name": "beh_admin_8.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_8.wav",
+      "duration": 0.22579166666666667,
+      "size_bytes": 21720,
+      "created_at": "2025-02-28T10:00:28.749505"
+    },
+    "beh_beh_admin_9": {
+      "id": "beh_beh_admin_9",
+      "file_name": "beh_admin_9.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_9.wav",
+      "duration": 0.20854166666666665,
+      "size_bytes": 20064,
+      "created_at": "2025-02-28T10:00:28.749734"
+    },
+    "beh_beh_9ace84a1": {
+      "id": "beh_beh_9ace84a1",
+      "file_name": "beh_9ace84a1.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_9ace84a1.wav",
+      "duration": 0.276,
+      "size_bytes": 8876,
+      "created_at": "2025-03-02T09:11:23.138570"
+    },
+    "beh_beh_34055398": {
+      "id": "beh_beh_34055398",
+      "file_name": "beh_34055398.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_34055398.wav",
+      "duration": 0.276,
+      "size_bytes": 8876,
+      "created_at": "2025-02-28T13:29:53.242969"
+    },
+    "beh_beh_admin_18": {
+      "id": "beh_beh_admin_18",
+      "file_name": "beh_admin_18.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_18.wav",
+      "duration": 0.32254166666666667,
+      "size_bytes": 31008,
+      "created_at": "2025-02-28T10:00:28.749971"
+    },
+    "beh_beh_admin_19": {
+      "id": "beh_beh_admin_19",
+      "file_name": "beh_admin_19.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_19.wav",
+      "duration": 0.22877083333333334,
+      "size_bytes": 22006,
+      "created_at": "2025-02-28T10:00:28.750206"
+    },
+    "beh_beh_3013ea36": {
+      "id": "beh_beh_3013ea36",
+      "file_name": "beh_3013ea36.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_3013ea36.wav",
+      "duration": 0.276,
+      "size_bytes": 8876,
+      "created_at": "2025-02-28T13:30:05.742229"
+    },
+    "beh_beh_ae7e90e2": {
+      "id": "beh_beh_ae7e90e2",
+      "file_name": "beh_ae7e90e2.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_ae7e90e2.wav",
+      "duration": 0.276,
+      "size_bytes": 8876,
+      "created_at": "2025-02-28T13:29:58.412322"
+    },
+    "beh_beh_2be7c818": {
+      "id": "beh_beh_2be7c818",
+      "file_name": "beh_2be7c818.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_2be7c818.wav",
+      "duration": 0.34,
+      "size_bytes": 10924,
+      "created_at": "2025-03-02T09:11:36.221993"
+    },
+    "beh_beh_admin_12": {
+      "id": "beh_beh_admin_12",
+      "file_name": "beh_admin_12.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_12.wav",
+      "duration": 0.23170833333333332,
+      "size_bytes": 22288,
+      "created_at": "2025-02-28T10:00:28.750412"
+    },
+    "beh_beh_admin_13": {
+      "id": "beh_beh_admin_13",
+      "file_name": "beh_admin_13.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_13.wav",
+      "duration": 0.21241666666666667,
+      "size_bytes": 20436,
+      "created_at": "2025-02-28T10:00:28.750640"
+    },
+    "beh_beh_admin_11": {
+      "id": "beh_beh_admin_11",
+      "file_name": "beh_admin_11.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_11.wav",
+      "duration": 0.20170833333333332,
+      "size_bytes": 19408,
+      "created_at": "2025-02-28T10:00:28.750869"
+    },
+    "beh_beh_admin_10": {
+      "id": "beh_beh_admin_10",
+      "file_name": "beh_admin_10.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_10.wav",
+      "duration": 0.20739583333333333,
+      "size_bytes": 19954,
+      "created_at": "2025-02-28T10:00:28.751107"
+    },
+    "beh_beh_admin_14": {
+      "id": "beh_beh_admin_14",
+      "file_name": "beh_admin_14.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_14.wav",
+      "duration": 0.22189583333333332,
+      "size_bytes": 21346,
+      "created_at": "2025-02-28T10:00:28.751323"
+    },
+    "beh_beh_admin_15": {
+      "id": "beh_beh_admin_15",
+      "file_name": "beh_admin_15.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_15.wav",
+      "duration": 0.30645833333333333,
+      "size_bytes": 29464,
+      "created_at": "2025-02-28T10:00:28.751542"
+    },
+    "beh_beh_12e2c30f": {
+      "id": "beh_beh_12e2c30f",
+      "file_name": "beh_12e2c30f.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_12e2c30f.wav",
+      "duration": 0.276,
+      "size_bytes": 8876,
+      "created_at": "2025-03-02T09:11:28.716921"
+    },
+    "beh_beh_admin_17": {
+      "id": "beh_beh_admin_17",
+      "file_name": "beh_admin_17.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_17.wav",
+      "duration": 0.2466875,
+      "size_bytes": 23726,
+      "created_at": "2025-02-28T10:00:28.751775"
+    },
+    "beh_beh_admin_16": {
+      "id": "beh_beh_admin_16",
+      "file_name": "beh_admin_16.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_16.wav",
+      "duration": 0.242875,
+      "size_bytes": 23360,
+      "created_at": "2025-02-28T10:00:28.751981"
+    },
+    "beh_beh_5389d2c2": {
+      "id": "beh_beh_5389d2c2",
+      "file_name": "beh_5389d2c2.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_5389d2c2.wav",
+      "duration": 0.276,
+      "size_bytes": 8876,
+      "created_at": "2025-03-02T09:11:41.410061"
+    },
+    "beh_beh_admin_1": {
+      "id": "beh_beh_admin_1",
+      "file_name": "beh_admin_1.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_1.wav",
+      "duration": 1.7000625,
+      "size_bytes": 54446,
+      "created_at": "2025-02-28T10:00:28.752193"
+    },
+    "beh_beh_admin_2": {
+      "id": "beh_beh_admin_2",
+      "file_name": "beh_admin_2.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_2.wav",
+      "duration": 0.7553125,
+      "size_bytes": 24214,
+      "created_at": "2025-02-28T10:00:28.752422"
+    },
+    "beh_beh_admin_3": {
+      "id": "beh_beh_admin_3",
+      "file_name": "beh_admin_3.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_3.wav",
+      "duration": 0.34160416666666665,
+      "size_bytes": 32838,
+      "created_at": "2025-02-28T10:00:28.752630"
+    },
+    "beh_beh_admin_7": {
+      "id": "beh_beh_admin_7",
+      "file_name": "beh_admin_7.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_7.wav",
+      "duration": 0.382,
+      "size_bytes": 36716,
+      "created_at": "2025-02-28T10:00:28.752862"
+    },
+    "beh_beh_16a46d83": {
+      "id": "beh_beh_16a46d83",
+      "file_name": "beh_16a46d83.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_16a46d83.wav",
+      "duration": 0.34,
+      "size_bytes": 10924,
+      "created_at": "2025-02-28T13:30:02.799170"
+    },
+    "beh_beh_admin_6": {
+      "id": "beh_beh_admin_6",
+      "file_name": "beh_admin_6.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_6.wav",
+      "duration": 0.2138125,
+      "size_bytes": 20570,
+      "created_at": "2025-02-28T10:00:28.753074"
+    },
+    "beh_beh_admin_4": {
+      "id": "beh_beh_admin_4",
+      "file_name": "beh_admin_4.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_4.wav",
+      "duration": 0.7796666666666666,
+      "size_bytes": 74892,
+      "created_at": "2025-02-28T10:00:28.753282"
+    },
+    "beh_beh_admin_5": {
+      "id": "beh_beh_admin_5",
+      "file_name": "beh_admin_5.wav",
+      "class": "beh",
+      "path": "data/sounds/training_sounds/beh/beh_admin_5.wav",
+      "duration": 0.327,
+      "size_bytes": 31436,
+      "created_at": "2025-02-28T10:00:28.753503"
+    },
+    "eh_eh_admin_20": {
+      "id": "eh_eh_admin_20",
+      "file_name": "eh_admin_20.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_20.wav",
+      "duration": 0.2895,
+      "size_bytes": 27836,
+      "created_at": "2025-02-28T10:00:28.735250"
+    },
+    "eh_eh_9f0c1c96": {
+      "id": "eh_eh_9f0c1c96",
+      "file_name": "eh_9f0c1c96.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_9f0c1c96.wav",
+      "duration": 1.9674375,
+      "size_bytes": 188918,
+      "created_at": "2025-02-28T10:00:28.735567"
+    },
+    "eh_eh_3f680c67": {
+      "id": "eh_eh_3f680c67",
+      "file_name": "eh_3f680c67.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_3f680c67.wav",
+      "duration": 1.4777916666666666,
+      "size_bytes": 141912,
+      "created_at": "2025-02-28T10:00:28.735830"
+    },
+    "eh_eh_admin_21": {
+      "id": "eh_eh_admin_21",
+      "file_name": "eh_admin_21.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_21.wav",
+      "duration": 0.3213125,
+      "size_bytes": 30890,
+      "created_at": "2025-02-28T10:00:28.736089"
+    },
+    "eh_eh_admin_8": {
+      "id": "eh_eh_admin_8",
+      "file_name": "eh_admin_8.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_8.wav",
+      "duration": 0.38595833333333335,
+      "size_bytes": 37096,
+      "created_at": "2025-02-28T10:00:28.736304"
+    },
+    "eh_eh_admin_9": {
+      "id": "eh_eh_admin_9",
+      "file_name": "eh_admin_9.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_9.wav",
+      "duration": 0.3470416666666667,
+      "size_bytes": 33360,
+      "created_at": "2025-02-28T10:00:28.736585"
+    },
+    "eh_eh_admin_22": {
+      "id": "eh_eh_admin_22",
+      "file_name": "eh_admin_22.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_22.wav",
+      "duration": 0.32639583333333333,
+      "size_bytes": 31378,
+      "created_at": "2025-02-28T10:00:28.736818"
+    },
+    "eh_eh_admin_19": {
+      "id": "eh_eh_admin_19",
+      "file_name": "eh_admin_19.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_19.wav",
+      "duration": 0.2907708333333333,
+      "size_bytes": 27958,
+      "created_at": "2025-02-28T10:00:28.737041"
+    },
+    "eh_eh_admin_18": {
+      "id": "eh_eh_admin_18",
+      "file_name": "eh_admin_18.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_18.wav",
+      "duration": 0.3480625,
+      "size_bytes": 33458,
+      "created_at": "2025-02-28T10:00:28.737251"
+    },
+    "eh_eh_admin_2": {
+      "id": "eh_eh_admin_2",
+      "file_name": "eh_admin_2.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_2.wav",
+      "duration": 0.7414166666666666,
+      "size_bytes": 71220,
+      "created_at": "2025-02-28T10:00:28.737481"
+    },
+    "eh_eh_admin_15": {
+      "id": "eh_eh_admin_15",
+      "file_name": "eh_admin_15.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_15.wav",
+      "duration": 0.3097083333333333,
+      "size_bytes": 29776,
+      "created_at": "2025-02-28T10:00:28.737714"
+    },
+    "eh_eh_admin_14": {
+      "id": "eh_eh_admin_14",
+      "file_name": "eh_admin_14.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_14.wav",
+      "duration": 0.37877083333333333,
+      "size_bytes": 36406,
+      "created_at": "2025-02-28T10:00:28.737953"
+    },
+    "eh_eh_admin_3": {
+      "id": "eh_eh_admin_3",
+      "file_name": "eh_admin_3.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_3.wav",
+      "duration": 1.5223333333333333,
+      "size_bytes": 146188,
+      "created_at": "2025-02-28T10:00:28.738188"
+    },
+    "eh_eh_admin_1": {
+      "id": "eh_eh_admin_1",
+      "file_name": "eh_admin_1.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_1.wav",
+      "duration": 1.0499791666666667,
+      "size_bytes": 100842,
+      "created_at": "2025-02-28T10:00:28.738399"
+    },
+    "eh_eh_admin_16": {
+      "id": "eh_eh_admin_16",
+      "file_name": "eh_admin_16.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_16.wav",
+      "duration": 0.32385416666666667,
+      "size_bytes": 31134,
+      "created_at": "2025-02-28T10:00:28.738658"
+    },
+    "eh_eh_admin_17": {
+      "id": "eh_eh_admin_17",
+      "file_name": "eh_admin_17.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_17.wav",
+      "duration": 0.30977083333333333,
+      "size_bytes": 29782,
+      "created_at": "2025-02-28T10:00:28.738904"
+    },
+    "eh_eh_admin_4": {
+      "id": "eh_eh_admin_4",
+      "file_name": "eh_admin_4.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_4.wav",
+      "duration": 1.4841875,
+      "size_bytes": 142526,
+      "created_at": "2025-02-28T10:00:28.739125"
+    },
+    "eh_eh_admin_13": {
+      "id": "eh_eh_admin_13",
+      "file_name": "eh_admin_13.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_13.wav",
+      "duration": 0.25483333333333336,
+      "size_bytes": 24508,
+      "created_at": "2025-02-28T10:00:28.739349"
+    },
+    "eh_eh_admin_12": {
+      "id": "eh_eh_admin_12",
+      "file_name": "eh_admin_12.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_12.wav",
+      "duration": 1.144,
+      "size_bytes": 109868,
+      "created_at": "2025-02-28T10:00:28.739578"
+    },
+    "eh_eh_admin_5": {
+      "id": "eh_eh_admin_5",
+      "file_name": "eh_admin_5.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_5.wav",
+      "duration": 0.9423125,
+      "size_bytes": 90506,
+      "created_at": "2025-02-28T10:00:28.739840"
+    },
+    "eh_eh_admin_7": {
+      "id": "eh_eh_admin_7",
+      "file_name": "eh_admin_7.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_7.wav",
+      "duration": 0.27158333333333334,
+      "size_bytes": 26116,
+      "created_at": "2025-02-28T10:00:28.740094"
+    },
+    "eh_eh_admin_10": {
+      "id": "eh_eh_admin_10",
+      "file_name": "eh_admin_10.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_10.wav",
+      "duration": 0.24654166666666666,
+      "size_bytes": 23712,
+      "created_at": "2025-02-28T10:00:28.740355"
+    },
+    "eh_eh_1382b5a4": {
+      "id": "eh_eh_1382b5a4",
+      "file_name": "eh_1382b5a4.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_1382b5a4.wav",
+      "duration": 0.20858333333333334,
+      "size_bytes": 20068,
+      "created_at": "2025-02-28T10:00:28.740624"
+    },
+    "eh_eh_admin_11": {
+      "id": "eh_eh_admin_11",
+      "file_name": "eh_admin_11.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_11.wav",
+      "duration": 0.4155,
+      "size_bytes": 39932,
+      "created_at": "2025-02-28T10:00:28.740883"
+    },
+    "eh_eh_admin_6": {
+      "id": "eh_eh_admin_6",
+      "file_name": "eh_admin_6.wav",
+      "class": "eh",
+      "path": "data/sounds/training_sounds/eh/eh_admin_6.wav",
+      "duration": 0.5340625,
+      "size_bytes": 51314,
+      "created_at": "2025-02-28T10:00:28.741132"
+    },
+    "oo_oo_admin_3": {
+      "id": "oo_oo_admin_3",
+      "file_name": "oo_admin_3.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_3.wav",
+      "duration": 0.4899375,
+      "size_bytes": 15722,
+      "created_at": "2025-02-28T10:00:28.717936"
+    },
+    "oo_oo_admin_18": {
+      "id": "oo_oo_admin_18",
+      "file_name": "oo_admin_18.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_18.wav",
+      "duration": 0.60425,
+      "size_bytes": 58052,
+      "created_at": "2025-02-28T10:00:28.718162"
+    },
+    "oo_oo_admin_24": {
+      "id": "oo_oo_admin_24",
+      "file_name": "oo_admin_24.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_24.wav",
+      "duration": 0.7064166666666667,
+      "size_bytes": 67860,
+      "created_at": "2025-02-28T10:00:28.718402"
+    },
+    "oo_oo_admin_25": {
+      "id": "oo_oo_admin_25",
+      "file_name": "oo_admin_25.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_25.wav",
+      "duration": 0.4683541666666667,
+      "size_bytes": 45006,
+      "created_at": "2025-02-28T10:00:28.718640"
+    },
+    "oo_oo_admin_19": {
+      "id": "oo_oo_admin_19",
+      "file_name": "oo_admin_19.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_19.wav",
+      "duration": 0.5475416666666667,
+      "size_bytes": 52608,
+      "created_at": "2025-02-28T10:00:28.718855"
+    },
+    "oo_oo_admin_2": {
+      "id": "oo_oo_admin_2",
+      "file_name": "oo_admin_2.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_2.wav",
+      "duration": 0.7696458333333334,
+      "size_bytes": 73930,
+      "created_at": "2025-02-28T10:00:28.719076"
+    },
+    "oo_oo_admin_27": {
+      "id": "oo_oo_admin_27",
+      "file_name": "oo_admin_27.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_27.wav",
+      "duration": 0.5207708333333333,
+      "size_bytes": 50038,
+      "created_at": "2025-02-28T10:00:28.719314"
+    },
+    "oo_oo_admin_26": {
+      "id": "oo_oo_admin_26",
+      "file_name": "oo_admin_26.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_26.wav",
+      "duration": 0.5696875,
+      "size_bytes": 54734,
+      "created_at": "2025-02-28T10:00:28.719521"
+    },
+    "oo_oo_admin_1": {
+      "id": "oo_oo_admin_1",
+      "file_name": "oo_admin_1.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_1.wav",
+      "duration": 0.8784375,
+      "size_bytes": 84374,
+      "created_at": "2025-02-28T10:00:28.719737"
+    },
+    "oo_oo_admin_5": {
+      "id": "oo_oo_admin_5",
+      "file_name": "oo_admin_5.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_5.wav",
+      "duration": 0.4660416666666667,
+      "size_bytes": 44784,
+      "created_at": "2025-02-28T10:00:28.719980"
+    },
+    "oo_oo_admin_22": {
+      "id": "oo_oo_admin_22",
+      "file_name": "oo_admin_22.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_22.wav",
+      "duration": 0.6803958333333333,
+      "size_bytes": 65362,
+      "created_at": "2025-02-28T10:00:28.720220"
+    },
+    "oo_oo_admin_23": {
+      "id": "oo_oo_admin_23",
+      "file_name": "oo_admin_23.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_23.wav",
+      "duration": 0.719125,
+      "size_bytes": 69080,
+      "created_at": "2025-02-28T10:00:28.720442"
+    },
+    "oo_oo_admin_4": {
+      "id": "oo_oo_admin_4",
+      "file_name": "oo_admin_4.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_4.wav",
+      "duration": 0.7093958333333333,
+      "size_bytes": 68146,
+      "created_at": "2025-02-28T10:00:28.720659"
+    },
+    "oo_oo_admin_6": {
+      "id": "oo_oo_admin_6",
+      "file_name": "oo_admin_6.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_6.wav",
+      "duration": 0.538375,
+      "size_bytes": 51728,
+      "created_at": "2025-02-28T10:00:28.720875"
+    },
+    "oo_oo_admin_21": {
+      "id": "oo_oo_admin_21",
+      "file_name": "oo_admin_21.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_21.wav",
+      "duration": 0.7523125,
+      "size_bytes": 72266,
+      "created_at": "2025-02-28T10:00:28.721115"
+    },
+    "oo_oo_admin_20": {
+      "id": "oo_oo_admin_20",
+      "file_name": "oo_admin_20.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_20.wav",
+      "duration": 0.6679791666666667,
+      "size_bytes": 64170,
+      "created_at": "2025-02-28T10:00:28.721339"
+    },
+    "oo_oo_admin_7": {
+      "id": "oo_oo_admin_7",
+      "file_name": "oo_admin_7.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_7.wav",
+      "duration": 0.54275,
+      "size_bytes": 52148,
+      "created_at": "2025-02-28T10:00:28.721543"
+    },
+    "oo_oo_admin_11": {
+      "id": "oo_oo_admin_11",
+      "file_name": "oo_admin_11.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_11.wav",
+      "duration": 0.5316041666666667,
+      "size_bytes": 51078,
+      "created_at": "2025-02-28T10:00:28.721756"
+    },
+    "oo_oo_admin_10": {
+      "id": "oo_oo_admin_10",
+      "file_name": "oo_admin_10.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_10.wav",
+      "duration": 0.4706666666666667,
+      "size_bytes": 45228,
+      "created_at": "2025-02-28T10:00:28.721988"
+    },
+    "oo_oo_admin_9": {
+      "id": "oo_oo_admin_9",
+      "file_name": "oo_admin_9.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_9.wav",
+      "duration": 2.5198958333333334,
+      "size_bytes": 241954,
+      "created_at": "2025-02-28T10:00:28.722225"
+    },
+    "oo_oo_admin_12": {
+      "id": "oo_oo_admin_12",
+      "file_name": "oo_admin_12.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_12.wav",
+      "duration": 0.5050833333333333,
+      "size_bytes": 48532,
+      "created_at": "2025-02-28T10:00:28.722452"
+    },
+    "oo_oo_admin_13": {
+      "id": "oo_oo_admin_13",
+      "file_name": "oo_admin_13.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_13.wav",
+      "duration": 0.5420416666666666,
+      "size_bytes": 52080,
+      "created_at": "2025-02-28T10:00:28.722657"
+    },
+    "oo_oo_admin_8": {
+      "id": "oo_oo_admin_8",
+      "file_name": "oo_admin_8.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_8.wav",
+      "duration": 0.4653541666666667,
+      "size_bytes": 44718,
+      "created_at": "2025-02-28T10:00:28.722873"
+    },
+    "oo_oo_admin_17": {
+      "id": "oo_oo_admin_17",
+      "file_name": "oo_admin_17.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_17.wav",
+      "duration": 0.5790625,
+      "size_bytes": 55634,
+      "created_at": "2025-02-28T10:00:28.723097"
+    },
+    "oo_oo_admin_16": {
+      "id": "oo_oo_admin_16",
+      "file_name": "oo_admin_16.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_16.wav",
+      "duration": 0.5375416666666667,
+      "size_bytes": 51648,
+      "created_at": "2025-02-28T10:00:28.723323"
+    },
+    "oo_oo_admin_14": {
+      "id": "oo_oo_admin_14",
+      "file_name": "oo_admin_14.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_14.wav",
+      "duration": 0.61425,
+      "size_bytes": 59012,
+      "created_at": "2025-02-28T10:00:28.723562"
+    },
+    "oo_oo_admin_28": {
+      "id": "oo_oo_admin_28",
+      "file_name": "oo_admin_28.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_28.wav",
+      "duration": 0.5097291666666667,
+      "size_bytes": 48978,
+      "created_at": "2025-02-28T10:00:28.723847"
+    },
+    "oo_oo_admin_29": {
+      "id": "oo_oo_admin_29",
+      "file_name": "oo_admin_29.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_29.wav",
+      "duration": 0.6545833333333333,
+      "size_bytes": 62884,
+      "created_at": "2025-02-28T10:00:28.724134"
+    },
+    "oo_oo_admin_15": {
+      "id": "oo_oo_admin_15",
+      "file_name": "oo_admin_15.wav",
+      "class": "oo",
+      "path": "data/sounds/training_sounds/oo/oo_admin_15.wav",
+      "duration": 0.38758333333333334,
+      "size_bytes": 37252,
+      "created_at": "2025-02-28T10:00:28.724432"
+    },
+    "oh_oh_admin_18": {
+      "id": "oh_oh_admin_18",
+      "file_name": "oh_admin_18.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_18.wav",
+      "duration": 0.29041666666666666,
+      "size_bytes": 27924,
+      "created_at": "2025-02-28T10:00:28.701148"
+    },
+    "oh_oh_admin_19": {
+      "id": "oh_oh_admin_19",
+      "file_name": "oh_admin_19.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_19.wav",
+      "duration": 0.2691458333333333,
+      "size_bytes": 25882,
+      "created_at": "2025-02-28T10:00:28.701427"
+    },
+    "oh_oh_admin_9": {
+      "id": "oh_oh_admin_9",
+      "file_name": "oh_admin_9.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_9.wav",
+      "duration": 0.3957291666666667,
+      "size_bytes": 38034,
+      "created_at": "2025-02-28T10:00:28.701701"
+    },
+    "oh_oh_admin_8": {
+      "id": "oh_oh_admin_8",
+      "file_name": "oh_admin_8.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_8.wav",
+      "duration": 0.29233333333333333,
+      "size_bytes": 28108,
+      "created_at": "2025-02-28T10:00:28.701971"
+    },
+    "oh_oh_admin_21": {
+      "id": "oh_oh_admin_21",
+      "file_name": "oh_admin_21.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_21.wav",
+      "duration": 2.004375,
+      "size_bytes": 192464,
+      "created_at": "2025-02-28T10:00:28.702203"
+    },
+    "oh_oh_admin_20": {
+      "id": "oh_oh_admin_20",
+      "file_name": "oh_admin_20.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_20.wav",
+      "duration": 0.3017708333333333,
+      "size_bytes": 29014,
+      "created_at": "2025-02-28T10:00:28.702453"
+    },
+    "oh_oh_admin_11": {
+      "id": "oh_oh_admin_11",
+      "file_name": "oh_admin_11.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_11.wav",
+      "duration": 0.3525625,
+      "size_bytes": 33890,
+      "created_at": "2025-02-28T10:00:28.702702"
+    },
+    "oh_oh_admin_6": {
+      "id": "oh_oh_admin_6",
+      "file_name": "oh_admin_6.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_6.wav",
+      "duration": 0.5581458333333333,
+      "size_bytes": 53626,
+      "created_at": "2025-02-28T10:00:28.702937"
+    },
+    "oh_oh_admin_10": {
+      "id": "oh_oh_admin_10",
+      "file_name": "oh_admin_10.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_10.wav",
+      "duration": 2.5309375,
+      "size_bytes": 243014,
+      "created_at": "2025-02-28T10:00:28.703191"
+    },
+    "oh_oh_admin_7": {
+      "id": "oh_oh_admin_7",
+      "file_name": "oh_admin_7.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_7.wav",
+      "duration": 0.48614583333333333,
+      "size_bytes": 46714,
+      "created_at": "2025-02-28T10:00:28.703457"
+    },
+    "oh_oh_admin_5": {
+      "id": "oh_oh_admin_5",
+      "file_name": "oh_admin_5.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_5.wav",
+      "duration": 0.43433333333333335,
+      "size_bytes": 41740,
+      "created_at": "2025-02-28T10:00:28.703690"
+    },
+    "oh_oh_admin_12": {
+      "id": "oh_oh_admin_12",
+      "file_name": "oh_admin_12.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_12.wav",
+      "duration": 0.4081666666666667,
+      "size_bytes": 39228,
+      "created_at": "2025-02-28T10:00:28.703910"
+    },
+    "oh_oh_admin_4": {
+      "id": "oh_oh_admin_4",
+      "file_name": "oh_admin_4.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_4.wav",
+      "duration": 0.5423541666666667,
+      "size_bytes": 52110,
+      "created_at": "2025-02-28T10:00:28.704137"
+    },
+    "oh_oh_admin_13": {
+      "id": "oh_oh_admin_13",
+      "file_name": "oh_admin_13.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_13.wav",
+      "duration": 0.44835416666666666,
+      "size_bytes": 43086,
+      "created_at": "2025-02-28T10:00:28.704371"
+    },
+    "oh_oh_admin_17": {
+      "id": "oh_oh_admin_17",
+      "file_name": "oh_admin_17.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_17.wav",
+      "duration": 0.306,
+      "size_bytes": 29420,
+      "created_at": "2025-02-28T10:00:28.704576"
+    },
+    "oh_oh_admin_16": {
+      "id": "oh_oh_admin_16",
+      "file_name": "oh_admin_16.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_16.wav",
+      "duration": 0.32877083333333335,
+      "size_bytes": 31606,
+      "created_at": "2025-02-28T10:00:28.704793"
+    },
+    "oh_oh_admin_1": {
+      "id": "oh_oh_admin_1",
+      "file_name": "oh_admin_1.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_1.wav",
+      "duration": 0.2529166666666667,
+      "size_bytes": 24324,
+      "created_at": "2025-02-28T10:00:28.705035"
+    },
+    "oh_oh_admin_3": {
+      "id": "oh_oh_admin_3",
+      "file_name": "oh_admin_3.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_3.wav",
+      "duration": 0.3109166666666667,
+      "size_bytes": 29892,
+      "created_at": "2025-02-28T10:00:28.705274"
+    },
+    "oh_oh_admin_14": {
+      "id": "oh_oh_admin_14",
+      "file_name": "oh_admin_14.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_14.wav",
+      "duration": 0.37545833333333334,
+      "size_bytes": 36088,
+      "created_at": "2025-02-28T10:00:28.705512"
+    },
+    "oh_oh_admin_2": {
+      "id": "oh_oh_admin_2",
+      "file_name": "oh_admin_2.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_2.wav",
+      "duration": 0.2606041666666667,
+      "size_bytes": 25062,
+      "created_at": "2025-02-28T10:00:28.705777"
+    },
+    "oh_oh_admin_15": {
+      "id": "oh_oh_admin_15",
+      "file_name": "oh_admin_15.wav",
+      "class": "oh",
+      "path": "data/sounds/training_sounds/oh/oh_admin_15.wav",
+      "duration": 0.30285416666666665,
+      "size_bytes": 29118,
+      "created_at": "2025-02-28T10:00:28.706013"
+    },
+    "bah_bah_admin_1": {
+      "id": "bah_bah_admin_1",
+      "file_name": "bah_admin_1.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_1.wav",
+      "duration": 0.406125,
+      "size_bytes": 39032,
+      "created_at": "2025-02-28T10:00:28.660521"
+    },
+    "bah_bah_admin_3": {
+      "id": "bah_bah_admin_3",
+      "file_name": "bah_admin_3.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_3.wav",
+      "duration": 0.4297916666666667,
+      "size_bytes": 41304,
+      "created_at": "2025-02-28T10:00:28.660742"
+    },
+    "bah_bah_admin_2": {
+      "id": "bah_bah_admin_2",
+      "file_name": "bah_admin_2.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_2.wav",
+      "duration": 0.21895833333333334,
+      "size_bytes": 21064,
+      "created_at": "2025-02-28T10:00:28.660965"
+    },
+    "bah_bah_admin_6": {
+      "id": "bah_bah_admin_6",
+      "file_name": "bah_admin_6.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_6.wav",
+      "duration": 0.2359375,
+      "size_bytes": 22694,
+      "created_at": "2025-02-28T10:00:28.661203"
+    },
+    "bah_bah_admin_7": {
+      "id": "bah_bah_admin_7",
+      "file_name": "bah_admin_7.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_7.wav",
+      "duration": 0.28041666666666665,
+      "size_bytes": 26964,
+      "created_at": "2025-02-28T10:00:28.661416"
+    },
+    "bah_bah_admin_5": {
+      "id": "bah_bah_admin_5",
+      "file_name": "bah_admin_5.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_5.wav",
+      "duration": 0.2853125,
+      "size_bytes": 27434,
+      "created_at": "2025-02-28T10:00:28.661613"
+    },
+    "bah_bah_admin_4": {
+      "id": "bah_bah_admin_4",
+      "file_name": "bah_admin_4.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_4.wav",
+      "duration": 0.43725,
+      "size_bytes": 42020,
+      "created_at": "2025-02-28T10:00:28.661815"
+    },
+    "bah_bah_admin_19": {
+      "id": "bah_bah_admin_19",
+      "file_name": "bah_admin_19.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_19.wav",
+      "duration": 0.2978125,
+      "size_bytes": 28634,
+      "created_at": "2025-02-28T10:00:28.662014"
+    },
+    "bah_bah_admin_18": {
+      "id": "bah_bah_admin_18",
+      "file_name": "bah_admin_18.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_18.wav",
+      "duration": 0.2174375,
+      "size_bytes": 20918,
+      "created_at": "2025-02-28T10:00:28.662211"
+    },
+    "bah_bah_admin_20": {
+      "id": "bah_bah_admin_20",
+      "file_name": "bah_admin_20.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_20.wav",
+      "duration": 0.309875,
+      "size_bytes": 29792,
+      "created_at": "2025-02-28T10:00:28.662411"
+    },
+    "bah_bah_admin_21": {
+      "id": "bah_bah_admin_21",
+      "file_name": "bah_admin_21.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_21.wav",
+      "duration": 0.29625,
+      "size_bytes": 28484,
+      "created_at": "2025-02-28T10:00:28.662656"
+    },
+    "bah_bah_admin_13": {
+      "id": "bah_bah_admin_13",
+      "file_name": "bah_admin_13.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_13.wav",
+      "duration": 0.304,
+      "size_bytes": 29228,
+      "created_at": "2025-02-28T10:00:28.662858"
+    },
+    "bah_bah_admin_12": {
+      "id": "bah_bah_admin_12",
+      "file_name": "bah_admin_12.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_12.wav",
+      "duration": 0.2031875,
+      "size_bytes": 19550,
+      "created_at": "2025-02-28T10:00:28.663069"
+    },
+    "bah_bah_admin_10": {
+      "id": "bah_bah_admin_10",
+      "file_name": "bah_admin_10.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_10.wav",
+      "duration": 0.23697916666666666,
+      "size_bytes": 22794,
+      "created_at": "2025-02-28T10:00:28.663265"
+    },
+    "bah_bah_admin_11": {
+      "id": "bah_bah_admin_11",
+      "file_name": "bah_admin_11.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_11.wav",
+      "duration": 0.2370625,
+      "size_bytes": 22802,
+      "created_at": "2025-02-28T10:00:28.663470"
+    },
+    "bah_bah_admin_15": {
+      "id": "bah_bah_admin_15",
+      "file_name": "bah_admin_15.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_15.wav",
+      "duration": 1.3405,
+      "size_bytes": 128732,
+      "created_at": "2025-02-28T10:00:28.663724"
+    },
+    "bah_bah_admin_14": {
+      "id": "bah_bah_admin_14",
+      "file_name": "bah_admin_14.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_14.wav",
+      "duration": 0.2119375,
+      "size_bytes": 20390,
+      "created_at": "2025-02-28T10:00:28.663931"
+    },
+    "bah_bah_admin_16": {
+      "id": "bah_bah_admin_16",
+      "file_name": "bah_admin_16.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_16.wav",
+      "duration": 0.25445833333333334,
+      "size_bytes": 24472,
+      "created_at": "2025-02-28T10:00:28.664137"
+    },
+    "bah_bah_admin_17": {
+      "id": "bah_bah_admin_17",
+      "file_name": "bah_admin_17.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_17.wav",
+      "duration": 0.2755,
+      "size_bytes": 26492,
+      "created_at": "2025-02-28T10:00:28.664340"
+    },
+    "bah_bah_admin_9": {
+      "id": "bah_bah_admin_9",
+      "file_name": "bah_admin_9.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_9.wav",
+      "duration": 0.27677083333333335,
+      "size_bytes": 26614,
+      "created_at": "2025-02-28T10:00:28.664559"
+    },
+    "bah_bah_admin_8": {
+      "id": "bah_bah_admin_8",
+      "file_name": "bah_admin_8.wav",
+      "class": "bah",
+      "path": "data/sounds/training_sounds/bah/bah_admin_8.wav",
+      "duration": 0.215375,
+      "size_bytes": 20720,
+      "created_at": "2025-02-28T10:00:28.664789"
+    },
+    "lah_lah_admin_5": {
+      "id": "lah_lah_admin_5",
+      "file_name": "lah_admin_5.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_5.wav",
+      "duration": 0.45560416666666664,
+      "size_bytes": 43782,
+      "created_at": "2025-02-28T10:00:28.615697"
+    },
+    "lah_lah_admin_20": {
+      "id": "lah_lah_admin_20",
+      "file_name": "lah_admin_20.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_20.wav",
+      "duration": 0.4302708333333333,
+      "size_bytes": 41350,
+      "created_at": "2025-02-28T10:00:28.615945"
+    },
+    "lah_lah_admin_21": {
+      "id": "lah_lah_admin_21",
+      "file_name": "lah_admin_21.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_21.wav",
+      "duration": 0.4161875,
+      "size_bytes": 39998,
+      "created_at": "2025-02-28T10:00:28.616173"
+    },
+    "lah_lah_admin_4": {
+      "id": "lah_lah_admin_4",
+      "file_name": "lah_admin_4.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_4.wav",
+      "duration": 0.524625,
+      "size_bytes": 50408,
+      "created_at": "2025-02-28T10:00:28.616390"
+    },
+    "lah_lah_admin_6": {
+      "id": "lah_lah_admin_6",
+      "file_name": "lah_admin_6.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_6.wav",
+      "duration": 0.3353541666666667,
+      "size_bytes": 32238,
+      "created_at": "2025-02-28T10:00:28.616599"
+    },
+    "lah_lah_admin_23": {
+      "id": "lah_lah_admin_23",
+      "file_name": "lah_admin_23.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_23.wav",
+      "duration": 0.46925,
+      "size_bytes": 45092,
+      "created_at": "2025-02-28T10:00:28.616825"
+    },
+    "lah_lah_admin_22": {
+      "id": "lah_lah_admin_22",
+      "file_name": "lah_admin_22.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_22.wav",
+      "duration": 0.4479375,
+      "size_bytes": 43046,
+      "created_at": "2025-02-28T10:00:28.617025"
+    },
+    "lah_lah_admin_7": {
+      "id": "lah_lah_admin_7",
+      "file_name": "lah_admin_7.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_7.wav",
+      "duration": 0.32577083333333334,
+      "size_bytes": 31318,
+      "created_at": "2025-02-28T10:00:28.617233"
+    },
+    "lah_lah_admin_3": {
+      "id": "lah_lah_admin_3",
+      "file_name": "lah_admin_3.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_3.wav",
+      "duration": 0.3440625,
+      "size_bytes": 33074,
+      "created_at": "2025-02-28T10:00:28.617425"
+    },
+    "lah_lah_admin_26": {
+      "id": "lah_lah_admin_26",
+      "file_name": "lah_admin_26.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_26.wav",
+      "duration": 0.4355,
+      "size_bytes": 41852,
+      "created_at": "2025-02-28T10:00:28.617636"
+    },
+    "lah_lah_admin_27": {
+      "id": "lah_lah_admin_27",
+      "file_name": "lah_admin_27.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_27.wav",
+      "duration": 0.46375,
+      "size_bytes": 44564,
+      "created_at": "2025-02-28T10:00:28.617888"
+    },
+    "lah_lah_admin_2": {
+      "id": "lah_lah_admin_2",
+      "file_name": "lah_admin_2.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_2.wav",
+      "duration": 0.576125,
+      "size_bytes": 55352,
+      "created_at": "2025-02-28T10:00:28.618285"
+    },
+    "lah_lah_admin_25": {
+      "id": "lah_lah_admin_25",
+      "file_name": "lah_admin_25.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_25.wav",
+      "duration": 0.37264583333333334,
+      "size_bytes": 35818,
+      "created_at": "2025-02-28T10:00:28.618501"
+    },
+    "lah_lah_admin_19": {
+      "id": "lah_lah_admin_19",
+      "file_name": "lah_admin_19.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_19.wav",
+      "duration": 0.36470833333333336,
+      "size_bytes": 35056,
+      "created_at": "2025-02-28T10:00:28.618698"
+    },
+    "lah_lah_admin_18": {
+      "id": "lah_lah_admin_18",
+      "file_name": "lah_admin_18.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_18.wav",
+      "duration": 0.31466666666666665,
+      "size_bytes": 30252,
+      "created_at": "2025-02-28T10:00:28.618898"
+    },
+    "lah_lah_admin_30": {
+      "id": "lah_lah_admin_30",
+      "file_name": "lah_admin_30.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_30.wav",
+      "duration": 0.3541666666666667,
+      "size_bytes": 34044,
+      "created_at": "2025-02-28T10:00:28.619098"
+    },
+    "lah_lah_admin_24": {
+      "id": "lah_lah_admin_24",
+      "file_name": "lah_admin_24.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_24.wav",
+      "duration": 0.42370833333333335,
+      "size_bytes": 40720,
+      "created_at": "2025-02-28T10:00:28.619382"
+    },
+    "lah_lah_admin_1": {
+      "id": "lah_lah_admin_1",
+      "file_name": "lah_admin_1.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_1.wav",
+      "duration": 0.5853333333333334,
+      "size_bytes": 56236,
+      "created_at": "2025-02-28T10:00:28.620497"
+    },
+    "lah_lah_admin_29": {
+      "id": "lah_lah_admin_29",
+      "file_name": "lah_admin_29.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_29.wav",
+      "duration": 0.47022916666666664,
+      "size_bytes": 45186,
+      "created_at": "2025-02-28T10:00:28.620708"
+    },
+    "lah_lah_admin_15": {
+      "id": "lah_lah_admin_15",
+      "file_name": "lah_admin_15.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_15.wav",
+      "duration": 0.3867291666666667,
+      "size_bytes": 37170,
+      "created_at": "2025-02-28T10:00:28.620900"
+    },
+    "lah_lah_admin_14": {
+      "id": "lah_lah_admin_14",
+      "file_name": "lah_admin_14.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_14.wav",
+      "duration": 1.6141666666666667,
+      "size_bytes": 155004,
+      "created_at": "2025-02-28T10:00:28.621107"
+    },
+    "lah_lah_admin_28": {
+      "id": "lah_lah_admin_28",
+      "file_name": "lah_admin_28.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_28.wav",
+      "duration": 0.48895833333333333,
+      "size_bytes": 46984,
+      "created_at": "2025-02-28T10:00:28.621372"
+    },
+    "lah_lah_admin_16": {
+      "id": "lah_lah_admin_16",
+      "file_name": "lah_admin_16.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_16.wav",
+      "duration": 0.438625,
+      "size_bytes": 42152,
+      "created_at": "2025-02-28T10:00:28.622380"
+    },
+    "lah_lah_admin_17": {
+      "id": "lah_lah_admin_17",
+      "file_name": "lah_admin_17.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_17.wav",
+      "duration": 0.44975,
+      "size_bytes": 43220,
+      "created_at": "2025-02-28T10:00:28.624813"
+    },
+    "lah_lah_admin_13": {
+      "id": "lah_lah_admin_13",
+      "file_name": "lah_admin_13.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_13.wav",
+      "duration": 0.43316666666666664,
+      "size_bytes": 41628,
+      "created_at": "2025-02-28T10:00:28.625386"
+    },
+    "lah_lah_admin_12": {
+      "id": "lah_lah_admin_12",
+      "file_name": "lah_admin_12.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_12.wav",
+      "duration": 0.3853125,
+      "size_bytes": 37034,
+      "created_at": "2025-02-28T10:00:28.625841"
+    },
+    "lah_lah_admin_9": {
+      "id": "lah_lah_admin_9",
+      "file_name": "lah_admin_9.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_9.wav",
+      "duration": 0.22195833333333334,
+      "size_bytes": 21352,
+      "created_at": "2025-02-28T10:00:28.626777"
+    },
+    "lah_lah_admin_10": {
+      "id": "lah_lah_admin_10",
+      "file_name": "lah_admin_10.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_10.wav",
+      "duration": 0.26858333333333334,
+      "size_bytes": 25828,
+      "created_at": "2025-02-28T10:00:28.626974"
+    },
+    "lah_lah_admin_11": {
+      "id": "lah_lah_admin_11",
+      "file_name": "lah_admin_11.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_11.wav",
+      "duration": 0.47641666666666665,
+      "size_bytes": 45780,
+      "created_at": "2025-02-28T10:00:28.627397"
+    },
+    "lah_lah_admin_8": {
+      "id": "lah_lah_admin_8",
+      "file_name": "lah_admin_8.wav",
+      "class": "lah",
+      "path": "data/sounds/training_sounds/lah/lah_admin_8.wav",
+      "duration": 0.412,
+      "size_bytes": 39596,
+      "created_at": "2025-02-28T10:00:28.627608"
+    },
+    "mee_mee_admin_21": {
+      "id": "mee_mee_admin_21",
+      "file_name": "mee_admin_21.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_21.wav",
+      "duration": 0.4643333333333333,
+      "size_bytes": 44620,
+      "created_at": "2025-02-28T10:00:28.597902"
+    },
+    "mee_mee_admin_8": {
+      "id": "mee_mee_admin_8",
+      "file_name": "mee_admin_8.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_8.wav",
+      "duration": 0.5975208333333333,
+      "size_bytes": 57406,
+      "created_at": "2025-02-28T10:00:28.598124"
+    },
+    "mee_mee_admin_9": {
+      "id": "mee_mee_admin_9",
+      "file_name": "mee_admin_9.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_9.wav",
+      "duration": 2.106333333333333,
+      "size_bytes": 202252,
+      "created_at": "2025-02-28T10:00:28.598367"
+    },
+    "mee_mee_admin_20": {
+      "id": "mee_mee_admin_20",
+      "file_name": "mee_admin_20.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_20.wav",
+      "duration": 0.5061041666666667,
+      "size_bytes": 48630,
+      "created_at": "2025-02-28T10:00:28.598586"
+    },
+    "mee_mee_admin_22": {
+      "id": "mee_mee_admin_22",
+      "file_name": "mee_admin_22.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_22.wav",
+      "duration": 0.3898125,
+      "size_bytes": 37466,
+      "created_at": "2025-02-28T10:00:28.598844"
+    },
+    "mee_mee_admin_23": {
+      "id": "mee_mee_admin_23",
+      "file_name": "mee_admin_23.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_23.wav",
+      "duration": 0.3875,
+      "size_bytes": 37244,
+      "created_at": "2025-02-28T10:00:28.599063"
+    },
+    "mee_mee_admin_27": {
+      "id": "mee_mee_admin_27",
+      "file_name": "mee_admin_27.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_27.wav",
+      "duration": 0.4967916666666667,
+      "size_bytes": 47736,
+      "created_at": "2025-02-28T10:00:28.599275"
+    },
+    "mee_mee_admin_26": {
+      "id": "mee_mee_admin_26",
+      "file_name": "mee_admin_26.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_26.wav",
+      "duration": 0.4239375,
+      "size_bytes": 40742,
+      "created_at": "2025-02-28T10:00:28.599492"
+    },
+    "mee_mee_admin_24": {
+      "id": "mee_mee_admin_24",
+      "file_name": "mee_admin_24.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_24.wav",
+      "duration": 0.5557083333333334,
+      "size_bytes": 53392,
+      "created_at": "2025-02-28T10:00:28.599689"
+    },
+    "mee_mee_admin_18": {
+      "id": "mee_mee_admin_18",
+      "file_name": "mee_admin_18.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_18.wav",
+      "duration": 0.37845833333333334,
+      "size_bytes": 36376,
+      "created_at": "2025-02-28T10:00:28.599928"
+    },
+    "mee_mee_admin_19": {
+      "id": "mee_mee_admin_19",
+      "file_name": "mee_admin_19.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_19.wav",
+      "duration": 0.3834166666666667,
+      "size_bytes": 36852,
+      "created_at": "2025-02-28T10:00:28.600169"
+    },
+    "mee_mee_admin_25": {
+      "id": "mee_mee_admin_25",
+      "file_name": "mee_admin_25.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_25.wav",
+      "duration": 0.4917916666666667,
+      "size_bytes": 47256,
+      "created_at": "2025-02-28T10:00:28.600359"
+    },
+    "mee_mee_admin_14": {
+      "id": "mee_mee_admin_14",
+      "file_name": "mee_admin_14.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_14.wav",
+      "duration": 0.3964375,
+      "size_bytes": 38102,
+      "created_at": "2025-02-28T10:00:28.600549"
+    },
+    "mee_mee_admin_1": {
+      "id": "mee_mee_admin_1",
+      "file_name": "mee_admin_1.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_1.wav",
+      "duration": 0.9200625,
+      "size_bytes": 29486,
+      "created_at": "2025-02-28T10:00:28.600761"
+    },
+    "mee_mee_admin_15": {
+      "id": "mee_mee_admin_15",
+      "file_name": "mee_admin_15.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_15.wav",
+      "duration": 0.3980208333333333,
+      "size_bytes": 38254,
+      "created_at": "2025-02-28T10:00:28.600962"
+    },
+    "mee_mee_admin_17": {
+      "id": "mee_mee_admin_17",
+      "file_name": "mee_admin_17.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_17.wav",
+      "duration": 0.5361875,
+      "size_bytes": 51518,
+      "created_at": "2025-02-28T10:00:28.601151"
+    },
+    "mee_mee_admin_2": {
+      "id": "mee_mee_admin_2",
+      "file_name": "mee_admin_2.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_2.wav",
+      "duration": 1.5369375,
+      "size_bytes": 49226,
+      "created_at": "2025-02-28T10:00:28.601335"
+    },
+    "mee_mee_admin_3": {
+      "id": "mee_mee_admin_3",
+      "file_name": "mee_admin_3.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_3.wav",
+      "duration": 0.645875,
+      "size_bytes": 62048,
+      "created_at": "2025-02-28T10:00:28.601595"
+    },
+    "mee_mee_admin_16": {
+      "id": "mee_mee_admin_16",
+      "file_name": "mee_admin_16.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_16.wav",
+      "duration": 0.5251458333333333,
+      "size_bytes": 50458,
+      "created_at": "2025-02-28T10:00:28.601793"
+    },
+    "mee_mee_admin_12": {
+      "id": "mee_mee_admin_12",
+      "file_name": "mee_admin_12.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_12.wav",
+      "duration": 0.3782083333333333,
+      "size_bytes": 36352,
+      "created_at": "2025-02-28T10:00:28.602045"
+    },
+    "mee_mee_admin_7": {
+      "id": "mee_mee_admin_7",
+      "file_name": "mee_admin_7.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_7.wav",
+      "duration": 0.5021875,
+      "size_bytes": 48254,
+      "created_at": "2025-02-28T10:00:28.602305"
+    },
+    "mee_mee_admin_6": {
+      "id": "mee_mee_admin_6",
+      "file_name": "mee_admin_6.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_6.wav",
+      "duration": 0.5086875,
+      "size_bytes": 48878,
+      "created_at": "2025-02-28T10:00:28.602507"
+    },
+    "mee_mee_admin_13": {
+      "id": "mee_mee_admin_13",
+      "file_name": "mee_admin_13.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_13.wav",
+      "duration": 0.518625,
+      "size_bytes": 49832,
+      "created_at": "2025-02-28T10:00:28.602748"
+    },
+    "mee_mee_admin_11": {
+      "id": "mee_mee_admin_11",
+      "file_name": "mee_admin_11.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_11.wav",
+      "duration": 0.48660416666666667,
+      "size_bytes": 46758,
+      "created_at": "2025-02-28T10:00:28.602938"
+    },
+    "mee_mee_admin_4": {
+      "id": "mee_mee_admin_4",
+      "file_name": "mee_admin_4.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_4.wav",
+      "duration": 0.5406666666666666,
+      "size_bytes": 51948,
+      "created_at": "2025-02-28T10:00:28.603120"
+    },
+    "mee_mee_admin_5": {
+      "id": "mee_mee_admin_5",
+      "file_name": "mee_admin_5.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_5.wav",
+      "duration": 0.49883333333333335,
+      "size_bytes": 47932,
+      "created_at": "2025-02-28T10:00:28.603325"
+    },
+    "mee_mee_admin_10": {
+      "id": "mee_mee_admin_10",
+      "file_name": "mee_admin_10.wav",
+      "class": "mee",
+      "path": "data/sounds/training_sounds/mee/mee_admin_10.wav",
+      "duration": 0.42164583333333333,
+      "size_bytes": 40522,
+      "created_at": "2025-02-28T10:00:28.603550"
+    },
+    "ooah_ooah_admin_1": {
+      "id": "ooah_ooah_admin_1",
+      "file_name": "ooah_admin_1.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_1.wav",
+      "duration": 0.8228333333333333,
+      "size_bytes": 79036,
+      "created_at": "2025-02-28T10:00:28.576603"
+    },
+    "ooah_ooah_admin_3": {
+      "id": "ooah_ooah_admin_3",
+      "file_name": "ooah_admin_3.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_3.wav",
+      "duration": 0.81325,
+      "size_bytes": 78116,
+      "created_at": "2025-02-28T10:00:28.576867"
+    },
+    "ooah_ooah_admin_2": {
+      "id": "ooah_ooah_admin_2",
+      "file_name": "ooah_admin_2.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_2.wav",
+      "duration": 0.5706875,
+      "size_bytes": 54830,
+      "created_at": "2025-02-28T10:00:28.577147"
+    },
+    "ooah_ooah_admin_6": {
+      "id": "ooah_ooah_admin_6",
+      "file_name": "ooah_admin_6.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_6.wav",
+      "duration": 0.7924791666666666,
+      "size_bytes": 76122,
+      "created_at": "2025-02-28T10:00:28.577413"
+    },
+    "ooah_ooah_admin_7": {
+      "id": "ooah_ooah_admin_7",
+      "file_name": "ooah_admin_7.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_7.wav",
+      "duration": 0.541375,
+      "size_bytes": 52016,
+      "created_at": "2025-02-28T10:00:28.577662"
+    },
+    "ooah_ooah_admin_5": {
+      "id": "ooah_ooah_admin_5",
+      "file_name": "ooah_admin_5.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_5.wav",
+      "duration": 0.7351041666666667,
+      "size_bytes": 70614,
+      "created_at": "2025-02-28T10:00:28.578067"
+    },
+    "ooah_ooah_admin_4": {
+      "id": "ooah_ooah_admin_4",
+      "file_name": "ooah_admin_4.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_4.wav",
+      "duration": 0.8063541666666667,
+      "size_bytes": 77454,
+      "created_at": "2025-02-28T10:00:28.578265"
+    },
+    "ooah_ooah_admin_19": {
+      "id": "ooah_ooah_admin_19",
+      "file_name": "ooah_admin_19.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_19.wav",
+      "duration": 0.9291875,
+      "size_bytes": 89246,
+      "created_at": "2025-02-28T10:00:28.578455"
+    },
+    "ooah_ooah_admin_18": {
+      "id": "ooah_ooah_admin_18",
+      "file_name": "ooah_admin_18.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_18.wav",
+      "duration": 0.985375,
+      "size_bytes": 94640,
+      "created_at": "2025-02-28T10:00:28.578644"
+    },
+    "ooah_ooah_admin_23": {
+      "id": "ooah_ooah_admin_23",
+      "file_name": "ooah_admin_23.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_23.wav",
+      "duration": 0.8754375,
+      "size_bytes": 84086,
+      "created_at": "2025-02-28T10:00:28.578891"
+    },
+    "ooah_ooah_admin_22": {
+      "id": "ooah_ooah_admin_22",
+      "file_name": "ooah_admin_22.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_22.wav",
+      "duration": 0.8551041666666667,
+      "size_bytes": 82134,
+      "created_at": "2025-02-28T10:00:28.579116"
+    },
+    "ooah_ooah_admin_20": {
+      "id": "ooah_ooah_admin_20",
+      "file_name": "ooah_admin_20.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_20.wav",
+      "duration": 0.8929583333333333,
+      "size_bytes": 85768,
+      "created_at": "2025-02-28T10:00:28.579315"
+    },
+    "ooah_ooah_admin_21": {
+      "id": "ooah_ooah_admin_21",
+      "file_name": "ooah_admin_21.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_21.wav",
+      "duration": 0.89675,
+      "size_bytes": 86132,
+      "created_at": "2025-02-28T10:00:28.579504"
+    },
+    "ooah_ooah_admin_10": {
+      "id": "ooah_ooah_admin_10",
+      "file_name": "ooah_admin_10.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_10.wav",
+      "duration": 0.8014166666666667,
+      "size_bytes": 76980,
+      "created_at": "2025-02-28T10:00:28.579688"
+    },
+    "ooah_ooah_admin_11": {
+      "id": "ooah_ooah_admin_11",
+      "file_name": "ooah_admin_11.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_11.wav",
+      "duration": 0.7043125,
+      "size_bytes": 67658,
+      "created_at": "2025-02-28T10:00:28.579920"
+    },
+    "ooah_ooah_admin_13": {
+      "id": "ooah_ooah_admin_13",
+      "file_name": "ooah_admin_13.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_13.wav",
+      "duration": 0.66225,
+      "size_bytes": 63620,
+      "created_at": "2025-02-28T10:00:28.580147"
+    },
+    "ooah_ooah_admin_12": {
+      "id": "ooah_ooah_admin_12",
+      "file_name": "ooah_admin_12.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_12.wav",
+      "duration": 0.7060833333333333,
+      "size_bytes": 67828,
+      "created_at": "2025-02-28T10:00:28.580369"
+    },
+    "ooah_ooah_admin_16": {
+      "id": "ooah_ooah_admin_16",
+      "file_name": "ooah_admin_16.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_16.wav",
+      "duration": 0.9127083333333333,
+      "size_bytes": 87664,
+      "created_at": "2025-02-28T10:00:28.580565"
+    },
+    "ooah_ooah_admin_17": {
+      "id": "ooah_ooah_admin_17",
+      "file_name": "ooah_admin_17.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_17.wav",
+      "duration": 0.9196875,
+      "size_bytes": 88334,
+      "created_at": "2025-02-28T10:00:28.580786"
+    },
+    "ooah_ooah_admin_15": {
+      "id": "ooah_ooah_admin_15",
+      "file_name": "ooah_admin_15.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_15.wav",
+      "duration": 0.7326458333333333,
+      "size_bytes": 70378,
+      "created_at": "2025-02-28T10:00:28.581027"
+    },
+    "ooah_ooah_admin_14": {
+      "id": "ooah_ooah_admin_14",
+      "file_name": "ooah_admin_14.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_14.wav",
+      "duration": 0.8499166666666667,
+      "size_bytes": 81636,
+      "created_at": "2025-02-28T10:00:28.581233"
+    },
+    "ooah_ooah_admin_9": {
+      "id": "ooah_ooah_admin_9",
+      "file_name": "ooah_admin_9.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_9.wav",
+      "duration": 0.66275,
+      "size_bytes": 63668,
+      "created_at": "2025-02-28T10:00:28.581436"
+    },
+    "ooah_ooah_admin_8": {
+      "id": "ooah_ooah_admin_8",
+      "file_name": "ooah_admin_8.wav",
+      "class": "ooah",
+      "path": "data/sounds/training_sounds/ooah/ooah_admin_8.wav",
+      "duration": 0.6875,
+      "size_bytes": 66044,
+      "created_at": "2025-02-28T10:00:28.581627"
+    }
+  },
+  "total_count": 504
+}

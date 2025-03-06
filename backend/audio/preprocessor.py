@@ -172,7 +172,7 @@ class AudioPreprocessor:
     
     def normalize_duration(self, audio_data):
         """
-        Normalize audio to target duration (1 second by default).
+        Normalize audio to target duration (1 second by default) using ONLY time stretching.
         
         Args:
             audio_data (np.array): Audio data as numpy array
@@ -185,22 +185,28 @@ class AudioPreprocessor:
             return np.zeros(int(self.target_duration * self.sample_rate))
         
         current_duration = len(audio_data) / self.sample_rate
+        target_length = int(self.target_duration * self.sample_rate)
         
-        # If the audio is already close to the target duration, no need to change
-        if abs(current_duration - self.target_duration) / self.target_duration < 0.05:
+        # If the audio is already exactly the target duration, return as is
+        if len(audio_data) == target_length:
             return audio_data
         
-        # If audio is shorter than target, pad with zeros
-        if current_duration < self.target_duration:
-            padding = int((self.target_duration - current_duration) * self.sample_rate)
-            # Add padding equally before and after
-            pad_before = padding // 2
-            pad_after = padding - pad_before
-            return np.pad(audio_data, (pad_before, pad_after), 'constant')
+        # Use time stretching to match target duration exactly
+        time_stretch_ratio = current_duration / self.target_duration
+        stretched_audio = librosa.effects.time_stretch(audio_data, rate=time_stretch_ratio)
         
-        # If audio is longer than target, use time stretching
-        time_stretch_ratio = self.target_duration / current_duration
-        return librosa.effects.time_stretch(audio_data, rate=time_stretch_ratio)
+        # Ensure the output is exactly the target length
+        # (Sometimes due to rounding, the length might be off by a sample or two)
+        if len(stretched_audio) > target_length:
+            return stretched_audio[:target_length]
+        elif len(stretched_audio) < target_length:
+            # Re-stretch slightly to match exactly
+            return librosa.effects.time_stretch(
+                stretched_audio, 
+                rate=len(stretched_audio)/target_length
+            )[:target_length]
+        else:
+            return stretched_audio
     
     def normalize_amplitude(self, audio_data):
         """

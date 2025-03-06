@@ -34,7 +34,7 @@ class DatasetPreparation:
             enable_loudness_normalization=False  # Disable loudness normalization by default
         )
         # Initialize FeatureExtractor for features
-        self.feature_extractor = FeatureExtractor(sr=sample_rate)
+        self.feature_extractor = FeatureExtractor(sample_rate=sample_rate)
         # Stats tracking
         self.file_errors = []
         self.error_logs = []

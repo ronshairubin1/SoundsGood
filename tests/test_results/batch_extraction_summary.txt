@@ -1,0 +1,17 @@
+Batch extraction summary:
+Classes: ['training_sounds', 'uploaded_sounds', 'pending_verification_live_recording_sounds']
+
+CNN extraction:
+  Time: 0.00 seconds
+  Features shape: (0,)
+  Total processed: 0
+  Total skipped: 0
+
+RF extraction:
+  Time: 0.00 seconds
+  Features shape: (0,)
+
+Processed counts by class:
+  training_sounds: 0
+  uploaded_sounds: 0
+  pending_verification_live_recording_sounds: 0
