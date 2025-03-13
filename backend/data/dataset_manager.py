@@ -49,7 +49,7 @@ class DatasetManager:
         # Set up sounds directory paths
         self.sounds_dir = self.base_dir / sounds_dir
         self.raw_sounds_dir = self.sounds_dir / "raw"
-        self.chopped_sounds_dir = self.sounds_dir / "chopped"
+        self.training_sounds_dir = self.sounds_dir / "training_sounds"  # Renamed from 'chopped' to be more descriptive
         self.augmented_sounds_dir = self.sounds_dir / "augmented"
         
         # Set up feature directory paths
@@ -70,7 +70,7 @@ class DatasetManager:
         """Create all necessary directories."""
         directories = [
             self.raw_sounds_dir,
-            self.chopped_sounds_dir,
+            self.training_sounds_dir,
             self.augmented_sounds_dir,
             self.unified_features_dir,
             self.model_specific_features_dir
@@ -147,7 +147,7 @@ class DatasetManager:
             }
             
             # Create class directories
-            for directory in [self.raw_sounds_dir, self.chopped_sounds_dir, self.augmented_sounds_dir]:
+            for directory in [self.raw_sounds_dir, self.training_sounds_dir, self.augmented_sounds_dir]:
                 class_dir = directory / class_name
                 class_dir.mkdir(exist_ok=True)
                 
@@ -339,7 +339,7 @@ class DatasetManager:
         
         Args:
             file_path: Path to the file
-            status: New status (e.g., 'raw', 'chopped', 'preprocessed', 'augmented')
+            status: New status (e.g., 'raw', 'training_sounds', 'preprocessed', 'augmented')
             
         Returns:
             True if successful, False otherwise

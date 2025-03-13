@@ -428,8 +428,17 @@ class AudioRecorder:
                     callback(100, "No sound detected")
                 return None
             
-            # Preprocess the first segment
-            processed_audio = self.preprocessor.preprocess_audio(segments[0])
+            # Preprocess the recording - using preprocess_recording for consistency
+            processed_segments = self.preprocessor.preprocess_recording(segments[0], measure_ambient=False)
+            
+            if not processed_segments:
+                logging.warning("No valid segments after preprocessing")
+                if callback:
+                    callback(100, "No valid sound detected")
+                return None
+                
+            # Just take the first processed segment
+            processed_audio = processed_segments[0]
             
             if callback:
                 callback(100, "Sound processed and ready for prediction")

@@ -21,7 +21,11 @@ import json
 import logging
 import time
 import hashlib
+import h5py  # Using HDF5 for better feature caching
 from pathlib import Path
+
+# Explicitly import librosa exceptions
+from librosa.util.exceptions import ParameterError as LibrosaParameterError
 
 # Set up logging
 logging.basicConfig(
@@ -79,36 +83,106 @@ class FeatureExtractor:
         """
         return hashlib.md5(str(file_path).encode()).hexdigest()
     
-    def _check_cache(self, file_hash):
+    def _check_cache(self, file_hash, model_type=None):
         """
-        Check if features exist in cache.
+        Check if features exist in cache and validate based on model type.
         
         Args:
             file_hash: Hash of the file path
+            model_type: Type of model ('cnn', 'rf', etc.) to validate specific features
             
         Returns:
-            Cached features if found, None otherwise
+            Cached features if found and valid, None otherwise
         """
         if not self.use_cache:
             return None
         
-        cache_path = os.path.join(self.cache_dir, f"{file_hash}.npz")
+        cache_path = os.path.join(self.cache_dir, f"{file_hash}.h5")
+        logging.info(f"[CACHE] Checking HDF5 cache at: {cache_path}, model_type={model_type}")
+        print(f"[EXTRACTOR] Checking cache for: {file_hash}.h5")
         
         if os.path.exists(cache_path):
             try:
-                data = np.load(cache_path, allow_pickle=True)
-                features = data['features'].item()
-                logging.info(f"Loaded features from cache: {cache_path}")
+                # Load from HDF5 file
+                logging.info(f"[CACHE] HDF5 cache file exists, attempting to load features")
+                print(f"[EXTRACTOR] Found HDF5 cache file, loading")
+                features = {}
+                
+                with h5py.File(cache_path, 'r') as f:
+                    # Handle the metadata group
+                    if 'metadata' in f:
+                        features['metadata'] = {}
+                        for key in f['metadata']:
+                            features['metadata'][key] = f['metadata'][key][()]
+                    
+                    # Handle other feature groups
+                    for group_name in f.keys():
+                        if group_name == 'metadata':
+                            continue
+                            
+                        if isinstance(f[group_name], h5py.Group):
+                            # Handle nested dictionaries (like 'statistical', 'rhythm', etc.)
+                            features[group_name] = {}
+                            for key in f[group_name]:
+                                features[group_name][key] = f[group_name][key][()]
+                        else:
+                            # Handle direct datasets (like 'mel_spectrogram')
+                            features[group_name] = f[group_name][()]
+                
+                # Log the structure of what was loaded
+                feature_keys = list(features.keys())
+                logging.info(f"[CACHE] Successfully loaded features from HDF5 cache: {cache_path}")
+                logging.info(f"[CACHE] Loaded feature keys: {feature_keys}")
+                print(f"[EXTRACTOR] Successfully loaded features from cache: {feature_keys}")
+                
+                # Perform model-specific validation
+                if model_type == 'cnn' and 'mel_spectrogram' not in features:
+                    logging.warning(f"[CACHE] Cache missing mel_spectrogram required for CNN, will regenerate")
+                    print(f"[EXTRACTOR] Cache missing CNN features, regenerating")
+                    return None
+                
+                # General validation for all models
+                if 'mel_spectrogram' not in features:
+                    logging.warning(f"[CACHE] Cache is missing mel_spectrogram feature")
+                    
                 return features
             except Exception as e:
-                logging.warning(f"Error loading from cache {cache_path}: {e}")
+                logging.error(f"[CACHE] Error loading from HDF5 cache {cache_path}: {e}")
+                logging.error(f"[CACHE] Error type: {type(e).__name__}, Details: {str(e)}")
+                print(f"[EXTRACTOR] Failed to load from HDF5 cache: {type(e).__name__}: {str(e)}")
+                # If cache file is corrupted, remove it
+                try:
+                    os.remove(cache_path)
+                    logging.info(f"[CACHE] Removed corrupted HDF5 cache file: {cache_path}")
+                    print(f"[EXTRACTOR] Removed corrupted cache file")
+                except:
+                    pass
                 return None
         
+        # Check for legacy cache formats (for backward compatibility)
+        legacy_cache_path = os.path.join(self.cache_dir, f"{file_hash}.npz")
+        if os.path.exists(legacy_cache_path):
+            logging.info(f"[CACHE] Found legacy NPZ cache file, will convert to HDF5: {legacy_cache_path}")
+            print(f"[EXTRACTOR] Found legacy cache file, converting to HDF5 format")
+            try:
+                # Try to load with numpy
+                data = np.load(legacy_cache_path, allow_pickle=True)
+                features = data['features'].item()
+                # Save to new HDF5 format for future use
+                self._save_to_cache(file_hash, features)
+                return features
+            except Exception as e:
+                logging.warning(f"[CACHE] Could not convert legacy NPZ cache: {e}")
+                logging.warning(f"[CACHE] Error type: {type(e).__name__}, Details: {str(e)}")
+                print(f"[EXTRACTOR] Failed to convert legacy cache: {type(e).__name__}: {str(e)}")
+        
+        logging.info(f"[CACHE] No HDF5 or legacy cache files found for: {file_hash}")
+        print(f"[EXTRACTOR] No cache files found, will extract features")
         return None
     
     def _save_to_cache(self, file_hash, features):
         """
-        Save features to cache.
+        Save features to cache using HDF5.
         
         Args:
             file_hash: Hash of the file path
@@ -120,24 +194,63 @@ class FeatureExtractor:
         if not self.use_cache:
             return False
         
-        cache_path = os.path.join(self.cache_dir, f"{file_hash}.npz")
+        cache_path = os.path.join(self.cache_dir, f"{file_hash}.h5")
+        logging.info(f"[CACHE] Attempting to save features to HDF5 cache: {cache_path}")
+        feature_keys = list(features.keys())
+        logging.info(f"[CACHE] Saving feature keys: {feature_keys}")
+        print(f"[EXTRACTOR] Saving features to cache: {feature_keys}")
         
         try:
-            # Save as compressed npz file
-            np.savez_compressed(cache_path, features=features)
-            logging.info(f"Saved features to cache: {cache_path}")
+            with h5py.File(cache_path, 'w') as f:
+                # Store metadata
+                if 'metadata' in features:
+                    metadata_group = f.create_group('metadata')
+                    for key, value in features['metadata'].items():
+                        metadata_group.create_dataset(key, data=value)
+                
+                # Store all other features
+                for key, value in features.items():
+                    if key == 'metadata':
+                        continue  # Already handled
+                        
+                    if isinstance(value, dict):
+                        # Create a group for nested dictionaries
+                        group = f.create_group(key)
+                        for subkey, subvalue in value.items():
+                            # Handle various data types
+                            if isinstance(subvalue, (int, float, bool, np.number)):
+                                group.create_dataset(subkey, data=subvalue)
+                            elif isinstance(subvalue, np.ndarray):
+                                group.create_dataset(subkey, data=subvalue, compression="gzip")
+                            else:
+                                # Convert other types to string representation
+                                group.create_dataset(subkey, data=str(subvalue))
+                    elif isinstance(value, np.ndarray):
+                        # Store array directly with compression
+                        f.create_dataset(key, data=value, compression="gzip")
+                    else:
+                        # Store other types directly
+                        f.create_dataset(key, data=value)
+                        
+            logging.info(f"[CACHE] Successfully saved features to HDF5 cache: {cache_path}")
+            print(f"[EXTRACTOR] Successfully saved features to cache")
             return True
         except Exception as e:
-            logging.warning(f"Error saving to cache {cache_path}: {e}")
+            logging.error(f"[CACHE] Error saving to HDF5 cache {cache_path}: {e}")
+            import traceback
+            logging.error(f"[CACHE] Traceback: {traceback.format_exc()}")
+            print(f"[EXTRACTOR] Failed to save to cache: {type(e).__name__}: {str(e)}")
             return False
     
-    def extract_features(self, audio_source, is_file=True):
+    def extract_features(self, audio_source, is_file=True, model_type=None, force_update=False):
         """
         Extract all possible features from an audio source.
         
         Args:
             audio_source: Path to audio file or audio data as numpy array
             is_file: Whether audio_source is a file path
+            model_type: Optional model type to validate model-specific features
+            force_update: If True, bypass cache and regenerate features
             
         Returns:
             Dictionary of extracted features
@@ -146,14 +259,45 @@ class FeatureExtractor:
         file_hash = None
         if is_file:
             file_hash = self._hash_file_path(audio_source)
-            cached_features = self._check_cache(file_hash)
-            if cached_features:
-                return cached_features
+            # Only check cache if force_update is False
+            if not force_update:
+                cached_features = self._check_cache(file_hash, model_type)
+                if cached_features:
+                    return cached_features
+            else:
+                logging.info(f"Force update requested, bypassing cache for {os.path.basename(audio_source)}")
         
         try:
-            # Load audio if needed
+            # Load audio if needed with enhanced logging
             if is_file:
-                audio, sr = librosa.load(audio_source, sr=self.sample_rate)
+                file_name = os.path.basename(audio_source)
+                file_size = os.path.getsize(audio_source) if os.path.exists(audio_source) else 'file not found'
+                logging.info(f"Loading audio from file: {file_name}, size: {file_size} bytes")
+                print(f"[EXTRACTOR] Loading audio from file: {file_name}")
+                
+                try:
+                    audio, sr = librosa.load(audio_source, sr=self.sample_rate)
+                    audio_duration = len(audio) / sr
+                    audio_info = f"Audio loaded successfully: {len(audio)} samples, {sr}Hz, duration: {audio_duration:.2f}s"
+                    audio_info += f", min: {np.min(audio):.3f}, max: {np.max(audio):.3f}"
+                    logging.info(audio_info)
+                    print(f"[EXTRACTOR] {audio_info}")
+                    
+                    # Validate audio data
+                    if len(audio) == 0:
+                        logging.error(f"Empty audio file: {file_name}")
+                        return None
+                        
+                    if np.isnan(audio).any():
+                        logging.error(f"Audio contains NaN values: {file_name}")
+                        return None
+                        
+                    if audio_duration < 0.1:
+                        logging.warning(f"Audio is very short ({audio_duration:.3f}s): {file_name}")
+                except Exception as e:
+                    logging.error(f"Failed to load audio: {file_name}, error: {str(e)}")
+                    print(f"[EXTRACTOR] Failed to load audio: {file_name}")
+                    raise
             else:
                 audio = audio_source
                 sr = self.sample_rate
@@ -170,17 +314,38 @@ class FeatureExtractor:
             # --------------------
             # Mel spectrogram (for CNN)
             # --------------------
-            mel_spec = librosa.feature.melspectrogram(
-                y=audio, 
-                sr=sr, 
-                n_mels=self.n_mels, 
-                n_fft=self.n_fft, 
-                hop_length=self.hop_length
-            )
+            logging.info(f"Extracting mel spectrogram with n_mels={self.n_mels}, n_fft={self.n_fft}, hop_length={self.hop_length}")
             
-            # Convert to dB scale
-            mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
-            features['mel_spectrogram'] = mel_spec_db
+            try:
+                mel_spec = librosa.feature.melspectrogram(
+                    y=audio, 
+                    sr=sr, 
+                    n_mels=self.n_mels, 
+                    n_fft=self.n_fft, 
+                    hop_length=self.hop_length
+                )
+                logging.info(f"Mel spectrogram extracted: shape={mel_spec.shape}")
+                
+                # Convert to dB scale
+                mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+                features['mel_spectrogram'] = mel_spec_db
+                
+                # Store file path in metadata if this is a file
+                if is_file:
+                    if 'metadata' not in features:
+                        features['metadata'] = {}
+                    features['metadata']['file_path'] = audio_source
+                
+                # Verify the mel_spectrogram was stored correctly
+                if 'mel_spectrogram' not in features or features['mel_spectrogram'] is None:
+                    logging.error(f"Failed to store mel_spectrogram in features dictionary")
+                    raise ValueError("Failed to store mel_spectrogram")
+                else:
+                    logging.info(f"Successfully stored mel_spectrogram with shape {features['mel_spectrogram'].shape}")
+            except Exception as e:
+                logging.error(f"Failed to extract mel spectrogram: {str(e)}")
+                print(f"[EXTRACTOR] Error extracting mel spectrogram: {str(e)}")
+                raise
             
             # --------------------
             # MFCC features (for RF)
@@ -292,10 +457,16 @@ class FeatureExtractor:
             features['spectral']['flatness_mean'] = float(np.mean(flatness))
             features['spectral']['flatness_std'] = float(np.std(flatness))
             
-            # Spectral contrast
-            contrast = librosa.feature.spectral_contrast(y=audio, sr=sr)
-            features['spectral']['contrast_mean'] = float(np.mean(contrast))
-            features['spectral']['contrast_std'] = float(np.std(contrast))
+            # Spectral contrast - adjust parameters for low sample rate audio
+            try:
+                # Use fewer bands and lower fmin for low sample rate audio
+                contrast = librosa.feature.spectral_contrast(y=audio, sr=sr, n_bands=4, fmin=60)
+                features['spectral']['contrast_mean'] = float(np.mean(contrast))
+                features['spectral']['contrast_std'] = float(np.std(contrast))
+            except LibrosaParameterError as e:
+                logging.warning(f"Skipping spectral contrast due to parameter error: {str(e)}")
+                features['spectral']['contrast_mean'] = 0.0
+                features['spectral']['contrast_std'] = 0.0
             
             # Spectral bandwidth
             bandwidth = librosa.feature.spectral_bandwidth(y=audio, sr=sr)
@@ -343,12 +514,51 @@ class FeatureExtractor:
             
             # Cache features if audio_source is a file
             if is_file and file_hash:
-                self._save_to_cache(file_hash, features)
+                feature_groups = list(features.keys())
+                feature_summary = f"Feature extraction completed successfully, extracted {len(feature_groups)} feature groups: {feature_groups}"
+                logging.info(feature_summary)
+                print(f"[EXTRACTOR] {feature_summary}")
+                
+                # Validate extracted features before caching
+                feature_validation_passed = True
+                for key, value in features.items():
+                    if key != 'metadata' and isinstance(value, (np.ndarray, list)):
+                        if isinstance(value, np.ndarray) and (np.isnan(value).any() or np.isinf(value).any()):
+                            logging.warning(f"Feature '{key}' contains NaN or Inf values")
+                            feature_validation_passed = False
+                
+                if feature_validation_passed:
+                    logging.info(f"All features validated successfully, caching results")
+                    print(f"[EXTRACTOR] Caching features for {os.path.basename(audio_source) if is_file else 'audio data'}")
+                    self._save_to_cache(file_hash, features)
+                else:
+                    logging.warning(f"Features contain NaN or Inf values, skipping cache")
             
             return features
             
         except Exception as e:
             logging.error(f"Error extracting features: {str(e)}")
+            logging.error(f"Error type: {type(e).__name__}")
+            import traceback
+            logging.error(f"Traceback: {traceback.format_exc()}")
+            print(f"[EXTRACTOR] Feature extraction failed: {type(e).__name__}: {str(e)}")
+            
+            # Log specialized error diagnostics for common error types
+            if isinstance(e, LibrosaParameterError):
+                logging.error(f"Librosa parameter error - likely invalid audio format or empty audio")
+            elif isinstance(e, ValueError) and "empty" in str(e).lower():
+                logging.error(f"Empty audio data detected")
+            elif isinstance(e, np.linalg.LinAlgError):
+                logging.error(f"Linear algebra error - likely due to invalid audio data")
+            elif isinstance(e, (OSError, IOError)):
+                logging.error(f"File system error - possible file access, permission, or corruption issue")
+            
+            # Add audio metadata to help debug
+            if 'audio' in locals() and isinstance(audio, np.ndarray):
+                logging.error(f"Audio metadata at error: shape={audio.shape}, min={np.min(audio) if audio.size > 0 else 'empty'}, "  
+                              f"max={np.max(audio) if audio.size > 0 else 'empty'}, "  
+                              f"has_nan={np.isnan(audio).any() if audio.size > 0 else 'N/A'}")
+            
             return None
     
     def extract_features_for_model(self, features, model_type):
@@ -363,25 +573,61 @@ class FeatureExtractor:
             Model-specific features
         """
         if features is None:
+            logging.error(f"Cannot extract model features, feature dictionary is None")
             return None
-            
-        if model_type == 'cnn':
-            # Return mel spectrogram for CNN
-            return features['mel_spectrogram']
-            
-        elif model_type == 'rf':
-            # Return statistical features for RF
-            return features['statistical']
-            
-        elif model_type == 'ensemble':
-            # Return both mel spectrogram and statistical features
-            return {
-                'cnn': features['mel_spectrogram'],
-                'rf': features['statistical']
-            }
         
-        else:
-            logging.warning(f"Unknown model type: {model_type}")
+        try:    
+            if not isinstance(features, dict):
+                logging.error(f"Features must be a dictionary, got {type(features)}")
+                return None
+                
+            feature_keys = list(features.keys())
+            logging.info(f"Preparing features for model: {model_type}, available feature keys: {feature_keys}")
+            print(f"[EXTRACTOR] Preparing features for model: {model_type}")
+            
+            if model_type == 'cnn':
+                # Check if mel spectrogram exists
+                if 'mel_spectrogram' not in features:
+                    logging.error(f"Missing 'mel_spectrogram' key in features. Available keys: {feature_keys}")
+                    print(f"[EXTRACTOR] Error: Missing mel_spectrogram for CNN")
+                    raise KeyError("Missing 'mel_spectrogram' key in features")
+                    
+                # Get the mel spectrogram
+                mel_spec = features['mel_spectrogram']
+                
+                # Ensure the mel spectrogram has the channel dimension for CNN
+                if isinstance(mel_spec, np.ndarray) and len(mel_spec.shape) == 2:
+                    logging.info(f"Adding channel dimension to mel spectrogram: {mel_spec.shape} -> {mel_spec.shape + (1,)}")
+                    mel_spec = np.expand_dims(mel_spec, axis=-1)
+                
+                # Add file path to features if it exists in metadata for error tracking
+                result = mel_spec
+                
+                # For training_service.py, we need to return a dictionary with both mel_spectrogram and file_path
+                if isinstance(result, np.ndarray) and 'metadata' in features and 'file_path' in features['metadata']:
+                    return {
+                        'mel_spectrogram': result,
+                        'file_path': features['metadata']['file_path']
+                    }
+                return result
+            
+            elif model_type == 'rf':
+                # Return statistical features for RF
+                return features['statistical']
+            
+            elif model_type == 'ensemble':
+                # Return both mel spectrogram and statistical features
+                return {
+                    'cnn': features['mel_spectrogram'],
+                    'rf': features['statistical']
+                }
+            
+            else:
+                logging.warning(f"Unknown model type: {model_type}")
+                return None
+                
+        except Exception as e:
+            logging.error(f"Error extracting features for model {model_type}: {str(e)}")
             return None
     
     def get_feature_names(self):
@@ -541,12 +787,39 @@ class FeatureExtractor:
                     logging.debug(f"Extracting features from {file_path}")
                     all_features = self.extract_features(file_path, is_file=True)
                     
-                    # Then extract model-specific features
-                    features = self.extract_features_for_model(all_features, model_type)
+                    # Skip if no features were extracted
+                    if all_features is None:
+                        logging.warning(f"Skipping {file_path}: No features were extracted")
+                        stats['skipped_counts'][class_dir] += 1
+                        stats['total_skipped'] += 1
+                        stats['error_files'].append(file_path)
+                        stats['error_types'].setdefault('feature_extraction_failed', 0)
+                        stats['error_types']['feature_extraction_failed'] += 1
+                        continue
+                        
+                    # Ensure that mel_spectrogram is present for CNN models
+                    if model_type == 'cnn' and 'mel_spectrogram' not in all_features:
+                        logging.error(f"Missing mel_spectrogram in features for {file_path}")
+                        stats['skipped_counts'][class_dir] += 1
+                        stats['total_skipped'] += 1
+                        stats['error_files'].append(file_path)
+                        stats['error_types'].setdefault('missing_mel_spectrogram', 0)
+                        stats['error_types']['missing_mel_spectrogram'] += 1
+                        continue
+                    
+                    # For CNN models, store a complete feature dictionary with mel_spectrogram and file_path
+                    if model_type == 'cnn':
+                        features = {
+                            'mel_spectrogram': all_features['mel_spectrogram'],
+                            'file_path': file_path
+                        }
+                    else:
+                        # For other models, use the extract_features_for_model method
+                        features = self.extract_features_for_model(all_features, model_type)
                     
                     # Skip files with invalid features
                     if features is None:
-                        logging.warning(f"Skipping {file_path}: Failed to extract features")
+                        logging.warning(f"Skipping {file_path}: Failed to extract model-specific features")
                         stats['skipped_counts'][class_dir] += 1
                         stats['total_skipped'] += 1
                         stats['error_files'].append(file_path)

@@ -1,0 +1,482 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-03-10T11:46:27.108502",
+  "classes": {
+    "dee": {
+      "name": "dee",
+      "path": "dee",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.508791",
+      "updated_at": "2025-03-10T11:46:27.106922",
+      "in_dictionaries": []
+    },
+    "bee": {
+      "name": "bee",
+      "path": "bee",
+      "samples": {
+        "original": 23,
+        "augmented": 115,
+        "total": 138
+      },
+      "created_at": "2025-03-10T11:30:35.508883",
+      "updated_at": "2025-03-10T11:46:27.108387",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "moo": {
+      "name": "moo",
+      "path": "moo",
+      "samples": {
+        "original": 32,
+        "augmented": 160,
+        "total": 192
+      },
+      "created_at": "2025-03-10T11:30:35.509000",
+      "updated_at": "2025-03-10T11:46:27.108500",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "meh": {
+      "name": "meh",
+      "path": "meh",
+      "samples": {
+        "original": 32,
+        "augmented": 160,
+        "total": 192
+      },
+      "created_at": "2025-03-10T11:30:35.509111",
+      "updated_at": "2025-03-10T11:46:27.107995",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "ree": {
+      "name": "ree",
+      "path": "ree",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509144",
+      "updated_at": "2025-03-10T11:46:27.106723",
+      "in_dictionaries": []
+    },
+    "loh": {
+      "name": "loh",
+      "path": "loh",
+      "samples": {
+        "original": 19,
+        "augmented": 95,
+        "total": 114
+      },
+      "created_at": "2025-03-10T11:30:35.509219",
+      "updated_at": "2025-03-10T11:46:27.108170",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "oo": {
+      "name": "oo",
+      "path": "oo",
+      "samples": {
+        "original": 29,
+        "augmented": 145,
+        "total": 174
+      },
+      "created_at": "2025-03-10T11:30:35.509317",
+      "updated_at": "2025-03-10T11:46:27.107890",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "boo": {
+      "name": "boo",
+      "path": "boo",
+      "samples": {
+        "original": 18,
+        "augmented": 90,
+        "total": 108
+      },
+      "created_at": "2025-03-10T11:30:35.509394",
+      "updated_at": "2025-03-10T11:46:27.106893",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "ooah": {
+      "name": "ooah",
+      "path": "ooah",
+      "samples": {
+        "original": 23,
+        "augmented": 115,
+        "total": 138
+      },
+      "created_at": "2025-03-10T11:30:35.509478",
+      "updated_at": "2025-03-10T11:46:27.107038",
+      "in_dictionaries": [
+        "Michal Plus Ooah"
+      ]
+    },
+    "moh": {
+      "name": "moh",
+      "path": "moh",
+      "samples": {
+        "original": 20,
+        "augmented": 100,
+        "total": 120
+      },
+      "created_at": "2025-03-10T11:30:35.509559",
+      "updated_at": "2025-03-10T11:46:27.107118",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "raw": {
+      "name": "raw",
+      "path": "raw",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509579",
+      "updated_at": "2025-03-10T11:46:27.108012",
+      "in_dictionaries": []
+    },
+    "test": {
+      "name": "test",
+      "path": "test",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509596",
+      "updated_at": "2025-03-10T11:46:27.107562",
+      "in_dictionaries": []
+    },
+    "oof": {
+      "name": "oof",
+      "path": "oof",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509623",
+      "updated_at": "2025-03-10T11:46:27.106952",
+      "in_dictionaries": []
+    },
+    "pee": {
+      "name": "pee",
+      "path": "pee",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509653",
+      "updated_at": "2025-03-10T11:46:27.106399",
+      "in_dictionaries": []
+    },
+    "leh": {
+      "name": "leh",
+      "path": "leh",
+      "samples": {
+        "original": 22,
+        "augmented": 110,
+        "total": 132
+      },
+      "created_at": "2025-03-10T11:30:35.509738",
+      "updated_at": "2025-03-10T11:46:27.106496",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "zoo": {
+      "name": "zoo",
+      "path": "zoo",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509767",
+      "updated_at": "2025-03-10T11:46:27.108225",
+      "in_dictionaries": []
+    },
+    "nee": {
+      "name": "nee",
+      "path": "nee",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.509800",
+      "updated_at": "2025-03-10T11:46:27.108200",
+      "in_dictionaries": []
+    },
+    "eh": {
+      "name": "eh",
+      "path": "eh",
+      "samples": {
+        "original": 25,
+        "augmented": 125,
+        "total": 150
+      },
+      "created_at": "2025-03-10T11:30:35.509889",
+      "updated_at": "2025-03-10T11:46:27.107778",
+      "in_dictionaries": [
+        "Default",
+        "EhOh",
+        "Michal Base",
+        "Michal Plus Ooah",
+        "Two words"
+      ]
+    },
+    "boh": {
+      "name": "boh",
+      "path": "boh",
+      "samples": {
+        "original": 24,
+        "augmented": 120,
+        "total": 144
+      },
+      "created_at": "2025-03-10T11:30:35.509978",
+      "updated_at": "2025-03-10T11:46:27.107466",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "jo": {
+      "name": "jo",
+      "path": "jo",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.510002",
+      "updated_at": "2025-03-10T11:46:27.107609",
+      "in_dictionaries": []
+    },
+    "ah": {
+      "name": "ah",
+      "path": "ah",
+      "samples": {
+        "original": 22,
+        "augmented": 110,
+        "total": 132
+      },
+      "created_at": "2025-03-10T11:30:35.510090",
+      "updated_at": "2025-03-10T11:46:27.107201",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "mee": {
+      "name": "mee",
+      "path": "mee",
+      "samples": {
+        "original": 27,
+        "augmented": 135,
+        "total": 162
+      },
+      "created_at": "2025-03-10T11:30:35.510183",
+      "updated_at": "2025-03-10T11:46:27.106819",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "bah": {
+      "name": "bah",
+      "path": "bah",
+      "samples": {
+        "original": 21,
+        "augmented": 105,
+        "total": 126
+      },
+      "created_at": "2025-03-10T11:30:35.510260",
+      "updated_at": "2025-03-10T11:46:27.107544",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "lah": {
+      "name": "lah",
+      "path": "lah",
+      "samples": {
+        "original": 30,
+        "augmented": 150,
+        "total": 180
+      },
+      "created_at": "2025-03-10T11:30:35.510363",
+      "updated_at": "2025-03-10T11:46:27.106688",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "lee": {
+      "name": "lee",
+      "path": "lee",
+      "samples": {
+        "original": 24,
+        "augmented": 120,
+        "total": 144
+      },
+      "created_at": "2025-03-10T11:30:35.510448",
+      "updated_at": "2025-03-10T11:46:27.107381",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "ee": {
+      "name": "ee",
+      "path": "ee",
+      "samples": {
+        "original": 21,
+        "augmented": 105,
+        "total": 126
+      },
+      "created_at": "2025-03-10T11:30:35.510530",
+      "updated_at": "2025-03-10T11:46:27.106582",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "uploaded": {
+      "name": "uploaded",
+      "path": "uploaded",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.510548",
+      "updated_at": "2025-03-10T11:46:27.107795",
+      "in_dictionaries": []
+    },
+    "loo": {
+      "name": "loo",
+      "path": "loo",
+      "samples": {
+        "original": 23,
+        "augmented": 115,
+        "total": 138
+      },
+      "created_at": "2025-03-10T11:30:35.510636",
+      "updated_at": "2025-03-10T11:46:27.108094",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "mah": {
+      "name": "mah",
+      "path": "mah",
+      "samples": {
+        "original": 21,
+        "augmented": 105,
+        "total": 126
+      },
+      "created_at": "2025-03-10T11:30:35.510716",
+      "updated_at": "2025-03-10T11:46:27.108304",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "beh": {
+      "name": "beh",
+      "path": "beh",
+      "samples": {
+        "original": 27,
+        "augmented": 135,
+        "total": 162
+      },
+      "created_at": "2025-03-10T11:30:35.510813",
+      "updated_at": "2025-03-10T11:46:27.107295",
+      "in_dictionaries": [
+        "Default",
+        "Michal Base",
+        "Michal Plus Ooah"
+      ]
+    },
+    "oh": {
+      "name": "oh",
+      "path": "oh",
+      "samples": {
+        "original": 21,
+        "augmented": 105,
+        "total": 126
+      },
+      "created_at": "2025-03-10T11:30:35.510900",
+      "updated_at": "2025-03-10T11:46:27.107688",
+      "in_dictionaries": [
+        "Default",
+        "EhOh",
+        "Michal Base",
+        "Michal Plus Ooah",
+        "Two words"
+      ]
+    },
+    "pending": {
+      "name": "pending",
+      "path": "pending",
+      "samples": {
+        "original": 0,
+        "augmented": 0,
+        "total": 0
+      },
+      "created_at": "2025-03-10T11:30:35.510919",
+      "updated_at": "2025-03-10T11:46:27.107581",
+      "in_dictionaries": []
+    }
+  },
+  "stats": {
+    "total_classes": 32,
+    "total_samples": 3024,
+    "orphaned_classes": 11,
+    "empty_classes": 11
+  }
+}

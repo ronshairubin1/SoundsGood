@@ -1,0 +1,452 @@
+"""
+ML API routes
+"""
+import json
+import logging
+import os
+import traceback
+from datetime import datetime
+from flask import Blueprint, jsonify, request, session
+
+import numpy as np
+from tensorflow.keras.models import load_model
+
+from src.config import Config
+from src.audio.sound_detector import SoundDetector
+from src.audio.sound_detector_rf import SoundDetectorRF
+from src.ml.rf_classifier import RandomForestClassifier
+
+
+ml_bp = Blueprint('ml', __name__)
+
+# Global variable for sound detector
+sound_detector = None
+
+
+def prediction_callback(label, probability, timestamp=None):
+    """
+    Callback for real-time predictions.
+    """
+    from src.routes.socket_routes import emit_realtime_prediction
+
+    if timestamp is None:
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    emit_realtime_prediction(
+        label=label,
+        probability=float(probability),
+        timestamp=timestamp
+    )
+
+    logging.info(f"Emitted real-time prediction: {label}, {probability}, {timestamp}")
+
+
+@ml_bp.route('/models', methods=['GET'])
+def get_models():
+    """
+    Get available ML models.
+
+    Returns:
+        JSON with model information
+    """
+    try:
+        from src.ml.model_paths import get_available_models, synchronize_model_registry
+
+        # Make sure model registry is up-to-date
+        synchronize_model_registry()
+        logging.info("Synchronized model registry to ensure up-to-date information")
+
+        # Get models from registry
+        models_dict = get_available_models()
+        
+        # Return models
+        return jsonify({
+            'status': 'success',
+            'models': models_dict
+        })
+
+    except Exception as e:
+        logging.error("Error retrieving models: %s", str(e))
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@ml_bp.route('/train_model', methods=['POST'])
+def train_model():
+    """
+    Train a new ML model.
+
+    Returns:
+        JSON with training status and model ID
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+
+    try:
+        # Get request data
+        data = request.json
+        model_type = data.get('model_type', 'cnn').lower()
+        dict_name = data.get('dictionary')
+        model_name = data.get('model_name')
+        training_params = data.get('params', {})
+
+        # Validate inputs
+        if not dict_name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Dictionary name is required'
+            }), 400
+
+        if not model_name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Model name is required'
+            }), 400
+
+        if model_type not in ['cnn', 'rf', 'ensemble']:
+            return jsonify({
+                'status': 'error',
+                'message': f'Unsupported model type: {model_type}'
+            }), 400
+
+        # Load the dictionary
+        dict_path = os.path.join(Config.DICTIONARIES_DIR, f"{dict_name}.json")
+        if not os.path.exists(dict_path):
+            return jsonify({
+                'status': 'error',
+                'message': f'Dictionary not found: {dict_name}'
+            }), 404
+
+        with open(dict_path, 'r') as f:
+            dictionary = json.load(f)
+
+        # Start training in background
+        from src.services.training_service import start_training_job
+        job_id = start_training_job(
+            dictionary=dictionary,
+            dict_name=dict_name,
+            model_type=model_type,
+            model_name=model_name,
+            user_id=session.get('user_id', 'anonymous'),
+            params=training_params
+        )
+
+        # Return job ID
+        return jsonify({
+            'status': 'success',
+            'message': f'Training job started for {model_type} model',
+            'job_id': job_id
+        })
+
+    except Exception as e:
+        logging.error("Error starting training job: %s", str(e))
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@ml_bp.route('/training_status/<job_id>', methods=['GET'])
+def get_training_status(job_id):
+    """
+    Get the status of a training job.
+
+    Args:
+        job_id: Training job ID
+
+    Returns:
+        JSON with training status
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+
+    try:
+        from src.services.training_service import get_job_status
+        
+        status = get_job_status(job_id)
+        
+        if not status:
+            return jsonify({
+                'status': 'error',
+                'message': f'Training job not found: {job_id}'
+            }), 404
+            
+        return jsonify({
+            'status': 'success',
+            'job_status': status
+        })
+        
+    except Exception as e:
+        logging.error("Error getting training status: %s", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@ml_bp.route('/predict', methods=['POST'])
+def predict_audio():
+    """
+    Predict from audio data.
+    
+    Returns:
+        JSON with prediction results
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+        
+    try:
+        # Get request data
+        data = request.json
+        audio_data = data.get('audio_data')
+        model_id = data.get('model_id')
+        
+        if not audio_data:
+            return jsonify({
+                'status': 'error',
+                'message': 'No audio data provided'
+            }), 400
+            
+        if not model_id:
+            return jsonify({
+                'status': 'error',
+                'message': 'No model ID provided'
+            }), 400
+            
+        # Convert base64 to numpy array (if needed)
+        # ... implementation ...
+        
+        # Load the model and make prediction
+        # ... implementation ...
+        
+        # Return prediction
+        return jsonify({
+            'status': 'success',
+            'prediction': {
+                'label': 'example_sound',
+                'probability': 0.85
+            }
+        })
+        
+    except Exception as e:
+        logging.error("Error making prediction: %s", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@ml_bp.route('/start_listening', methods=['POST'])
+def start_listening():
+    """
+    Start real-time sound detection and classification.
+
+    Returns:
+        JSON with prediction results
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+
+    # Response template
+    response = {
+        'status': 'success',
+        'message': 'Started listening',
+        'model_type': None,
+        'model_id': None,
+        'sound_classes': []
+    }
+
+    # Access sound_detector as module-level variable
+    global sound_detector
+
+    try:
+        logging.info("========== START LISTENING API CALLED ==========")
+
+        # Parse request data
+        data = request.json
+        model_id = data.get('model_id')
+        use_ambient_noise = data.get('use_ambient_noise', False)
+        
+        # Initialize model_data here - this is the key fix
+        model_data = None
+
+        logging.info("Request data: model_id=%s, use_ambient_noise=%s",
+                     model_id, use_ambient_noise)
+
+        # Validate model_id
+        if not model_id:
+            logging.error("No model_id provided in request")
+            return jsonify({
+                'status': 'error',
+                'message': 'model_id is required'
+            }), 400
+
+        # Default to CNN model if model type not specified
+        model_choice = data.get('model_type', '').lower()
+        if model_choice not in ['cnn', 'rf', 'ensemble']:
+            model_choice = 'cnn'
+
+        logging.info("Starting listening with model ID: %s, type: %s, use_ambient_noise: %s",
+                     model_id, model_choice, use_ambient_noise)
+
+        # Get class names from model registry or active dictionary
+        class_names = []
+        models_json_path = os.path.join(Config.BASE_DIR, 'data', 'models', 'models.json')
+
+        if os.path.exists(models_json_path):
+            try:
+                with open(models_json_path, 'r') as f:
+                    models_registry = json.load(f)
+
+                # Look for the model in the registry
+                for mtype, models in models_registry.get('models', {}).items():
+                    if model_id in models:
+                        model_data = models[model_id]
+                        break
+
+                if model_data and 'class_names' in model_data:
+                    class_names = model_data['class_names']
+                    logging.info("Found %d class names from registry for %s",
+                                 len(class_names), model_id)
+            except Exception as e:
+                logging.error("Error loading models.json: %s", str(e))
+
+        # If no class names found in model registry, use active dictionary
+        if not class_names:
+            active_dict = Config.get_dictionary()
+            class_names = active_dict.get('sounds', [])
+            logging.info("Using %d class names from active dictionary", len(class_names))
+
+        # Initialize the appropriate model
+        if model_choice == 'rf':
+            # Find and load the RF model
+            rf_path = None
+
+            if model_data and 'file_path' in model_data:
+                rf_path = model_data['file_path']
+            else:
+                # Look for models with consistent naming
+                rf_path = f"models/{model_id}.joblib"
+
+            if not os.path.exists(rf_path):
+                logging.error("RF model file not found at %s", rf_path)
+                return jsonify({
+                    'status': 'error',
+                    'message': f'No RF model file found at {rf_path}'
+                }), 400
+
+            logging.info("Loading RF model from %s", rf_path)
+            rf_classifier = RandomForestClassifier()
+            rf_classifier.load(rf_path)
+
+            # Create and start the RF detector
+            sound_detector = SoundDetectorRF(
+                model=rf_classifier,
+                sound_classes=class_names,
+                callback=prediction_callback,
+                sample_rate=16000
+            )
+
+            sound_detector.start_listening(measure_ambient=use_ambient_noise)
+
+            # Update response
+            response['model_type'] = 'rf'
+            response['model_id'] = model_id
+            response['sound_classes'] = class_names
+
+        else:  # Default to CNN
+            # Find and load the CNN model
+            model_path = None
+
+            if model_data and 'file_path' in model_data:
+                model_path = model_data['file_path']
+            else:
+                # Look for models with consistent naming
+                model_path = f"models/{model_id}.h5"
+
+            if not os.path.exists(model_path):
+                logging.error("Model file not found at %s", model_path)
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Model file not found at {model_path}'
+                }), 404
+
+            logging.info("Loading CNN model from %s", model_path)
+            try:
+                logging.info("Loading Keras model...")
+                model = load_model(model_path)
+                logging.info("Model loaded successfully with input shape: %s", model.input_shape)
+            except Exception as e:
+                logging.error("Error loading model: %s", str(e))
+                traceback.print_exc()
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Failed to load model: {str(e)}'
+                }), 500
+
+            # Create and start the CNN detector
+            try:
+                sound_detector = SoundDetector(
+                    model=model,
+                    sound_classes=class_names,
+                    callback=prediction_callback,
+                    sample_rate=16000
+                )
+
+                sound_detector.start_listening(measure_ambient=use_ambient_noise)
+
+                # Update response
+                response['model_type'] = 'cnn'
+                response['model_id'] = model_id
+                response['sound_classes'] = class_names
+            except Exception as e:
+                logging.error("Error creating/starting SoundDetector: %s", str(e))
+                traceback.print_exc()
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Failed to start sound detector: {str(e)}'
+                }), 500
+
+        return jsonify(response)
+
+    except Exception as e:
+        logging.error("Error in start_listening: %s", str(e))
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@ml_bp.route('/stop_listening', methods=['POST'])
+def stop_listening():
+    """
+    Stop real-time sound detection and classification.
+
+    Returns:
+        JSON with stop status
+    """
+    if 'username' not in session:
+        return jsonify({'status': 'error', 'message': 'Please log in first'}), 401
+
+    global sound_detector
+    try:
+        if sound_detector:
+            result = sound_detector.stop_listening()
+            sound_detector = None
+            return jsonify({
+                'status': 'success',
+                'message': 'Listening stopped'
+            })
+
+        return jsonify({
+            'status': 'error',
+            'message': 'No active listener'
+        })
+    except Exception as e:
+        logging.error("Error stopping listener: %s", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        })

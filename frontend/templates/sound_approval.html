@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Sound Recording Approval - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.approval-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.waveform-container {
+    height: 120px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.recording-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.recording-item:last-child {
+    border-bottom: none;
+}
+
+.recording-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recording-class {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.recording-time {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.recording-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.recordings-container {
+    max-height: 75vh;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.class-badge {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    margin-right: 10px;
+}
+
+.grouped-heading {
+    padding: 10px 15px;
+    background-color: #e9ecef;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-check2-circle me-2"></i>Sound Recordings Approval
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Sound Approval</li>
+            </ol>
+        </nav>
+        <p class="text-muted">Review and approve recordings that are waiting for verification before they can be used for training</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card approval-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-earmark-music me-2"></i>Pending Recordings
+                    </h5>
+                    <div>
+                        <button id="refreshBtn" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                        </button>
+                        <a href="{{ url_for('record_sounds') }}" class="btn btn-sm btn-primary ms-2">
+                            <i class="bi bi-mic-fill me-1"></i> Record More
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="recordings-container">
+                    <div id="loadingSpinner" class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="emptyMessage" class="empty-message" style="display: none;">
+                        <i class="bi bi-emoji-smile display-4"></i>
+                        <h4 class="mt-3">All Caught Up!</h4>
+                        <p>There are no pending recordings that need approval.</p>
+                        <a href="{{ url_for('record_sounds') }}" class="btn btn-primary mt-2">
+                            <i class="bi bi-mic-fill me-1"></i> Record New Sounds
+                        </a>
+                    </div>
+                    
+                    <div id="pendingRecordings">
+                        <!-- Will be populated with JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch all pending recordings when the page loads
+        fetchAllPendingRecordings();
+        
+        // Set up refresh button
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            fetchAllPendingRecordings();
+        });
+    });
+    
+    // Fetch all pending recordings across classes
+    function fetchAllPendingRecordings() {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const pendingRecordings = document.getElementById('pendingRecordings');
+        
+        loadingSpinner.style.display = 'flex';
+        emptyMessage.style.display = 'none';
+        pendingRecordings.innerHTML = '';
+        
+        fetch('/api/sounds/pending/all')
+            .then(response => response.json())
+            .then(data => {
+                loadingSpinner.style.display = 'none';
+                
+                if (data.success && data.recordings.length > 0) {
+                    displayAllPendingRecordings(data.recordings);
+                } else {
+                    emptyMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching pending recordings:', error);
+                loadingSpinner.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                emptyMessage.innerHTML = `
+                    <i class="bi bi-exclamation-triangle text-warning display-4"></i>
+                    <h4 class="mt-3">Error Loading Recordings</h4>
+                    <p>There was a problem loading the pending recordings. Please try again.</p>
+                    <button id="retryBtn" class="btn btn-primary mt-2">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Retry
+                    </button>
+                `;
+                document.getElementById('retryBtn').addEventListener('click', fetchAllPendingRecordings);
+            });
+    }
+    
+    // Display all pending recordings grouped by class
+    function displayAllPendingRecordings(recordings) {
+        const pendingRecordings = document.getElementById('pendingRecordings');
+        
+        // Group recordings by class
+        const recordingsByClass = {};
+        recordings.forEach(recording => {
+            if (!recordingsByClass[recording.class_name]) {
+                recordingsByClass[recording.class_name] = [];
+            }
+            recordingsByClass[recording.class_name].push(recording);
+        });
+        
+        // Generate HTML for each class
+        let html = '';
+        for (const className in recordingsByClass) {
+            const classRecordings = recordingsByClass[className];
+            
+            html += `
+                <div class="grouped-heading">
+                    <i class="bi bi-folder2 me-2"></i>Class: ${className} (${classRecordings.length} recordings)
+                </div>
+            `;
+            
+            classRecordings.forEach((recording, index) => {
+                html += `
+                    <div class="recording-item" data-file="${recording.filename}">
+                        <div class="recording-info">
+                            <div class="recording-class">Sample ${index + 1}</div>
+                            <div class="recording-time">${recording.timestamp}</div>
+                        </div>
+                        <div class="recording-actions">
+                            <audio controls src="${recording.url}" class="me-2"></audio>
+                            <button class="btn btn-sm btn-success keep-recording" data-file="${recording.filename}">
+                                <i class="bi bi-check-circle"></i> Use in Training
+                            </button>
+                            <button class="btn btn-sm btn-danger discard-recording" data-file="${recording.filename}">
+                                <i class="bi bi-trash"></i> Discard
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        pendingRecordings.innerHTML = html;
+        
+        // Add event listeners for keep and discard buttons
+        document.querySelectorAll('.keep-recording').forEach(button => {
+            button.addEventListener('click', function() {
+                const filename = this.getAttribute('data-file');
+                keepRecording(filename);
+            });
+        });
+        
+        document.querySelectorAll('.discard-recording').forEach(button => {
+            button.addEventListener('click', function() {
+                const filename = this.getAttribute('data-file');
+                discardRecording(filename);
+            });
+        });
+    }
+    
+    // Save a recording for training
+    function keepRecording(filename) {
+        // Find the button and disable it while processing
+        const button = document.querySelector(`.keep-recording[data-file="${filename}"]`);
+        const originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        
+        fetch('/api/sounds/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                filename: filename, 
+                keep: true 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove this recording from the UI
+                const recordingElement = document.querySelector(`.recording-item[data-file="${filename}"]`);
+                if (recordingElement) {
+                    recordingElement.style.opacity = '0';
+                    setTimeout(() => {
+                        recordingElement.remove();
+                        
+                        // Check if this was the last recording in its class group
+                        const className = filename.split('/')[0];
+                        const classRecordings = document.querySelectorAll(`.recording-item[data-file^="${className}/"]`);
+                        if (classRecordings.length === 0) {
+                            // Remove the class heading
+                            const headings = document.querySelectorAll('.grouped-heading');
+                            headings.forEach(heading => {
+                                if (heading.textContent.includes(`Class: ${className}`)) {
+                                    heading.remove();
+                                }
+                            });
+                        }
+                        
+                        // Check if there are any recordings left
+                        if (document.querySelectorAll('.recording-item').length === 0) {
+                            document.getElementById('emptyMessage').style.display = 'block';
+                        }
+                    }, 300);
+                    
+                    showToast('Recording saved for training', 'success');
+                }
+            } else {
+                showToast('Error: ' + (data.error || 'Unknown error'), 'danger');
+                button.disabled = false;
+                button.innerHTML = originalHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error saving recording:', error);
+            showToast('Error saving recording', 'danger');
+            button.disabled = false;
+            button.innerHTML = originalHtml;
+        });
+    }
+    
+    // Discard a recording
+    function discardRecording(filename) {
+        // Find the button and disable it while processing
+        const button = document.querySelector(`.discard-recording[data-file="${filename}"]`);
+        const originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        
+        fetch('/api/sounds/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                filename: filename, 
+                keep: false 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove this recording from the UI
+                const recordingElement = document.querySelector(`.recording-item[data-file="${filename}"]`);
+                if (recordingElement) {
+                    recordingElement.style.opacity = '0';
+                    setTimeout(() => {
+                        recordingElement.remove();
+                        
+                        // Check if this was the last recording in its class group
+                        const className = filename.split('/')[0];
+                        const classRecordings = document.querySelectorAll(`.recording-item[data-file^="${className}/"]`);
+                        if (classRecordings.length === 0) {
+                            // Remove the class heading
+                            const headings = document.querySelectorAll('.grouped-heading');
+                            headings.forEach(heading => {
+                                if (heading.textContent.includes(`Class: ${className}`)) {
+                                    heading.remove();
+                                }
+                            });
+                        }
+                        
+                        // Check if there are any recordings left
+                        if (document.querySelectorAll('.recording-item').length === 0) {
+                            document.getElementById('emptyMessage').style.display = 'block';
+                        }
+                    }, 300);
+                    
+                    showToast('Recording discarded', 'success');
+                }
+            } else {
+                showToast('Error: ' + (data.error || 'Unknown error'), 'danger');
+                button.disabled = false;
+                button.innerHTML = originalHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error discarding recording:', error);
+            showToast('Error discarding recording', 'danger');
+            button.disabled = false;
+            button.innerHTML = originalHtml;
+        });
+    }
+    
+    // Show toast notification
+    function showToast(message, type) {
+        const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast show bg-${type} text-white`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="toast-header bg-${type} text-white">
+                <strong class="me-auto">SoundsEasy</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 5000);
+        
+        // Add click event to close button
+        toast.querySelector('.btn-close').addEventListener('click', function() {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        });
+    }
+    
+    // Create toast container if it doesn't exist
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        container.style.zIndex = '5';
+        document.body.appendChild(container);
+        return container;
+    }
+</script>
+{% endblock %} 

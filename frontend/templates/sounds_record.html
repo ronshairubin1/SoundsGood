@@ -1,0 +1,1047 @@
+{% extends "base.html" %}
+
+{% block title %}Record Sounds - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.recording-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.record-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.record-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.record-btn.recording {
+    background-color: var(--danger-color);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.waveform-container {
+    height: 120px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.recording-status {
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 10px 0;
+}
+
+.previews-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.preview-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.class-selection {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.recent-recordings {
+    margin-top: 2rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-mic-fill me-2"></i>Recordings
+        </h1>
+        <p class="text-muted">First select an existing sound class or create a new one, then record and process sound samples</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <!-- Sound Class Selection - Now shown by default -->
+        <div class="card" id="classSelectionCard">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-tag me-2"></i>Step 1: Select Sound Class
+                </h5>
+                
+                <form id="selectClassForm">
+                    <!-- Show this option for all users -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="classOption" id="allClassesOption" value="all" checked>
+                        <label class="form-check-label" for="allClassesOption">
+                            Select a class from all classes
+                        </label>
+                    </div>
+                    
+                    <div id="allClassesSection" class="mb-4">
+                        <select class="form-select" id="allClassesSelect">
+                            <option value="">-- Select a class --</option>
+                            {% for class in sound_classes %}
+                            <option value="{{ class.name }}">{{ class.name }} ({{ class.sample_count }} samples)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Only show this option if we're coming from a dictionary -->
+                    {% if source_dictionary %}
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="classOption" id="dictClassesOption" value="dict">
+                        <label class="form-check-label" for="dictClassesOption">
+                            Select a class from dictionary "{{ source_dictionary.name }}"
+                        </label>
+                    </div>
+                    
+                    <div id="dictClassesSection" class="mb-4" style="display: none;">
+                        <select class="form-select" id="dictClassesSelect">
+                            <option value="">-- Select a class --</option>
+                            {% for class in dict_classes %}
+                            <option value="{{ class.name }}">{{ class.name }} ({{ class.sample_count }} samples)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="classOption" id="newClassOption" value="new">
+                        <label class="form-check-label" for="newClassOption">
+                            Create new class
+                        </label>
+                    </div>
+                    
+                    <div id="newClassSection" class="mb-4" style="display: none;">
+                        <input type="text" class="form-control" id="newClassName" placeholder="Enter new class name">
+                        <div class="form-text">
+                            Use a descriptive name for the sound (e.g., "zee", "ah", "doorbell")
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm mt-2" id="createClassBtn">
+                            <i class="bi bi-plus-circle me-1"></i>Create Class
+                        </button>
+                        
+                        <!-- Only show this button if we're coming from a dictionary -->
+                        {% if source_dictionary %}
+                        <button type="button" class="btn btn-success btn-sm mt-2" id="addToDictionaryBtn" style="display: none;">
+                            <i class="bi bi-plus-circle me-1"></i>Create & Add to Dictionary "{{ source_dictionary.name }}"
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Current Selection
+                </h5>
+                <div id="currentClassInfo">
+                    <p class="text-muted">No class selected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card recording-card">
+            <div class="card-body">
+                <h4 class="card-title text-center mb-4">
+                    <i class="bi bi-soundwave me-2"></i>Step 2: Record Sound
+                </h4>
+                
+                <div class="alert alert-info mb-4" id="recordingInstructions">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Please select or create a sound class first to enable recording.
+                </div>
+                
+                <div class="recording-controls d-flex flex-column align-items-center mb-4">
+                    <div class="record-btn" id="recordBtn">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <span class="mt-2" id="recordStatus">Click to start recording</span>
+                    <div class="recording-time mt-2 d-none" id="recordingTime">00:00</div>
+                    
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="ambientNoise">
+                        <label class="form-check-label" for="ambientNoise">
+                            Measure ambient noise before recording
+                        </label>
+                        <span class="ms-2 badge bg-secondary" id="ambientNoiseStatus">Off</span>
+                    </div>
+                    
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="useUnifiedProcessor" checked>
+                        <label class="form-check-label" for="useUnifiedProcessor">
+                            Use enhanced audio processing (recommended)
+                        </label>
+                        <small class="form-text text-muted d-block">
+                            Improves sound detection accuracy and ensures consistency between training and inference
+                        </small>
+                    </div>
+                </div>
+                
+                <div id="waveform" class="my-4"></div>
+                
+                <div id="processControls" style="display: none;">
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <span class="ms-2" id="processingStatus">Processing your recording...</span>
+                    </div>
+                    <div class="text-center text-muted mb-3">
+                        <small>We're chopping your recording into individual sound samples and processing them.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Recordings -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-clock-history me-2"></i>Step 3: Recent Recordings
+                </h5>
+                <div id="recentRecordings" class="previews-container">
+                    <!-- Will be populated with JavaScript -->
+                    <div class="text-center text-muted py-4" id="noRecordingsMessage">
+                        No recent recordings
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Sound Class Assignment -->
+        <div class="card" id="classAssignmentCard" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-tag me-2"></i>Assign to Class
+                </h5>
+                
+                <form id="assignClassForm">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="classOption" id="existingClassOption" value="existing" checked>
+                        <label class="form-check-label" for="existingClassOption">
+                            Use existing class
+                        </label>
+                    </div>
+                    
+                    <div id="existingClassSection" class="mb-4">
+                        <select class="form-select" id="existingClassSelect">
+                            <option value="">-- Select a class --</option>
+                            {% for class in sound_classes %}
+                            <option value="{{ class.name }}">{{ class.name }} ({{ class.sample_count }} samples)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="classOption" id="newClassOption" value="new">
+                        <label class="form-check-label" for="newClassOption">
+                            Create new class
+                        </label>
+                    </div>
+                    
+                    <div id="newClassSection" class="mb-4" style="display: none;">
+                        <input type="text" class="form-control" id="newClassName" placeholder="Enter new class name">
+                        <div class="form-text">
+                            Use a descriptive name for the sound (e.g., "zee", "ah", "doorbell")
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sampleName" class="form-label">Sample Name (Optional)</label>
+                        <input type="text" class="form-control" id="sampleName" placeholder="Leave blank for automatic naming">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-success" id="saveRecordingBtn" disabled>
+                            <i class="bi bi-save me-1"></i>Save Recording
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container for Notifications -->
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11;"></div>
+
+<style>
+    .recording-card {
+        min-height: 300px;
+    }
+    
+    .record-btn {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 2px solid #dc3545;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .record-btn i {
+        font-size: 2rem;
+        color: #dc3545;
+    }
+    
+    .record-btn.recording {
+        background-color: #dc3545;
+        animation: pulse 1.5s infinite;
+    }
+    
+    .record-btn.recording i {
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+        }
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+    
+    .recording-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .recording-info {
+        flex: 1;
+    }
+    
+    .recording-class {
+        font-weight: bold;
+    }
+    
+    .recording-name, .recording-time {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+<script>
+    let audioRecorder;
+    let audioBlob = null;
+    let recordingInterval;
+    let recordingSeconds = 0;
+    let selectedClass = null;
+    let isClassConfirmed = false;
+    let isRecording = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get DOM elements
+        const allClassesOption = document.getElementById('allClassesOption');
+        const allClassesSection = document.getElementById('allClassesSection');
+        const allClassesSelect = document.getElementById('allClassesSelect');
+        
+        const dictClassesOption = document.getElementById('dictClassesOption');
+        const dictClassesSection = dictClassesOption ? document.getElementById('dictClassesSection') : null;
+        const dictClassesSelect = dictClassesOption ? document.getElementById('dictClassesSelect') : null;
+        
+        const newClassOption = document.getElementById('newClassOption');
+        const newClassSection = document.getElementById('newClassSection');
+        const newClassName = document.getElementById('newClassName');
+        const createClassBtn = document.getElementById('createClassBtn');
+        const addToDictionaryBtn = document.getElementById('addToDictionaryBtn');
+
+        // Check for all required DOM elements and provide fallbacks if necessary
+        function ensureElement(id, type = 'div', className = '', defaultText = '') {
+            let element = document.getElementById(id);
+            if (!element) {
+                console.error(`Error: Could not find element with ID "${id}"`);
+                // Create the element if it doesn't exist to prevent errors
+                element = document.createElement(type);
+                element.id = id;
+                if (className) element.className = className;
+                if (defaultText) element.textContent = defaultText;
+                // Add to the document body if we can't find a better place
+                document.body.appendChild(element);
+                console.warn(`Created fallback element for "${id}"`);
+            }
+            return element;
+        }
+
+        // Replace potentially problematic element references with ensureElement
+        const recordButton = ensureElement('recordBtn', 'button', 'btn btn-primary', 'Record');
+        let recordingStatus = ensureElement('recordStatus', 'span', 'mt-2', 'Click to start recording');
+        const recordingInstructions = ensureElement('recordingInstructions', 'div', 'alert alert-info mb-4');
+        const currentClassInfo = ensureElement('currentClassInfo', 'div');
+        const processControls = ensureElement('processControls', 'div');
+        const recentRecordings = ensureElement('recentRecordings', 'div');
+        const noRecordingsMessage = ensureElement('noRecordingsMessage', 'div');
+        let recordingTime = ensureElement('recordingTime', 'div', 'recording-time mt-2 d-none', '00:00');
+        const ambientNoiseSwitch = ensureElement('ambientNoise', 'input');
+        const ambientNoiseStatus = ensureElement('ambientNoiseStatus', 'span');
+
+        // Variables to track state
+        let isRecording = false;
+        let isClassConfirmed = false;
+        let selectedClass = null;
+        let recordingSeconds = 0;
+        let recordingInterval;
+        let audioRecorder = null;
+        let audioBlob = null;
+        
+        // Get source dictionary information from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const sourceDictName = urlParams.get('dict_name');
+        
+        // Toggle between class selection options
+        allClassesOption.addEventListener('change', function() {
+            if (this.checked) {
+                allClassesSection.style.display = 'block';
+                if (dictClassesSection) dictClassesSection.style.display = 'none';
+                newClassSection.style.display = 'none';
+                
+                // If a class is already selected, confirm it automatically
+                if (allClassesSelect.value) {
+                    selectedClass = allClassesSelect.value;
+                    confirmClassSelection(selectedClass);
+                } else {
+                    // Reset confirmed state 
+                    isClassConfirmed = false;
+                    updateRecordingUI();
+                }
+            }
+        });
+        
+        // Dictionary-specific class option (if available)
+        if (dictClassesOption) {
+            dictClassesOption.addEventListener('change', function() {
+                if (this.checked) {
+                    allClassesSection.style.display = 'none';
+                    dictClassesSection.style.display = 'block';
+                    newClassSection.style.display = 'none';
+                    
+                    // If a class is already selected, confirm it automatically
+                    if (dictClassesSelect.value) {
+                        selectedClass = dictClassesSelect.value;
+                        confirmClassSelection(selectedClass);
+                    } else {
+                        // Reset confirmed state
+                        isClassConfirmed = false;
+                        updateRecordingUI();
+                    }
+                }
+            });
+            
+            // Auto-confirm class when selected from dictionary dropdown
+            dictClassesSelect.addEventListener('change', function() {
+                if (this.value && dictClassesOption.checked) {
+                    selectedClass = this.value;
+                    confirmClassSelection(selectedClass);
+                } else if (dictClassesOption.checked) {
+                    // Reset if "Select a class" is chosen
+                    isClassConfirmed = false;
+                    updateRecordingUI();
+                }
+            });
+        }
+        
+        newClassOption.addEventListener('change', function() {
+            if (this.checked) {
+                allClassesSection.style.display = 'none';
+                if (dictClassesSection) dictClassesSection.style.display = 'none';
+                newClassSection.style.display = 'block';
+                
+                // Show the "Add to Dictionary" button if we're coming from a dictionary
+                if (addToDictionaryBtn) {
+                    addToDictionaryBtn.style.display = 'inline-block';
+                }
+                
+                // Reset confirmed state when switching to new class option
+                isClassConfirmed = false;
+                updateRecordingUI();
+            }
+        });
+        
+        // Auto-confirm class when selected from all classes dropdown
+        allClassesSelect.addEventListener('change', function() {
+            if (this.value && allClassesOption.checked) {
+                selectedClass = this.value;
+                confirmClassSelection(selectedClass);
+            } else if (allClassesOption.checked) {
+                // Reset if "Select a class" is chosen
+                isClassConfirmed = false;
+                updateRecordingUI();
+            }
+        });
+        
+        // Create Class button click event
+        createClassBtn.addEventListener('click', function() {
+            const className = newClassName.value.trim();
+            if (!className) {
+                alert('Please enter a name for the new sound class');
+                return;
+            }
+            
+            // Disable button while creating
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...';
+            
+            createNewClass(className)
+                .then(newClassName => {
+                    if (newClassName) {
+                        selectedClass = newClassName;
+                        confirmClassSelection(newClassName);
+                        
+                        // Show success message
+                        showToast(`Class "${newClassName}" created successfully`, 'success');
+                        
+                        // If we have an "Add to Dictionary" button, enable it
+                        if (addToDictionaryBtn) {
+                            addToDictionaryBtn.disabled = false;
+                        }
+                    }
+                })
+                .finally(() => {
+                    // Re-enable button
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Create Class';
+                });
+        });
+        
+        // Add to Dictionary button click event (if present)
+        if (addToDictionaryBtn) {
+            addToDictionaryBtn.addEventListener('click', function() {
+                const className = newClassName.value.trim();
+                if (!className) {
+                    alert('Please enter a name for the new sound class');
+                    return;
+                }
+                
+                // Disable button while processing
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                // First, create the class
+                createNewClass(className)
+                    .then(newClassName => {
+                        if (!newClassName) {
+                            // Failed to create class
+                            throw new Error('Failed to create class');
+                        }
+                        
+                        selectedClass = newClassName;
+                        // Now add the class to the dictionary
+                        return fetch(`/api/dictionary/${encodeURIComponent(sourceDictName)}/add_class`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                class_name: selectedClass
+                            })
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(`Class "${selectedClass}" created and added to dictionary "${sourceDictName}"`, 'success');
+                            confirmClassSelection(selectedClass);
+                        } else {
+                            showToast(`Class created but error adding to dictionary: ${data.error}`, 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error creating class and adding to dictionary:', error);
+                        showToast('Error processing request', 'danger');
+                    })
+                    .finally(() => {
+                        // Re-enable button
+                        this.disabled = false;
+                        this.innerHTML = `<i class="bi bi-plus-circle me-1"></i>Create & Add to Dictionary "${sourceDictName}"`;
+                    });
+            });
+        }
+        
+        // Record button functionality
+        recordButton.addEventListener('click', function() {
+            if (!isClassConfirmed) {
+                alert('Please select or create a sound class first');
+                return;
+            }
+            
+            if (!isRecording) {
+                audioRecorder.start();
+            } else {
+                audioRecorder.stop();
+            }
+        });
+        
+        // Fetch pending recordings for this class
+        function fetchPendingRecordings() {
+            if (!selectedClass) return;
+            
+            fetch(`/api/sounds/pending/${selectedClass}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.recordings.length > 0) {
+                        displayPendingRecordings(data.recordings);
+                    } else {
+                        // No pending recordings, clear the container
+                        noRecordingsMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching pending recordings:', error);
+                });
+        }
+        
+        // Display pending recordings in the UI
+        function displayPendingRecordings(recordings) {
+            noRecordingsMessage.style.display = 'none';
+            
+            let html = '';
+            recordings.forEach((recording, index) => {
+                html += `
+                    <div class="recording-item" data-file="${recording.filename}">
+                        <div class="recording-info">
+                            <div class="recording-class">${recording.class_name} - Sample ${index + 1}</div>
+                            <div class="recording-time">${recording.timestamp}</div>
+                        </div>
+                        <div class="recording-actions">
+                            <audio controls src="${recording.url}" class="me-2" style="height: 30px;"></audio>
+                            <button class="btn btn-sm btn-success keep-recording" data-file="${recording.filename}">
+                                <i class="bi bi-check-circle"></i> Use in Training
+                            </button>
+                            <button class="btn btn-sm btn-danger discard-recording" data-file="${recording.filename}">
+                                <i class="bi bi-trash"></i> Discard
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            recentRecordings.innerHTML = html;
+            
+            // Add event listeners for keep and discard buttons
+            document.querySelectorAll('.keep-recording').forEach(button => {
+                button.addEventListener('click', function() {
+                    const filename = this.getAttribute('data-file');
+                    keepRecording(filename);
+                });
+            });
+            
+            document.querySelectorAll('.discard-recording').forEach(button => {
+                button.addEventListener('click', function() {
+                    const filename = this.getAttribute('data-file');
+                    discardRecording(filename);
+                });
+            });
+        }
+        
+        // Save a recording for training
+        function keepRecording(filename) {
+            fetch('/api/sounds/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    filename: filename, 
+                    keep: true 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove this recording from the UI
+                    const recordingElement = document.querySelector(`.recording-item[data-file="${filename}"]`);
+                    if (recordingElement) {
+                        recordingElement.remove();
+                    }
+                    
+                    showToast('Recording saved for training!', 'success');
+                    
+                    // Check if we have more recordings
+                    if (recentRecordings.querySelectorAll('.recording-item').length === 0) {
+                        noRecordingsMessage.style.display = 'block';
+                    }
+                } else {
+                    showToast('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving recording:', error);
+                showToast('Error saving recording', 'danger');
+            });
+        }
+        
+        // Discard a recording
+        function discardRecording(filename) {
+            fetch('/api/sounds/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    filename: filename, 
+                    keep: false 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove this recording from the UI
+                    const recordingElement = document.querySelector(`.recording-item[data-file="${filename}"]`);
+                    if (recordingElement) {
+                        recordingElement.remove();
+                    }
+                    
+                    showToast('Recording discarded.', 'info');
+                    
+                    // Check if we have more recordings
+                    if (recentRecordings.querySelectorAll('.recording-item').length === 0) {
+                        noRecordingsMessage.style.display = 'block';
+                    }
+                } else {
+                    showToast('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error discarding recording:', error);
+                showToast('Error discarding recording', 'danger');
+            });
+        }
+        
+        // Process a recording
+        function processRecording(blob) {
+            if (!blob || !selectedClass) {
+                alert('No recording available or no class selected');
+                resetRecording();
+                return;
+            }
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('audio', blob, 'recording.wav');
+            formData.append('sound', selectedClass);
+            
+            // Add ambient noise detection flag
+            formData.append('measure_ambient', ambientNoiseSwitch.checked ? 'true' : 'false');
+            
+            // Add unified processor flag
+            const useUnifiedProcessor = document.getElementById('useUnifiedProcessor');
+            formData.append('use_unified', useUnifiedProcessor && useUnifiedProcessor.checked ? 'true' : 'false');
+            
+            // Send the recording to the ML processing pipeline
+            fetch('/api/ml/record', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    if (response.redirected) {
+                        // Follow the redirect to the verify chunks page
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                } else {
+                    throw new Error('Server error: ' + response.status);
+                }
+            })
+            .then(data => {
+                if (data && !data.success) {
+                    showToast('Error: ' + (data.message || 'Unknown error'), 'danger');
+                    resetRecording();
+                } else if (data && data.success) {
+                    // Recording processed successfully
+                    showToast('Recording processed successfully!', 'success');
+                    
+                    // Fetch pending recordings to show in the UI
+                    fetchPendingRecordings();
+                    
+                    // Reset for another recording
+                    resetRecording();
+                }
+            })
+            .catch(error => {
+                console.error('Error processing recording:', error);
+                showToast('Error processing recording: ' + error.message, 'danger');
+                resetRecording();
+            });
+        }
+        
+        // Function to create a new class
+        function createNewClass(className) {
+            return fetch('/api/sounds/classes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ class_name: className })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Add the new class to the dropdown
+                    const option = document.createElement('option');
+                    option.value = data.class.name;
+                    option.textContent = `${data.class.name} (0 samples)`;
+                    allClassesSelect.appendChild(option);
+                    
+                    // Select the new class in the dropdown
+                    allClassesSelect.value = data.class.name;
+                    
+                    // Switch to existing class option
+                    allClassesOption.checked = true;
+                    allClassesSection.style.display = 'block';
+                    newClassSection.style.display = 'none';
+                    
+                    // Clear the new class input
+                    newClassName.value = '';
+                    
+                    showToast('Sound class created successfully!', 'success');
+                    return data.class.name;
+                } else {
+                    showToast('Error: ' + data.error, 'danger');
+                    return null;
+                }
+            })
+            .catch(error => {
+                console.error('Error creating class:', error);
+                showToast('Error creating class', 'danger');
+                return null;
+            });
+        }
+
+        function confirmClassSelection(className) {
+            isClassConfirmed = true;
+            
+            // Update the current class info
+            currentClassInfo.innerHTML = `
+                <p class="mb-2"><strong>Selected Class:</strong> ${className}</p>
+                <p class="mb-0 text-success">
+                    <i class="bi bi-check-circle-fill me-1"></i>Ready to record
+                </p>
+            `;
+            
+            // Enable recording
+            updateRecordingUI();
+            
+            // Fetch any pending recordings for this class
+            fetchPendingRecordings();
+        }
+        
+        function updateRecordingUI() {
+            if (isClassConfirmed) {
+                recordButton.style.opacity = '1';
+                recordButton.style.cursor = 'pointer';
+                recordingStatus.textContent = 'Click to start recording';
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Recording for class: <strong>${selectedClass}</strong>. Click the microphone to begin.
+                `;
+            } else {
+                recordButton.style.opacity = '0.5';
+                recordButton.style.cursor = 'not-allowed';
+                recordingStatus.textContent = 'Select a class to enable recording';
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Please select or create a sound class first to enable recording.
+                `;
+            }
+        }
+        
+        function resetRecording() {
+            // Reset UI elements
+            recordButton.style.display = 'block';
+            recordButton.classList.remove('recording');
+            processControls.style.display = 'none';
+            recordingTime.style.display = 'none';
+            
+            // Update status
+            recordingStatus.textContent = isClassConfirmed ? 'Click to start recording' : 'Select a class to enable recording';
+            
+            // Reset recording instruction
+            if (isClassConfirmed) {
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Recording for class: <strong>${selectedClass}</strong>. Click the microphone to begin.
+                `;
+            } else {
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Please select or create a sound class first to enable recording.
+                `;
+            }
+            
+            // Reset recording state
+            isRecording = false;
+            clearInterval(recordingInterval);
+        }
+        
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+        
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '11';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Setup ambient noise detection switch
+        ambientNoiseSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                ambientNoiseStatus.textContent = 'On';
+                ambientNoiseStatus.className = 'ms-2 badge bg-success';
+            } else {
+                ambientNoiseStatus.textContent = 'Off';
+                ambientNoiseStatus.className = 'ms-2 badge bg-secondary';
+            }
+        });
+
+        // Initialize audio recorder
+        audioRecorder = new AudioRecorder({
+            onStart: function() {
+                isRecording = true;
+                recordButton.classList.add('recording');
+                
+                // Update UI
+                recordingStatus.textContent = 'Recording in progress...';
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Please repeat the sound "<strong>${selectedClass}</strong>" separated by brief one to two second silences. 
+                    Click the microphone again when finished.
+                `;
+                
+                // Start recording timer
+                recordingSeconds = 0;
+                recordingTime.style.display = 'inline-block';
+                recordingInterval = setInterval(() => {
+                    recordingSeconds++;
+                    const minutes = Math.floor(recordingSeconds / 60);
+                    const seconds = recordingSeconds % 60;
+                    recordingTime.textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            },
+            onStop: function(blob) {
+                isRecording = false;
+                recordButton.classList.remove('recording');
+                
+                // Update UI
+                recordingStatus.textContent = 'Processing recording...';
+                recordingInstructions.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    Processing your recording of "<strong>${selectedClass}</strong>". Please wait...
+                `;
+                
+                // Clear recording timer
+                clearInterval(recordingInterval);
+                recordingTime.style.display = 'none';
+                
+                // Hide record button, show processing UI
+                recordButton.style.display = 'none';
+                processControls.style.display = 'block';
+                
+                // Automatically send the recording for processing
+                processRecording(blob);
+            },
+            onError: function(error) {
+                console.error('Recording error:', error);
+                showToast('Error accessing microphone: ' + error.message, 'danger');
+                
+                resetRecording();
+            }
+        });
+    });
+</script>
+{% endblock %} 

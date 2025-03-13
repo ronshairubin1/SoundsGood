@@ -230,12 +230,14 @@ class AudioPreprocessor:
         
         return audio_data
     
-    def preprocess_audio(self, audio_data):
+    def preprocess_audio(self, audio_data, sr=None, measure_ambient=False):
         """
         Apply full preprocessing pipeline to a single audio segment.
         
         Args:
             audio_data (np.array): Audio data as numpy array
+            sr (int, optional): Sample rate of the audio (for compatibility)
+            measure_ambient (bool): Whether to measure ambient noise to adjust thresholds
             
         Returns:
             np.array: Preprocessed audio
@@ -243,6 +245,11 @@ class AudioPreprocessor:
         if audio_data is None or len(audio_data) == 0:
             logging.warning("Empty audio for preprocessing")
             return None
+            
+        # If requested, measure ambient noise to set appropriate thresholds
+        if measure_ambient:
+            logging.info("Measuring ambient noise to optimize sound detection thresholds")
+            self.measure_ambient_noise(audio_data)
         
         # Step 1: Find precise sound boundaries
         start, end = self.find_sound_boundaries(audio_data)
@@ -276,31 +283,84 @@ class AudioPreprocessor:
             # Load audio file
             audio_data, sr = librosa.load(input_file, sr=self.sample_rate)
             
-            # Apply preprocessing
-            processed_audio = self.preprocess_audio(audio_data)
+            # Apply preprocessing using the consistent preprocessing route
+            processed_segments = self.preprocess_recording(audio_data)
             
-            # Save if output file is provided
-            if output_file and processed_audio is not None:
+            # Save if output file is provided and we have processed segments
+            if output_file and processed_segments and len(processed_segments) > 0:
+                # Use the first processed segment
+                processed_audio = processed_segments[0]
                 sf.write(output_file, processed_audio, self.sample_rate)
                 logging.info(f"Saved preprocessed audio to {output_file}")
-            
-            return processed_audio
+                return processed_audio
+            elif processed_segments and len(processed_segments) > 0:
+                # Return the first processed segment if no output file
+                return processed_segments[0]
+            else:
+                return None
             
         except Exception as e:
             logging.error(f"Error preprocessing file {input_file}: {str(e)}")
             return None
     
-    def preprocess_recording(self, audio_data):
+    def measure_ambient_noise(self, audio_data, duration_seconds=0.5):
+        """
+        Measure the ambient noise level from the beginning of a recording.
+        
+        Args:
+            audio_data (np.array): Audio data as numpy array
+            duration_seconds (float): Duration in seconds to measure from start of file
+            
+        Returns:
+            float: RMS level of ambient noise
+        """
+        try:
+            # Use just the first part of the recording for ambient noise
+            samples_to_use = min(int(duration_seconds * self.sample_rate), len(audio_data))
+            ambient_segment = audio_data[:samples_to_use]
+            
+            # Calculate RMS energy
+            frame_length = int(0.025 * self.sample_rate)  # 25ms frames
+            hop_length = int(0.010 * self.sample_rate)    # 10ms hop
+            
+            energy = []
+            for i in range(0, len(ambient_segment) - frame_length, hop_length):
+                frame = ambient_segment[i:i+frame_length]
+                energy.append(np.sqrt(np.mean(np.square(frame))))
+            
+            # Use the median RMS as ambient noise level (more robust than mean)
+            ambient_level = np.median(energy) if energy else 0.001
+            
+            logging.info(f"Measured ambient noise level: {ambient_level:.6f}")
+            
+            # Update thresholds based on ambient noise
+            original_threshold = self.sound_threshold
+            self.sound_threshold = max(original_threshold, ambient_level * 3.0)  # At least 3x ambient noise
+            
+            return ambient_level
+            
+        except Exception as e:
+            logging.error(f"Error measuring ambient noise: {e}")
+            return 0.001  # Fall back to a low threshold
+    
+    def preprocess_recording(self, audio_data, sr=None, measure_ambient=False):
         """
         Preprocess a recording (possibly containing multiple sounds).
         
         Args:
             audio_data (np.array): Recorded audio data
+            sr (int, optional): Sample rate of the audio (for compatibility)
+            measure_ambient (bool): Whether to measure ambient noise to adjust thresholds
             
         Returns:
             list: List of preprocessed audio segments
         """
         try:
+            # If requested, first measure ambient noise to set appropriate thresholds
+            if measure_ambient:
+                logging.info("Measuring ambient noise to optimize sound detection thresholds")
+                self.measure_ambient_noise(audio_data)
+            
             # Step 1: Chop audio into separate sound segments
             segments = self.chop_audio(audio_data)
             

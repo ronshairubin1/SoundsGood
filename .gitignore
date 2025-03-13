@@ -1,3 +1,17 @@
+# Sound files
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.aac
+*.m4a
+
+# Dot directories/files (except .gitignore)
+.*/
+.*/
+.*
+!.gitignore
+
 # Virtual Environment
 venv/
 env/
@@ -26,11 +40,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Logs
-*.log
-logs/*
-# app_output.log  # Removed specific log file references as they're now in logs/
-
 # OS specific files
 .DS_Store
 .DS_Store?
@@ -54,6 +63,11 @@ Miniconda3-latest-MacOSX-arm64.sh
 .python-version
 
 # Legacy files
+.legacy/
+.recovered/
 legacy/
 *.code-workspace
+.cursor/
 
+# windsurf rules
+.windsurfrules

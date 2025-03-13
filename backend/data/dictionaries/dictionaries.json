@@ -1,115 +1,450 @@
 {
-    "dictionaries": {
-        "Default": {
-            "name": "Default",
-            "sounds": [
-                "ah",
-                "eh",
-                "ee",
-                "oh",
-                "oo",
-                "bah",
-                "beh",
-                "bee",
-                "boh",
-                "boo",
-                "mah",
-                "meh",
-                "mee",
-                "moh",
-                "moo",
-                "lah",
-                "leh",
-                "lee",
-                "loh",
-                "loo"
-            ]
+  "dictionaries": {
+    "Default": {
+      "name": "Default",
+      "sounds": [
+        "ah",
+        "eh",
+        "ee",
+        "oh",
+        "oo",
+        "bah",
+        "beh",
+        "bee",
+        "boh",
+        "boo",
+        "mah",
+        "meh",
+        "mee",
+        "moh",
+        "moo",
+        "lah",
+        "leh",
+        "lee",
+        "loh",
+        "loo"
+      ],
+      "classes": [
+        "ah",
+        "eh",
+        "ee",
+        "oh",
+        "oo",
+        "bah",
+        "beh",
+        "bee",
+        "boh",
+        "boo",
+        "mah",
+        "meh",
+        "mee",
+        "moh",
+        "moo",
+        "lah",
+        "leh",
+        "lee",
+        "loh",
+        "loo"
+      ],
+      "class_details": [
+        {
+          "name": "ah",
+          "sample_count": 132
         },
-        "EhOh": {
-            "name": "EhOh",
-            "sounds": [
-                "eh",
-                "oh"
-            ],
-            "active": false,
-            "created_at": "2025-03-03T12:00:00.000000",
-            "updated_at": "2025-03-03T13:56:39.814463",
-            "created_by": "admin",
-            "description": "Dictionary for EhOh models with just 'eh' and 'oh' sounds",
-            "sample_count": 46,
-            "classes": [
-                "eh",
-                "oh"
-            ],
-            "class_details": [
-                {
-                    "name": "eh",
-                    "sample_count": 25
-                },
-                {
-                    "name": "oh",
-                    "sample_count": 21
-                }
-            ]
+        {
+          "name": "eh",
+          "sample_count": 150
         },
-        "Michal Base": {
-            "name": "Michal Base",
-            "sounds": [
-                "ah",
-                "eh",
-                "ee",
-                "oh",
-                "oo",
-                "bah",
-                "beh",
-                "bee",
-                "boh",
-                "boo",
-                "mah",
-                "meh",
-                "mee",
-                "moh",
-                "moo",
-                "lah",
-                "leh",
-                "lee",
-                "loh",
-                "loo"
-            ]
+        {
+          "name": "ee",
+          "sample_count": 126
         },
-        "Michal Plus Ooah": {
-            "name": "Michal Plus Ooah",
-            "sounds": [
-                "ah",
-                "eh",
-                "ee",
-                "oh",
-                "oo",
-                "bah",
-                "beh",
-                "bee",
-                "boh",
-                "boo",
-                "mah",
-                "meh",
-                "mee",
-                "moh",
-                "moo",
-                "lah",
-                "leh",
-                "lee",
-                "loh",
-                "loo",
-                "ooah"
-            ]
+        {
+          "name": "oh",
+          "sample_count": 126
         },
-        "Two words": {
-            "name": "Two words",
-            "sounds": [
-                "oh",
-                "eh"
-            ]
+        {
+          "name": "oo",
+          "sample_count": 174
+        },
+        {
+          "name": "bah",
+          "sample_count": 126
+        },
+        {
+          "name": "beh",
+          "sample_count": 162
+        },
+        {
+          "name": "bee",
+          "sample_count": 138
+        },
+        {
+          "name": "boh",
+          "sample_count": 144
+        },
+        {
+          "name": "boo",
+          "sample_count": 108
+        },
+        {
+          "name": "mah",
+          "sample_count": 126
+        },
+        {
+          "name": "meh",
+          "sample_count": 192
+        },
+        {
+          "name": "mee",
+          "sample_count": 162
+        },
+        {
+          "name": "moh",
+          "sample_count": 120
+        },
+        {
+          "name": "moo",
+          "sample_count": 192
+        },
+        {
+          "name": "lah",
+          "sample_count": 180
+        },
+        {
+          "name": "leh",
+          "sample_count": 132
+        },
+        {
+          "name": "lee",
+          "sample_count": 144
+        },
+        {
+          "name": "loh",
+          "sample_count": 114
+        },
+        {
+          "name": "loo",
+          "sample_count": 138
         }
+      ],
+      "sample_count": 2886
     },
-    "active_dictionary": "Michal Plus Ooah"
+    "EhOh": {
+      "name": "EhOh",
+      "sounds": [
+        "eh",
+        "oh"
+      ],
+      "active": false,
+      "created_at": "2025-03-03T12:00:00.000000",
+      "updated_at": "2025-03-03T13:56:39.814463",
+      "created_by": "admin",
+      "description": "Dictionary for EhOh models with just 'eh' and 'oh' sounds",
+      "sample_count": 276,
+      "classes": [
+        "eh",
+        "oh"
+      ],
+      "class_details": [
+        {
+          "name": "eh",
+          "sample_count": 150
+        },
+        {
+          "name": "oh",
+          "sample_count": 126
+        }
+      ]
+    },
+    "Michal Base": {
+      "name": "Michal Base",
+      "sounds": [
+        "ah",
+        "eh",
+        "ee",
+        "oh",
+        "oo",
+        "bah",
+        "beh",
+        "bee",
+        "boh",
+        "boo",
+        "mah",
+        "meh",
+        "mee",
+        "moh",
+        "moo",
+        "lah",
+        "leh",
+        "lee",
+        "loh",
+        "loo"
+      ],
+      "classes": [
+        "ah",
+        "eh",
+        "ee",
+        "oh",
+        "oo",
+        "bah",
+        "beh",
+        "bee",
+        "boh",
+        "boo",
+        "mah",
+        "meh",
+        "mee",
+        "moh",
+        "moo",
+        "lah",
+        "leh",
+        "lee",
+        "loh",
+        "loo"
+      ],
+      "class_details": [
+        {
+          "name": "ah",
+          "sample_count": 132
+        },
+        {
+          "name": "eh",
+          "sample_count": 150
+        },
+        {
+          "name": "ee",
+          "sample_count": 126
+        },
+        {
+          "name": "oh",
+          "sample_count": 126
+        },
+        {
+          "name": "oo",
+          "sample_count": 174
+        },
+        {
+          "name": "bah",
+          "sample_count": 126
+        },
+        {
+          "name": "beh",
+          "sample_count": 162
+        },
+        {
+          "name": "bee",
+          "sample_count": 138
+        },
+        {
+          "name": "boh",
+          "sample_count": 144
+        },
+        {
+          "name": "boo",
+          "sample_count": 108
+        },
+        {
+          "name": "mah",
+          "sample_count": 126
+        },
+        {
+          "name": "meh",
+          "sample_count": 192
+        },
+        {
+          "name": "mee",
+          "sample_count": 162
+        },
+        {
+          "name": "moh",
+          "sample_count": 120
+        },
+        {
+          "name": "moo",
+          "sample_count": 192
+        },
+        {
+          "name": "lah",
+          "sample_count": 180
+        },
+        {
+          "name": "leh",
+          "sample_count": 132
+        },
+        {
+          "name": "lee",
+          "sample_count": 144
+        },
+        {
+          "name": "loh",
+          "sample_count": 114
+        },
+        {
+          "name": "loo",
+          "sample_count": 138
+        }
+      ],
+      "sample_count": 2886
+    },
+    "Michal Plus Ooah": {
+      "name": "Michal Plus Ooah",
+      "sounds": [
+        "ah",
+        "eh",
+        "ee",
+        "oh",
+        "oo",
+        "bah",
+        "beh",
+        "bee",
+        "boh",
+        "boo",
+        "mah",
+        "meh",
+        "mee",
+        "moh",
+        "moo",
+        "lah",
+        "leh",
+        "lee",
+        "loh",
+        "loo",
+        "ooah"
+      ],
+      "classes": [
+        "ah",
+        "eh",
+        "ee",
+        "oh",
+        "oo",
+        "bah",
+        "beh",
+        "bee",
+        "boh",
+        "boo",
+        "mah",
+        "meh",
+        "mee",
+        "moh",
+        "moo",
+        "lah",
+        "leh",
+        "lee",
+        "loh",
+        "loo",
+        "ooah"
+      ],
+      "class_details": [
+        {
+          "name": "ah",
+          "sample_count": 132
+        },
+        {
+          "name": "eh",
+          "sample_count": 150
+        },
+        {
+          "name": "ee",
+          "sample_count": 126
+        },
+        {
+          "name": "oh",
+          "sample_count": 126
+        },
+        {
+          "name": "oo",
+          "sample_count": 174
+        },
+        {
+          "name": "bah",
+          "sample_count": 126
+        },
+        {
+          "name": "beh",
+          "sample_count": 162
+        },
+        {
+          "name": "bee",
+          "sample_count": 138
+        },
+        {
+          "name": "boh",
+          "sample_count": 144
+        },
+        {
+          "name": "boo",
+          "sample_count": 108
+        },
+        {
+          "name": "mah",
+          "sample_count": 126
+        },
+        {
+          "name": "meh",
+          "sample_count": 192
+        },
+        {
+          "name": "mee",
+          "sample_count": 162
+        },
+        {
+          "name": "moh",
+          "sample_count": 120
+        },
+        {
+          "name": "moo",
+          "sample_count": 192
+        },
+        {
+          "name": "lah",
+          "sample_count": 180
+        },
+        {
+          "name": "leh",
+          "sample_count": 132
+        },
+        {
+          "name": "lee",
+          "sample_count": 144
+        },
+        {
+          "name": "loh",
+          "sample_count": 114
+        },
+        {
+          "name": "loo",
+          "sample_count": 138
+        },
+        {
+          "name": "ooah",
+          "sample_count": 138
+        }
+      ],
+      "sample_count": 3024
+    },
+    "Two words": {
+      "name": "Two words",
+      "sounds": [
+        "oh",
+        "eh"
+      ],
+      "classes": [
+        "oh",
+        "eh"
+      ],
+      "class_details": [
+        {
+          "name": "oh",
+          "sample_count": 126
+        },
+        {
+          "name": "eh",
+          "sample_count": 150
+        }
+      ],
+      "sample_count": 276
+    }
+  },
+  "active_dictionary": "Michal Plus Ooah"
 }

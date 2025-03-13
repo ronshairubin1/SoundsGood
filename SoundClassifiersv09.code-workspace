@@ -1,12 +1,27 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"search.exclude": {
-			"**/get_code": true
-		}
-	}
+    "folders": [
+        {
+            "path": "/Users/ronshairubin/Desktop/SoundsEasy/SoundClassifiers/SoundClassifier_v09"
+        }
+    ],
+    "settings": {
+        "files.autoSave": "afterDelay",
+        "editor.wordWrap": "on",
+        "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+        "editor.experimentalEditContextEnabled": true,
+        "editor.experimentalInlineEdit.enabled": true,
+        "editor.maxTokenizationLineLength": 200000,
+        "diffEditor.codeLens": true,
+        "files.autoGuessEncoding": true,
+        "files.autoSaveDelay": 10000,
+        "workbench.commandPalette.preserveInput": true,
+        "workbench.experimental.cloudChanges.autoStore": "onShutdown",
+        "workbench.experimental.cloudChanges.partialMatches.enabled": true,
+        "workbench.experimental.share.enabled": true,
+        "workbench.editor.enablePreview": false,
+        "workbench.editor.enablePreviewFromCodeNavigation": true,
+        "terminal.integrated.ignoreBracketedPasteMode": true,
+        "search.useGlobalIgnoreFiles": false,
+        "search.useIgnoreFiles": false
+    }
 }

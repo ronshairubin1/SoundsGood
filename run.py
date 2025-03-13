@@ -9,7 +9,7 @@ import webbrowser
 import threading
 import logging
 import traceback
-from config import Config
+from backend.config import Config
 
 # Set up logging
 logging.basicConfig(
@@ -126,56 +126,15 @@ def check_and_kill_port(port=5002):
         logger.info(f"Successfully freed port {port}.")
         return True
 
-def open_browser(port=5002):
-    """
-    Open the browser to the application URL after a short delay
-    """
-    # Direct to the auto-logout route to ensure the user starts logged out
-    url = f"http://localhost:{port}/auto-logout"
-    logger.info(f"Opening browser to {url}...")
-    
-    # Give the server more time to start up
-    time.sleep(3)
-    logger.debug("Waited 3 seconds for server startup")
-    
-    # Try to open the browser with better error handling
+def open_browser(port=5002, delay=1.5):
+    """Open browser to the application after a short delay"""
     try:
-        # Try to open with the default browser
-        logger.debug("Attempting to open URL with default browser")
-        success = webbrowser.open(url)
-        
-        if not success:
-            logger.warning("Failed to open with default browser, trying specific browsers...")
-            # Try specific browsers by name
-            for browser in ['chrome', 'firefox', 'safari']:
-                try:
-                    logger.debug(f"Trying to open with {browser}")
-                    browser_controller = webbrowser.get(browser)
-                    browser_controller.open(url)
-                    logger.info(f"Opened URL with {browser}")
-                    break
-                except Exception as e:
-                    logger.debug(f"Failed to open with {browser}: {e}")
-                    continue
-            else:
-                # If all browsers failed, try system-specific command
-                logger.warning("Trying system command to open browser...")
-                system = platform.system().lower()
-                if system == 'darwin':  # macOS
-                    logger.debug("Using 'open' command (macOS)")
-                    subprocess.run(['open', url], check=False)
-                elif system == 'windows':
-                    logger.debug("Using 'start' command (Windows)")
-                    subprocess.run(['start', url], shell=True, check=False)
-                elif system == 'linux':
-                    logger.debug("Using 'xdg-open' command (Linux)")
-                    subprocess.run(['xdg-open', url], check=False)
-                else:
-                    logger.error("WARNING: Could not open browser automatically.")
-                    logger.error(f"Please open {url} manually in your browser.")
+        time.sleep(delay)  # Give the web app time to start
+        url = f"http://localhost:{port}/test-login"
+        logger.info(f"Opening browser to {url}...")
+        webbrowser.open(url)
     except Exception as e:
-        logger.error(f"Error trying to open browser: {e}")
-        logger.error(f"Please open {url} manually in your browser.")
+        logger.error(f"Error opening browser: {e}")
 
 def main():
     """
@@ -234,12 +193,33 @@ def main():
         browser_thread.start()
         
         try:
-            # Run the main script directly as a subprocess
-            # This ensures it runs in the foreground and doesn't terminate
-            logger.info(f"Executing: {sys.executable} {main_script}")
-            subprocess.call([sys.executable, main_script])
+            # Check if command line arguments are provided
+            if len(sys.argv) > 1 and sys.argv[1] == "train":
+                # Run the training command with necessary arguments
+                training_args = [
+                    sys.executable,
+                    main_script,
+                    "train",              # Command to train a model
+                    "--dict_name", "EhOh",  # Dictionary name (using EhOh specifically)
+                    "--model_type", "cnn",  # Model type (CNN)
+                    "--clear_cache", "true"  # Clear cache flag (force regeneration)
+                ]
+                logger.info(f"Executing training: {' '.join(training_args)}")
+                subprocess.call(training_args)
+            else:
+                # Run the web application
+                logger.info("Starting web application...")
+                # Run main.py with no arguments to start the web application (default behavior)
+                web_args = [sys.executable, main_script]
+                logger.info(f"Executing web app: {' '.join(web_args)}")
+                try:
+                    output = subprocess.check_output(web_args, stderr=subprocess.STDOUT)
+                    logger.info("Web app output: %s", output.decode())
+                except subprocess.CalledProcessError as e:
+                    logger.error("Web app error (code %d): %s", e.returncode, e.output.decode())
+                    print("Error running main.py:", e.output.decode())
         except Exception as e:
-            logger.error(f"Error running main application: {e}")
+            logger.error(f"Error running application: {e}")
             logger.error(traceback.format_exc())
             sys.exit(1)
 

@@ -1,0 +1,32 @@
+{
+  "admin": {
+    "id": "809d53493e9bf469",
+    "username": "admin",
+    "password_hash": "9f616ac4f41064fff016dd742f57b9da082b8115518813f9e58c563477939af1",
+    "salt": "9cda0dff7ce8a15a740ad0539229beb6",
+    "email": null,
+    "is_admin": true,
+    "created_at": "2025-03-06T10:06:46.706297",
+    "last_login": "2025-03-11T10:35:20.640240"
+  },
+  "ron": {
+    "id": "86dabf4ce6fc62b8",
+    "username": "ron",
+    "password_hash": "ecad779911cf67fc0ba619fa9d5d4347aa476c319f22f8b622a1ef99d2fa5b21",
+    "salt": "447082083d6a3d38d8d11ecb8eccc34f",
+    "email": "ronshairubin@gmail.com",
+    "is_admin": false,
+    "created_at": "2025-03-06T10:57:02.341051",
+    "last_login": "2025-03-13T08:57:46.218589"
+  },
+  "test": {
+    "id": "test-user-id-12345678",
+    "username": "test",
+    "password_hash": "9be3849b9961f5b129d39d77d793a20e5c0b10295eecb349e350207548ef68e7",
+    "salt": "7625e694215c0f782b466ada777bf219",
+    "email": "test@example.com",
+    "is_admin": true,
+    "created_at": "2025-03-09T09:11:59.008635",
+    "last_login": "2025-03-09T09:11:59.008635"
+  }
+}

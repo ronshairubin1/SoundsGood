@@ -1,0 +1,1 @@
+{"class_names": ["eh", "oh"], "model_type": "cnn", "input_shape": [64, 63, 1], "creation_date": "2025-03-10 12:45:48", "training_stats": {"accuracy": 1.0, "loss": 0.0012437390396371484, "training_samples": 220, "validation_samples": 56}}

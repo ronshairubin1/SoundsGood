@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Dictionaries - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.dictionary-card {
+    height: 100%;
+}
+.dictionary-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.class-badge {
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.sample-count {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+}
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    margin-top: 2rem;
+}
+.class-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.class-item {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 4px 8px;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.class-item .badge {
+    margin-right: 5px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title">
+                <i class="bi bi-folder2 me-2"></i>Sound Dictionaries
+            </h1>
+            <div>
+                <button id="syncCounts" class="btn btn-outline-info me-2">
+                    <i class="bi bi-sync me-1"></i>Sync Sample Counts
+                </button>
+                <a href="/dictionaries/create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>New Dictionary
+                </a>
+            </div>
+        </div>
+        <p class="text-muted">Create and manage your custom sound dictionaries for training models</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newDictionaryModal">
+            <i class="bi bi-plus-circle me-2"></i>Create New Dictionary
+        </button>
+    </div>
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="dictionarySearch" placeholder="Search dictionaries...">
+        </div>
+    </div>
+</div>
+
+<!-- Dictionaries Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="dictionariesGrid">
+    {% for dict in dictionaries %}
+    <div class="col dictionary-item">
+        <div class="card dictionary-card h-100">
+            <div class="card-body">
+                <div class="dictionary-actions dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/dictionaries/{{ dict.name }}">
+                            <i class="bi bi-pencil me-2"></i>Manage
+                        </a></li>
+                        <li><a class="dropdown-item" href="/dictionaries/{{ dict.name }}/export">
+                            <i class="bi bi-download me-2"></i>Export
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" 
+                               onclick="confirmDelete('{{ dict.name }}', '{{ dict.name }}')">
+                            <i class="bi bi-trash me-2"></i>Delete
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <h5 class="card-title">{{ dict.name }}</h5>
+                <p class="card-text text-muted small">{{ dict.description }}</p>
+                
+                <div class="mt-3 mb-4">
+                    <strong class="d-block mb-2">Sound Classes:</strong>
+                    {% if dict.classes %}
+                        <div class="class-list">
+                            {% for class_detail in dict.class_details %}
+                            <div class="class-item">
+                                <span class="badge bg-primary class-badge">{{ class_detail.name }}</span>
+                                <span class="badge bg-secondary">{{ class_detail.sample_count }} samples</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-muted fst-italic">No classes yet</span>
+                    {% endif %}
+                </div>
+                
+                <span class="sample-count">
+                    <i class="bi bi-file-earmark-music me-1"></i>{{ dict.sample_count }} samples
+                </span>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="/dictionaries/{{ dict.name }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-folder2-open me-1"></i>Open
+                    </a>
+                    <a href="{{ url_for('ml.training_view', dictionary=dict.name) }}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-gear me-1"></i>Train Model
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-folder2 display-1 text-muted mb-3"></i>
+            <h3>No Dictionaries Yet</h3>
+            <p class="text-muted">Create your first dictionary to start organizing sound samples</p>
+            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newDictionaryModal">
+                <i class="bi bi-plus-circle me-2"></i>Create New Dictionary
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Debug information section, only visible in debug mode -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Debug Information</h5>
+            </div>
+            <div class="card-body">
+                <h6>Dictionaries Passed to Template:</h6>
+                <pre class="bg-light p-3" style="max-height: 300px; overflow-y: auto;">Total dictionaries: {{ dictionaries|length }}
+{% for dict in dictionaries %}
+- {{ dict.name }} (ID: {{ dict.safe_name if dict.safe_name else 'None' }})
+  - Classes: {{ dict.classes|length }}
+  - Samples: {{ dict.sample_count }}
+  - Created by: {{ dict.created_by if dict.created_by else 'Unknown' }}
+  - Created at: {{ dict.created_at if dict.created_at else 'Unknown' }}
+{% else %}
+No dictionaries found.
+{% endfor %}
+                </pre>
+                
+                <h6 class="mt-3">Session Information:</h6>
+                <pre class="bg-light p-3">
+- User ID: {{ session.user_id if session.user_id else 'Not set' }}
+- Username: {{ session.username if session.username else 'Not set' }}
+                </pre>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End debug section -->
+
+<!-- New Dictionary Modal -->
+<div class="modal fade" id="newDictionaryModal" tabindex="-1" aria-labelledby="newDictionaryModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newDictionaryModalLabel">Create New Dictionary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="dictionaryFormError" class="alert alert-danger" style="display: none;"></div>
+                <form id="newDictionaryForm" method="POST" action="/api/dictionary/create">
+                    <div class="mb-3">
+                        <label for="dictionaryName" class="form-label">Dictionary Name</label>
+                        <input type="text" class="form-control" id="dictionaryName" name="name" required 
+                               placeholder="Enter a unique name for your dictionary">
+                        <div class="form-text">Name should be unique and contain only letters, numbers, and spaces.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dictionaryDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="dictionaryDescription" name="description" rows="3" 
+                                  placeholder="Optional description for your dictionary"></textarea>
+                    </div>
+                    <input type="hidden" name="user_id" value="{{ session.user_id }}">
+                    <input type="hidden" name="redirect" value="/dictionaries">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createDictionaryBtn">Create Dictionary</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteDictionaryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the dictionary "<span id="deleteTargetName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone. All sound samples in this dictionary will be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    console.log("Document ready for dictionary management");
+
+    // Initialize modals
+    try {
+        const newDictionaryModalEl = document.getElementById('newDictionaryModal');
+        if (newDictionaryModalEl) {
+            const newDictionaryModal = new bootstrap.Modal(newDictionaryModalEl);
+            console.log("New dictionary modal initialized");
+            
+            // Clear form when modal is hidden
+            newDictionaryModalEl.addEventListener('hidden.bs.modal', function() {
+                console.log("Modal hidden, resetting form");
+                document.getElementById('newDictionaryForm').reset();
+                document.getElementById('dictionaryFormError').style.display = 'none';
+                const createBtn = document.getElementById('createDictionaryBtn');
+                if (createBtn) {
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = 'Create Dictionary';
+                }
+            });
+        } else {
+            console.error("Could not find new dictionary modal element");
+        }
+    } catch (e) {
+        console.error("Error initializing modals:", e);
+    }
+    
+    // Create dictionary
+    console.log("Document ready, setting up dictionary creation handler");
+    const createDictionaryBtn = document.getElementById('createDictionaryBtn');
+    
+    if (createDictionaryBtn) {
+        console.log("Found createDictionaryBtn, adding click handler");
+        createDictionaryBtn.addEventListener('click', function() {
+            console.log("CREATE DICTIONARY BUTTON CLICKED");
+            
+            const form = document.getElementById('newDictionaryForm');
+            if (!form) {
+                console.error("Could not find newDictionaryForm");
+                return;
+            }
+            
+            const nameInput = document.getElementById('dictionaryName');
+            if (!nameInput) {
+                console.error("Dictionary name input element not found!");
+                return;
+            }
+            
+            const name = nameInput.value.trim();
+            console.log("Dictionary name:", name);
+            
+            if (!name) {
+                console.warn("Dictionary name is empty!");
+                // Show error
+                const errorDiv = document.getElementById('dictionaryFormError');
+                if (errorDiv) {
+                    errorDiv.textContent = "Dictionary name is required";
+                    errorDiv.style.display = 'block';
+                } else {
+                    alert("Dictionary name is required");
+                }
+                nameInput.focus();
+                return;
+            }
+            
+            // All good, submit the form
+            console.log("Submitting form to create dictionary");
+            form.submit();
+        });
+    } else {
+        console.error("Could not find createDictionaryBtn element!");
+    }
+    
+    // Search functionality
+    $('#dictionarySearch').on('input', function() {
+        const query = $(this).val().toLowerCase();
+        $('.dictionary-item').each(function() {
+            const dictName = $(this).find('.card-title').text().toLowerCase();
+            const dictDesc = $(this).find('.card-text').text().toLowerCase();
+            if (dictName.includes(query) || dictDesc.includes(query)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+});
+
+// Delete confirmation
+function confirmDelete(name, displayName) {
+    $('#deleteTargetName').text(displayName);
+    $('#confirmDeleteBtn').data('name', name);
+    new bootstrap.Modal(document.getElementById('deleteDictionaryModal')).show();
+}
+
+$('#confirmDeleteBtn').click(function() {
+    const name = $(this).data('name');
+    
+    $.ajax({
+        url: '/api/dictionary/' + name,
+        type: 'DELETE',
+        success: function(response) {
+            if (response.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function() {
+            alert('Failed to delete dictionary');
+        }
+    });
+});
+</script>
+
+{% block custom_scripts %}
+<script>
+document.getElementById('syncCounts').addEventListener('click', function() {
+    // Show loading state
+    this.innerHTML = '<i class="bi bi-arrow-repeat me-1 spin"></i>Syncing...';
+    this.disabled = true;
+    
+    // Call the API to sync sample counts
+    fetch('/api/dictionary/sync_counts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button state
+        this.innerHTML = '<i class="bi bi-sync me-1"></i>Sync Sample Counts';
+        this.disabled = false;
+        
+        if (data.success) {
+            // Show success notification
+            showToast('Success', data.message, 'success');
+            
+            // Reload the page to show updated counts
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            // Show error notification
+            showToast('Error', data.error || 'Failed to sync sample counts', 'danger');
+        }
+    })
+    .catch(error => {
+        // Reset button state and show error
+        this.innerHTML = '<i class="bi bi-sync me-1"></i>Sync Sample Counts';
+        this.disabled = false;
+        showToast('Error', 'Failed to sync sample counts: ' + error, 'danger');
+    });
+});
+
+// Helper function to show toast notifications
+function showToast(title, message, type) {
+    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+    
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+    
+    toastEl.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>${title}</strong>: ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toastEl);
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+    
+    // Remove toast after it's hidden
+    toastEl.addEventListener('hidden.bs.toast', function () {
+        toastEl.remove();
+    });
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1050';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Add a CSS class for spinning icon
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock custom_scripts %}
+{% endblock %} 

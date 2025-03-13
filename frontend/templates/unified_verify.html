@@ -1,0 +1,825 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Sound Recordings - SoundsEasy{% endblock %}
+
+{% block custom_styles %}
+.approval-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.recording-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.recording-item:last-child {
+    border-bottom: none;
+}
+
+.recording-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recording-class {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.recording-time {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.recording-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.recordings-container {
+    max-height: 75vh;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    position: relative;
+}
+
+.class-badge {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    margin-right: 10px;
+}
+
+.grouped-heading {
+    padding: 10px 15px;
+    background-color: #e9ecef;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.loading-spinner {
+    display: none !important; /* Force hide the spinner initially */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    z-index: 5;
+    padding: 2rem;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+/* Button styles with improved visual feedback */
+.btn-keep {
+    background-color: #28a745;
+    color: white;
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: pointer !important;
+}
+
+.btn-keep:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-keep:active, .btn-keep.active {
+    background-color: #1a7a2d !important;
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
+}
+
+.btn-discard {
+    background-color: #dc3545;
+    color: white;
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: pointer !important;
+}
+
+.btn-discard:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-discard:active, .btn-discard.active {
+    background-color: #a91e2c !important;
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
+}
+
+.keep-recording, .discard-recording {
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto !important;
+}
+
+.keep-recording::after, .discard-recording::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.keep-recording:focus::after, .discard-recording:focus::after,
+.keep-recording:active::after, .discard-recording:active::after {
+    animation: ripple 0.5s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(50, 50);
+        opacity: 0;
+    }
+}
+
+.sound-chunk-item {
+    transition: all 0.3s ease;
+}
+
+.sound-chunk-item.bg-success-subtle {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+}
+
+.sound-chunk-item.bg-danger-subtle {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+}
+
+/* Ensure buttons are clickable even if spinner is visible */
+.btn {
+    position: relative;
+    z-index: 20;
+}
+
+audio {
+    z-index: 20;
+    position: relative;
+}
+
+#debug-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 400px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    z-index: 9999;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    border-top-right-radius: 5px;
+}
+
+#debug-panel h4 {
+    margin-top: 0;
+    color: #ff9;
+    font-size: 14px;
+}
+
+#debug-log div {
+    border-bottom: 1px solid #444;
+    padding: 3px 0;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-check2-circle me-2"></i>Sound Recordings Verification
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Dashboard</a></li>
+                {% if all_classes %}
+                <li class="breadcrumb-item active" aria-current="page">All Recordings</li>
+                {% else %}
+                <li class="breadcrumb-item"><a href="{{ url_for('unified_sound_verify') }}">All Recordings</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Class: {{ class_name }}</li>
+                {% endif %}
+            </ol>
+        </nav>
+        <p class="text-muted">
+            {% if all_classes %}
+            Review and verify all pending recordings across all sound classes before they are used for training.
+            {% else %}
+            Review and verify recordings for the sound class <span class="badge bg-primary">{{ class_name }}</span> before they are used for training.
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card approval-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-earmark-music me-2"></i>
+                        {% if all_classes %}
+                        Pending Recordings
+                        {% else %}
+                        Pending Recordings for {{ class_name }}
+                        {% endif %}
+                    </h5>
+                    <div>
+                        <button id="refreshBtn" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                        </button>
+                        {% if not all_classes %}
+                        <a href="{{ url_for('unified_sound_verify') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                            <i class="bi bi-grid-3x3-gap me-1"></i> View All Classes
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="recordings-container">
+                    <div id="loadingSpinner" class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="emptyMessage" class="empty-message" style="display: none;">
+                        <i class="bi bi-emoji-smile display-4"></i>
+                        <h4 class="mt-3">All Caught Up!</h4>
+                        <p>There are no pending recordings that need verification.</p>
+                    </div>
+                    
+                    <div id="pendingRecordings">
+                        {% if recordings|length > 0 %}
+                            {% if all_classes %}
+                                {% for class_key, class_recordings in recordings_by_class.items() %}
+                                <div class="class-group mb-3">
+                                    <div class="grouped-heading" data-class="{{ class_key }}" data-bs-toggle="collapse" data-bs-target="#recordings-{{ class_key }}">
+                                        <div>
+                                            <i class="bi bi-folder2 me-2"></i>Class: {{ class_key }} ({{ class_recordings|length }} recordings)
+                                            <i class="bi bi-chevron-down ms-2 toggle-icon"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="recordings-{{ class_key }}" class="recordings-group collapse">
+                                        {% for recording in class_recordings %}
+                                        <div class="sound-chunk-item recording-item" data-id="{{ recording.id }}" data-file="{{ recording.filename }}" data-class="{{ recording.class_name }}">
+                                            <div class="recording-info">
+                                                <div class="recording-class">
+                                                    Sample {{ loop.index }}
+                                                    <span class="badge bg-info">{{ recording.class_name }}</span>
+                                                </div>
+                                                <div class="recording-time">{{ recording.timestamp }}</div>
+                                            </div>
+                                            <div class="recording-actions chunk-actions">
+                                                <audio controls src="{{ recording.url }}" class="me-2"></audio>
+                                                <button class="btn btn-sm btn-success btn-keep keep-recording keep-chunk-btn" data-file="{{ recording.filename }}" data-id="{{ recording.id }}" onclick="
+                                                    try {
+                                                        var buttonElement = this;
+                                                        var filename = this.getAttribute('data-file');
+                                                        buttonElement.disabled = true;
+                                                        buttonElement.innerHTML = '<span class=\'spinner-border spinner-border-sm\' role=\'status\'></span> Processing...';
+                                                        
+                                                        fetch('/api/sounds/verify-recording', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ filename: filename, keep: true })
+                                                        })
+                                                        .then(function(response) {
+                                                            return response.json();
+                                                        })
+                                                        .then(function(data) {
+                                                            if (data.success) {
+                                                                buttonElement.innerHTML = 'Saved ✓';
+                                                                
+                                                                var recordingItem = buttonElement.closest('.recording-item');
+                                                                if (recordingItem) {
+                                                                    recordingItem.classList.add('bg-success-subtle');
+                                                                    
+                                                                    var actionsDiv = recordingItem.querySelector('.chunk-actions');
+                                                                    if (actionsDiv) {
+                                                                        var audio = actionsDiv.querySelector('audio');
+                                                                        actionsDiv.innerHTML = '';
+                                                                        if (audio) actionsDiv.appendChild(audio);
+                                                                        
+                                                                        var badge = document.createElement('span');
+                                                                        badge.className = 'badge kept';
+                                                                        badge.innerHTML = 'Added to Training';
+                                                                        actionsDiv.appendChild(badge);
+                                                                    }
+                                                                    
+                                                                    // Disable the discard button if it exists
+                                                                    var discardBtn = recordingItem.querySelector('.btn-discard');
+                                                                    if (discardBtn) {
+                                                                        discardBtn.disabled = true;
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                buttonElement.disabled = false;
+                                                                buttonElement.innerHTML = '<i class=\'bi bi-check me-1\'></i> Keep';
+                                                                console.error('Error keeping recording:', data.error);
+                                                            }
+                                                        })
+                                                        .catch(function(error) {
+                                                            buttonElement.disabled = false;
+                                                            buttonElement.innerHTML = '<i class=\'bi bi-check me-1\'></i> Keep';
+                                                            console.error('Error keeping recording:', error);
+                                                        });
+                                                    } catch(error) {
+                                                        console.error('Error in keep handler:', error);
+                                                    }
+                                                    return false;
+                                                ">
+                                                    <i class="bi bi-check me-1"></i> Keep
+                                                </button>
+                                                <button class="btn btn-sm btn-danger btn-discard discard-recording discard-chunk-btn" data-file="{{ recording.filename }}" data-id="{{ recording.id }}" onclick="
+                                                    try {
+                                                        var buttonElement = this;
+                                                        var filename = this.getAttribute('data-file');
+                                                        buttonElement.disabled = true;
+                                                        buttonElement.innerHTML = '<span class=\'spinner-border spinner-border-sm\' role=\'status\'></span> Processing...';
+                                                        
+                                                        fetch('/api/sounds/verify-recording', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ filename: filename, keep: false })
+                                                        })
+                                                        .then(function(response) {
+                                                            return response.json();
+                                                        })
+                                                        .then(function(data) {
+                                                            if (data.success) {
+                                                                buttonElement.innerHTML = 'Discarded ✓';
+                                                                
+                                                                var recordingItem = buttonElement.closest('.recording-item');
+                                                                if (recordingItem) {
+                                                                    recordingItem.classList.add('bg-danger-subtle');
+                                                                    
+                                                                    var actionsDiv = recordingItem.querySelector('.chunk-actions');
+                                                                    if (actionsDiv) {
+                                                                        // Remove audio element completely
+                                                                        actionsDiv.innerHTML = '';
+                                                                        
+                                                                        var badge = document.createElement('span');
+                                                                        badge.className = 'badge discarded';
+                                                                        badge.innerHTML = 'Discarded';
+                                                                        actionsDiv.appendChild(badge);
+                                                                    }
+                                                                    
+                                                                    // Disable the keep button if it exists
+                                                                    var keepBtn = recordingItem.querySelector('.btn-keep');
+                                                                    if (keepBtn) {
+                                                                        keepBtn.disabled = true;
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                buttonElement.disabled = false;
+                                                                buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard';
+                                                                console.error('Error discarding recording:', data.error);
+                                                            }
+                                                        })
+                                                        .catch(function(error) {
+                                                            buttonElement.disabled = false;
+                                                            buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard';
+                                                            console.error('Error discarding recording:', error);
+                                                        });
+                                                    } catch(error) {
+                                                        console.error('Error in discard handler:', error);
+                                                    }
+                                                    return false;
+                                                ">
+                                                    <i class="bi bi-trash me-1"></i> Discard
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Class-specific view -->
+                                <div class="d-flex justify-content-between align-items-center mb-3 px-3">
+                                    <div>{{ recordings|length }} samples found for class: <span class="badge bg-primary">{{ class_name }}</span></div>
+                                    <div>
+                                        <button id="keepAllBtn" class="btn btn-success btn-sm" onclick="
+                                            try {
+                                                var buttonElement = this;
+                                                var className = document.querySelector('.badge.bg-primary').textContent;
+                                                buttonElement.disabled = true;
+                                                buttonElement.innerHTML = '<span class=\'spinner-border spinner-border-sm\' role=\'status\'></span> Processing...';
+                                                
+                                                // Find all recording items for the current class view
+                                                var recordings = document.querySelectorAll('.recording-item');
+                                                if (recordings.length === 0) {
+                                                    buttonElement.disabled = false;
+                                                    buttonElement.innerHTML = '<i class=\'bi bi-check-all me-1\'></i> Keep All';
+                                                    alert('No recordings found');
+                                                    return false;
+                                                }
+                                                
+                                                // Count for tracking completion
+                                                var processed = 0;
+                                                var total = recordings.length;
+                                                
+                                                // Process each recording
+                                                recordings.forEach(function(recordingItem) {
+                                                    var filename = recordingItem.getAttribute('data-file');
+                                                    if (!filename) return;
+                                                    
+                                                    // Get the buttons
+                                                    var keepBtn = recordingItem.querySelector('.btn-keep');
+                                                    var discardBtn = recordingItem.querySelector('.btn-discard');
+                                                    
+                                                    // Skip if already processed
+                                                    if (keepBtn && keepBtn.disabled) {
+                                                        processed++;
+                                                        return;
+                                                    }
+                                                    
+                                                    // Disable buttons
+                                                    if (keepBtn) keepBtn.disabled = true;
+                                                    if (discardBtn) discardBtn.disabled = true;
+                                                    
+                                                    fetch('/api/sounds/verify-recording', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ filename: filename, keep: true })
+                                                    })
+                                                    .then(function(response) {
+                                                        return response.json();
+                                                    })
+                                                    .then(function(data) {
+                                                        processed++;
+                                                        
+                                                        if (data.success) {
+                                                            // Update the UI
+                                                            recordingItem.classList.add('bg-success-subtle');
+                                                            
+                                                            // Replace buttons with status badge
+                                                            var actionsDiv = recordingItem.querySelector('.chunk-actions');
+                                                            if (actionsDiv) {
+                                                                var audio = actionsDiv.querySelector('audio');
+                                                                actionsDiv.innerHTML = '';
+                                                                if (audio) actionsDiv.appendChild(audio);
+                                                                
+                                                                var badge = document.createElement('span');
+                                                                badge.className = 'badge kept';
+                                                                badge.innerHTML = 'Added to Training';
+                                                                actionsDiv.appendChild(badge);
+                                                            }
+                                                        }
+                                                        
+                                                        // Update the main button when all are processed
+                                                        if (processed === total) {
+                                                            buttonElement.innerHTML = '<i class=\'bi bi-check-circle me-1\'></i> All Kept';
+                                                            buttonElement.disabled = true;
+                                                            
+                                                            // If "Discard All" button exists, disable it too
+                                                            if (document.getElementById('discardAllBtn')) {
+                                                                document.getElementById('discardAllBtn').disabled = true;
+                                                            }
+                                                        }
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error('Error keeping recording:', error);
+                                                        processed++;
+                                                        
+                                                        // Update the main button when all are processed
+                                                        if (processed === total) {
+                                                            buttonElement.innerHTML = '<i class=\'bi bi-check-all me-1\'></i> Keep All';
+                                                            buttonElement.disabled = false;
+                                                        }
+                                                    });
+                                                });
+                                            } catch(error) {
+                                                console.error('Error in keep all handler:', error);
+                                                buttonElement.disabled = false;
+                                                buttonElement.innerHTML = '<i class=\'bi bi-check-all me-1\'></i> Keep All';
+                                            }
+                                            return false;
+                                        ">
+                                            <i class="bi bi-check-all me-1"></i> Keep All
+                                        </button>
+                                        <button id="discardAllBtn" class="btn btn-danger btn-sm ms-2" onclick="
+                                            try {
+                                                var buttonElement = this;
+                                                var className = document.querySelector('.badge.bg-primary').textContent;
+                                                buttonElement.disabled = true;
+                                                buttonElement.innerHTML = '<span class=\'spinner-border spinner-border-sm\' role=\'status\'></span> Processing...';
+                                                
+                                                // Find all recording items for the current class view
+                                                var recordings = document.querySelectorAll('.recording-item');
+                                                if (recordings.length === 0) {
+                                                    buttonElement.disabled = false;
+                                                    buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard All';
+                                                    alert('No recordings found');
+                                                    return false;
+                                                }
+                                                
+                                                // Count for tracking completion
+                                                var processed = 0;
+                                                var total = recordings.length;
+                                                
+                                                // Process each recording
+                                                recordings.forEach(function(recordingItem) {
+                                                    var filename = recordingItem.getAttribute('data-file');
+                                                    if (!filename) return;
+                                                    
+                                                    // Get the buttons
+                                                    var keepBtn = recordingItem.querySelector('.btn-keep');
+                                                    var discardBtn = recordingItem.querySelector('.btn-discard');
+                                                    
+                                                    // Skip if already processed
+                                                    if (discardBtn && discardBtn.disabled) {
+                                                        processed++;
+                                                        return;
+                                                    }
+                                                    
+                                                    // Disable buttons
+                                                    if (keepBtn) keepBtn.disabled = true;
+                                                    if (discardBtn) discardBtn.disabled = true;
+                                                    
+                                                    fetch('/api/sounds/verify-recording', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ filename: filename, keep: false })
+                                                    })
+                                                    .then(function(response) {
+                                                        return response.json();
+                                                    })
+                                                    .then(function(data) {
+                                                        processed++;
+                                                        
+                                                        if (data.success) {
+                                                            // Update the UI
+                                                            recordingItem.classList.add('bg-danger-subtle');
+                                                            
+                                                            // Replace buttons with status badge
+                                                            var actionsDiv = recordingItem.querySelector('.chunk-actions');
+                                                            if (actionsDiv) {
+                                                                var audio = actionsDiv.querySelector('audio');
+                                                                actionsDiv.innerHTML = '';
+                                                                if (audio) actionsDiv.appendChild(audio);
+                                                                
+                                                                var badge = document.createElement('span');
+                                                                badge.className = 'badge discarded';
+                                                                badge.innerHTML = 'Discarded';
+                                                                actionsDiv.appendChild(badge);
+                                                            }
+                                                        }
+                                                        
+                                                        // Update the main button when all are processed
+                                                        if (processed === total) {
+                                                            buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> All Discarded';
+                                                            buttonElement.disabled = true;
+                                                            
+                                                            // If "Keep All" button exists, disable it too
+                                                            if (document.getElementById('keepAllBtn')) {
+                                                                document.getElementById('keepAllBtn').disabled = true;
+                                                            }
+                                                        }
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error('Error discarding recording:', error);
+                                                        processed++;
+                                                        
+                                                        // Update the main button when all are processed
+                                                        if (processed === total) {
+                                                            buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard All';
+                                                            buttonElement.disabled = false;
+                                                        }
+                                                    });
+                                                });
+                                            } catch(error) {
+                                                console.error('Error in discard all handler:', error);
+                                                buttonElement.disabled = false;
+                                                buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard All';
+                                            }
+                                            return false;
+                                        ">
+                                            <i class="bi bi-trash me-1"></i> Discard All
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {% for recording in recordings %}
+                                <div class="sound-chunk-item recording-item" data-id="{{ recording.id }}" data-file="{{ recording.filename }}" data-class="{{ recording.class_name }}">
+                                    <div class="recording-info">
+                                        <div class="recording-class">
+                                            Sample {{ loop.index }}
+                                            <span class="badge bg-info">{{ recording.class_name }}</span>
+                                        </div>
+                                        <div class="recording-time">{{ recording.timestamp }}</div>
+                                    </div>
+                                    <div class="recording-actions chunk-actions">
+                                        <audio controls src="{{ recording.url }}" class="me-2"></audio>
+                                        <button class="btn btn-sm btn-success btn-keep keep-recording keep-chunk-btn" data-file="{{ recording.filename }}" data-id="{{ recording.id }}" onclick="
+                                            try {
+                                                var buttonElement = this;
+                                                var filename = this.getAttribute('data-file');
+                                                buttonElement.disabled = true;
+                                                buttonElement.innerHTML = '<span class=\'spinner-border spinner-border-sm\' role=\'status\'></span> Processing...';
+                                                
+                                                fetch('/api/sounds/verify-recording', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ filename: filename, keep: true })
+                                                })
+                                                .then(function(response) {
+                                                    return response.json();
+                                                })
+                                                .then(function(data) {
+                                                    if (data.success) {
+                                                        buttonElement.innerHTML = 'Saved ✓';
+                                                        
+                                                        var recordingItem = buttonElement.closest('.recording-item');
+                                                        if (recordingItem) {
+                                                            recordingItem.classList.add('bg-success-subtle');
+                                                            
+                                                            var actionsDiv = recordingItem.querySelector('.chunk-actions');
+                                                            if (actionsDiv) {
+                                                                var audio = actionsDiv.querySelector('audio');
+                                                                actionsDiv.innerHTML = '';
+                                                                if (audio) actionsDiv.appendChild(audio);
+                                                                
+                                                                var badge = document.createElement('span');
+                                                                badge.className = 'badge kept';
+                                                                badge.innerHTML = 'Added to Training';
+                                                                actionsDiv.appendChild(badge);
+                                                            }
+                                                        }
+                                                    } else {
+                                                        buttonElement.disabled = false;
+                                                        buttonElement.innerHTML = '<i class=\'bi bi-check me-1\'></i> Keep';
+                                                        console.error('Error keeping recording:', data.error);
+                                                    }
+                                                })
+                                                .catch(function(error) {
+                                                    buttonElement.disabled = false;
+                                                    buttonElement.innerHTML = '<i class=\'bi bi-check me-1\'></i> Keep';
+                                                    console.error('Error keeping recording:', error);
+                                                });
+                                            } catch(error) {
+                                                console.error('Error in keep handler:', error);
+                                            }
+                                            return false;
+                                        ">
+                                            <i class="bi bi-check me-1"></i> Keep
+                                        </button>
+                                        <button class="btn btn-sm btn-danger btn-discard discard-recording discard-chunk-btn" data-file="{{ recording.filename }}" data-id="{{ recording.id }}" onclick="
+                                            try {
+                                                var buttonElement = this;
+                                                var filename = this.getAttribute('data-file');
+                                                buttonElement.disabled = true;
+                                                buttonElement.innerHTML = '<span class=\'spinner-border spinner-border-sm\' role=\'status\'></span> Processing...';
+                                                
+                                                fetch('/api/sounds/verify-recording', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ filename: filename, keep: false })
+                                                })
+                                                .then(function(response) {
+                                                    return response.json();
+                                                })
+                                                .then(function(data) {
+                                                    if (data.success) {
+                                                        buttonElement.innerHTML = 'Discarded ✓';
+                                                        
+                                                        var recordingItem = buttonElement.closest('.recording-item');
+                                                        if (recordingItem) {
+                                                            recordingItem.classList.add('bg-danger-subtle');
+                                                            
+                                                            var actionsDiv = recordingItem.querySelector('.chunk-actions');
+                                                            if (actionsDiv) {
+                                                                var audio = actionsDiv.querySelector('audio');
+                                                                actionsDiv.innerHTML = '';
+                                                                if (audio) actionsDiv.appendChild(audio);
+                                                                
+                                                                var badge = document.createElement('span');
+                                                                badge.className = 'badge discarded';
+                                                                badge.innerHTML = 'Discarded';
+                                                                actionsDiv.appendChild(badge);
+                                                            }
+                                                        }
+                                                    } else {
+                                                        buttonElement.disabled = false;
+                                                        buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard';
+                                                        console.error('Error discarding recording:', data.error);
+                                                    }
+                                                })
+                                                .catch(function(error) {
+                                                    buttonElement.disabled = false;
+                                                    buttonElement.innerHTML = '<i class=\'bi bi-trash me-1\'></i> Discard';
+                                                    console.error('Error discarding recording:', error);
+                                                });
+                                            } catch(error) {
+                                                console.error('Error in discard handler:', error);
+                                            }
+                                            return false;
+                                        ">
+                                            <i class="bi bi-trash me-1"></i> Discard
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            <div class="empty-message">
+                                <i class="bi bi-emoji-smile display-4"></i>
+                                <h4 class="mt-3">All Caught Up!</h4>
+                                <p>There are no pending recordings that need verification.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{{ url_for('record_sounds') }}" class="btn btn-primary">
+                    <i class="bi bi-mic-fill me-1"></i> Make More Recordings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container for Notifications -->
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11;"></div>
+{% endblock %}
+
+{% block custom_scripts %}
+<script>
+    // Variable to track if the page is fully loaded
+    var pageLoaded = false;
+    
+    // Function to show toast notifications
+    function showToast(message, type) {
+        var toastContainer = document.getElementById('toastContainer');
+        var toastId = 'toast-' + Date.now();
+        var toastHTML = `
+            <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+        var toastElement = document.getElementById(toastId);
+        var toast = new bootstrap.Toast(toastElement);
+        toast.show();
+    }
+    
+    // Add event listener for refresh button
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+        window.location.reload();
+    });
+    
+    // Add event listeners for class headings to toggle recordings
+    document.addEventListener('DOMContentLoaded', function() {
+        var headings = document.querySelectorAll('.grouped-heading');
+        headings.forEach(function(heading) {
+            heading.addEventListener('click', function() {
+                this.classList.toggle('collapsed');
+            });
+        });
+    });
+</script>
+{% endblock %} 

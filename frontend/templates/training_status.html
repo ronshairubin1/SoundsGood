@@ -1,0 +1,747 @@
+{% extends "base.html" %}
+
+{% block title %}Training Status - SoundsEasy{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0" id="training-header">Model Training Status</h2>
+                </div>
+                <div class="card-body">
+                    <div id="training-status">
+                        <h4 class="mb-3" id="status-text">Initializing...</h4>
+                        
+                        <div id="progress-container" class="progress mb-4" style="height: 25px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                 role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" 
+                                 style="width: 0%">
+                                <span id="progress-text">0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" id="info-box">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <span id="info-message">Waiting for training to start...</span>
+                        </div>
+                        
+                        <!-- Training Statistics Section -->
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Training Statistics</h5>
+                                <button class="btn btn-sm btn-primary" onclick="toggleTrainingStats()">
+                                    <i class="bi bi-bar-chart-line me-1" id="stats-icon"></i> Show/Hide Statistics
+                                </button>
+                            </div>
+                            <div id="training-stats" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                        <span>Epoch-by-Epoch Training Results</span>
+                                        <button class="btn btn-sm btn-outline-light" onclick="refreshTrainingStats()">Refresh</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle me-1"></i> Hover over column names for explanations of metrics
+                                            </small>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th style="min-width: 70px;" data-bs-toggle="tooltip" title="Training epoch number">Epoch</th>
+                                                        <th style="min-width: 120px;" data-bs-toggle="tooltip" title="Loss on training data - lower values indicate better model fit. This should decrease over time.">Training Loss</th>
+                                                        <th style="min-width: 140px;" data-bs-toggle="tooltip" title="Classification accuracy on training data - higher values indicate better performance. This should increase over time.">Training Accuracy</th>
+                                                        <th style="min-width: 120px;" data-bs-toggle="tooltip" title="Loss on validation data - lower values indicate better generalization. This should decrease but may increase if the model overfits.">Validation Loss</th>
+                                                        <th style="min-width: 140px;" data-bs-toggle="tooltip" title="Classification accuracy on validation data - higher values indicate better generalization. This is the most important metric for final model performance.">Validation Accuracy</th>
+                                                        <th style="min-width: 110px;" data-bs-toggle="tooltip" title="Current learning rate - this may decrease over time as the training scheduler reduces it to fine-tune the model.">Learning Rate</th>
+                                                        <th style="min-width: 110px;" data-bs-toggle="tooltip" title="Indicates whether the model improved or regressed in validation accuracy compared to the previous epoch.">Improvement</th>
+                                                        <th style="min-width: 200px;" data-bs-toggle="tooltip" title="Description of the change in validation accuracy compared to the previous epoch.">Change Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="stats-table-body">
+                                                    <tr>
+                                                        <td colspan="8" class="text-center">No training data available yet...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-success me-2"><i class="bi bi-arrow-up"></i></span>
+                                                <small>Validation accuracy improved from previous epoch</small>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-danger me-2"><i class="bi bi-arrow-down"></i></span>
+                                                <small>Validation accuracy decreased from previous epoch</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Augmentation Statistics Section -->
+                        <div id="augmentation-stats" class="mt-4" style="display: none;">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                    <span>Augmentation Statistics</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h5 class="mb-0">Original Samples</h5>
+                                                    <h3 id="original-samples-count">0</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h5 class="mb-0">Augmented Samples</h5>
+                                                    <h3 id="augmented-samples-count">0</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h5 class="mb-0">Total Samples</h5>
+                                                    <h3 id="total-samples-count">0</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dataset Viewer & Analysis Buttons -->
+                        <div id="analysis-buttons" class="mt-4" style="display: none;">
+                            <div class="d-flex justify-content-center gap-3 mb-3">
+                                <button class="btn btn-primary" onclick="toggleDatasetView()">
+                                    <i class="bi bi-table me-1"></i> View Training Dataset
+                                </button>
+                                <button class="btn btn-info" onclick="toggleAnalysisView()">
+                                    <i class="bi bi-file-text me-1" id="analysis-icon"></i> Training Analysis
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Dataset View Section -->
+                        <div id="dataset-view" class="mt-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                    <span>Training Dataset</span>
+                                    <button class="btn btn-sm btn-outline-light" onclick="refreshDatasetView()">
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="dataset-summary" class="mb-3">Loading dataset information...</div>
+                                    
+                                    <!-- Augmentation Information -->
+                                    <div id="augmentation-info" class="mb-3 p-3 bg-light rounded border" style="display:none;">
+                                        <h5 class="border-bottom pb-2">Training Data Breakdown</h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="card border-primary mb-2">
+                                                    <div class="card-header bg-primary text-white py-1">Original Samples</div>
+                                                    <div class="card-body py-2">
+                                                        <p class="card-text" id="original-files-count">Calculating...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card border-success mb-2">
+                                                    <div class="card-header bg-success text-white py-1">Augmented Samples</div>
+                                                    <div class="card-body py-2">
+                                                        <p class="card-text" id="augmented-files-count">Calculating...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card border-info mb-2">
+                                                    <div class="card-header bg-info text-white py-1">Total Samples</div>
+                                                    <div class="card-body py-2">
+                                                        <p class="card-text" id="total-files-count">Calculating...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 small text-muted">
+                                            <p><i class="bi bi-info-circle"></i> Increasing the number of samples with augmentation can improve model accuracy when real samples are limited.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>File</th>
+                                                    <th>Class</th>
+                                                    <th>Duration</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dataset-table-body">
+                                                <tr>
+                                                    <td colspan="5" class="text-center">Loading dataset files...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Analysis View Section -->
+                        <div id="analysis-view" class="mt-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                    <span>Model Training Analysis</span>
+                                    <button class="btn btn-sm btn-outline-light" onclick="refreshAnalysis()">
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="prose-analysis" class="prose-content">
+                                        <p>Loading analysis...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Debug Information Section -->
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Debug Information</h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleDebugInfo()">
+                                    <i class="bi bi-chevron-down" id="toggle-icon"></i> Show/Hide
+                                </button>
+                            </div>
+                            <div id="debug-info" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                        <span>Training Logs</span>
+                                        <button class="btn btn-sm btn-outline-light" onclick="refreshDebugInfo()">Refresh</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <pre id="debug-logs" class="bg-light p-3" style="max-height: 400px; overflow-y: auto; font-size: 12px;">Waiting for logs...</pre>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="card">
+                                        <div class="card-header bg-dark text-white">Dictionary & Class Information</div>
+                                        <div class="card-body">
+                                            <pre id="class-info" class="bg-light p-3" style="max-height: 200px; overflow-y: auto; font-size: 12px;">Waiting for dictionary info...</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4" id="action-buttons">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                <i class="bi bi-house-door me-2"></i>Back to Home
+                            </a>
+                            <div id="completed-actions" style="display: none;">
+                                <a href="#" id="view-stats-link" class="btn btn-info">
+                                    <i class="bi bi-bar-chart me-2"></i>See Model Statistics
+                                </a>
+                                <a href="{{ url_for('ml.predict_hub') }}" class="btn btn-success">
+                                    <i class="bi bi-graph-up me-2"></i>Use Model for Inference
+                                </a>
+                                <a href="{{ url_for('ml.train_unified_model') }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-cpu me-2"></i>Train Model on Different ML Algorithm
+                                </a>
+                            </div>
+                            <div id="training-actions">
+                                <a href="{{ url_for('ml.train_unified_model') }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-gear-wide-connected me-2"></i>Train Another Model
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Start polling for training status
+    updateProgress();
+    
+    // Define dataset view toggle function
+    window.toggleDatasetView = function() {
+        const datasetView = document.getElementById('dataset-view');
+        const analysisView = document.getElementById('analysis-view');
+        
+        if (datasetView.style.display === 'none') {
+            datasetView.style.display = 'block';
+            analysisView.style.display = 'none'; // Hide analysis view
+            refreshDatasetView(); // Refresh dataset when showing
+        } else {
+            datasetView.style.display = 'none';
+        }
+    };
+    
+    // Define analysis view toggle function
+    window.toggleAnalysisView = function() {
+        const datasetView = document.getElementById('dataset-view');
+        const analysisView = document.getElementById('analysis-view');
+        
+        if (analysisView.style.display === 'none') {
+            analysisView.style.display = 'block';
+            datasetView.style.display = 'none'; // Hide dataset view
+            refreshAnalysis(); // Refresh analysis when showing
+        } else {
+            analysisView.style.display = 'none';
+        }
+    };
+    
+    // Function to refresh dataset view
+    window.refreshDatasetView = function() {
+        const datasetSummary = document.getElementById('dataset-summary');
+        const datasetTableBody = document.getElementById('dataset-table-body');
+        
+        datasetSummary.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div> Loading dataset information...';
+        datasetTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Loading dataset files...</td></tr>';
+        
+        // Fetch the dataset information from server
+        fetch("{{ url_for('ml.training_dataset') }}")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Dataset data:', data);
+                
+                // Update dataset summary
+                if (data.summary) {
+                    // Calculate the 80/20 split info based on total files
+                    const totalFiles = data.summary.total_files || 0;
+                    const expectedTrainingFiles = Math.round(totalFiles * 0.8);
+                    const expectedValidationFiles = totalFiles - expectedTrainingFiles;
+                    
+                    // Get class distribution if available
+                    let classDistributionHtml = '';
+                    if (data.summary.class_distribution) {
+                        classDistributionHtml = '<div class="mt-2"><strong>Class Distribution:</strong><ul class="list-unstyled d-flex flex-wrap gap-3">';
+                        for (const className in data.summary.class_distribution) {
+                            const count = data.summary.class_distribution[className];
+                            classDistributionHtml += `<li><span class="badge bg-secondary">${className}: ${count} files</span></li>`;
+                        }
+                        classDistributionHtml += '</ul></div>';
+                    }
+                    
+                    datasetSummary.innerHTML = `
+                        <div class="alert alert-info">
+                            <div><strong>Dataset Summary:</strong> ${totalFiles} files total</div>
+                            <div class="mt-2"><strong>Training/Validation Split:</strong></div>
+                            <ul>
+                                <li><strong>Training set (80%):</strong> ${expectedTrainingFiles} files</li>
+                                <li><strong>Validation set (20%):</strong> ${expectedValidationFiles} files</li>
+                            </ul>
+                            ${classDistributionHtml}
+                        </div>
+                    `;
+                } else {
+                    datasetSummary.innerHTML = '<div class="alert alert-warning">Dataset summary information not available.</div>';
+                }
+                
+                // Update dataset table
+                if (data.files && data.files.length > 0) {
+                    let tableHtml = '';
+                    data.files.forEach((file, index) => {
+                        tableHtml += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td><code>${file.filename}</code></td>
+                                <td><span class="badge bg-primary">${file.class}</span></td>
+                                <td>${file.duration ? file.duration + 's' : 'N/A'}</td>
+                                <td>
+                                    <span class="badge ${file.split === 'training' ? 'bg-success' : 'bg-info'}">
+                                        ${file.split === 'training' ? 'Training' : 'Validation'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    datasetTableBody.innerHTML = tableHtml;
+                } else {
+                    datasetTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No dataset files found.</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching dataset:', error);
+                datasetSummary.innerHTML = '<div class="alert alert-danger">Error loading dataset information.</div>';
+                datasetTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load dataset files. Please try again.</td></tr>';
+            });
+    };
+    
+    // Function to refresh analysis view
+    window.refreshAnalysis = function() {
+        const proseAnalysis = document.getElementById('prose-analysis');
+        proseAnalysis.innerHTML = '<div class="spinner-border text-info" role="status"></div> Generating training analysis...';
+        
+        fetch("{{ url_for('ml.training_analysis') }}")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.analysis) {
+                    proseAnalysis.innerHTML = data.analysis;
+                } else {
+                    proseAnalysis.innerHTML = '<div class="alert alert-warning">No analysis available yet.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching analysis:', error);
+                proseAnalysis.innerHTML = '<div class="alert alert-danger">Error loading analysis. Please try again.</div>';
+            });
+    };
+    
+    // Toggle training statistics display
+    window.toggleTrainingStats = function() {
+        const trainingStats = document.getElementById('training-stats');
+        const statsIcon = document.getElementById('stats-icon');
+        
+        if (trainingStats.style.display === 'none') {
+            trainingStats.style.display = 'block';
+            refreshTrainingStats(); // Refresh when showing
+        } else {
+            trainingStats.style.display = 'none';
+        }
+    };
+    
+    // Refresh training statistics data
+    window.refreshTrainingStats = function() {
+        updateProgress();
+    };
+    
+    // Define toggle debug info function
+    window.toggleDebugInfo = function() {
+        const debugInfo = document.getElementById('debug-info');
+        const toggleIcon = document.getElementById('toggle-icon');
+        
+        if (debugInfo.style.display === 'none') {
+            debugInfo.style.display = 'block';
+            toggleIcon.classList.remove('bi-chevron-down');
+            toggleIcon.classList.add('bi-chevron-up');
+        } else {
+            debugInfo.style.display = 'none';
+            toggleIcon.classList.remove('bi-chevron-up');
+            toggleIcon.classList.add('bi-chevron-down');
+        }
+    };
+    
+    // Define refresh debug info function
+    window.refreshDebugInfo = function() {
+        updateProgress();
+    };
+    
+    // Helper function to format numbers for better display
+    function formatNumber(num) {
+        if (num === null || num === undefined) return '-';
+        if (typeof num !== 'number') return num;
+        
+        // Format small numbers with scientific notation
+        if (Math.abs(num) < 0.0001 && num !== 0) {
+            return num.toExponential(4);
+        }
+        
+        // Format to 4 decimal places maximum
+        return num.toFixed(4);
+    }
+    
+    // Initialize tooltips when document is loaded
+    $(function () {
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    });
+    
+    // Function to update the training stats table
+    function updateTrainingStatsTable(epochData) {
+        if (!epochData || !Array.isArray(epochData) || epochData.length === 0) {
+            document.getElementById('stats-table-body').innerHTML = 
+                '<tr><td colspan="8" class="text-center">No training data available yet...</td></tr>';
+            return;
+        }
+        
+        const tableBody = document.getElementById('stats-table-body');
+        let tableHtml = '';
+        
+        // CRITICAL FIX: We need to examine the data structure more carefully
+        console.log('%c===== ANALYZING EPOCH DATA =====', 'font-weight:bold; color:red; font-size:16px');
+        console.log('Epoch data length:', epochData.length);
+        for (let i = 0; i < epochData.length; i++) {
+            console.log(`Data[${i}]:`, epochData[i]);
+        }
+        
+        // CRITICAL FIX: The epoch data comes in chronological order, but we need to display
+        // in reverse order. However, we must calculate improvements in chronological order.
+        
+        // STEP 1: Make a simple array of validation accuracies by index (simpler and more robust)
+        const accuracies = epochData.map(epoch => epoch.val_accuracy);
+        console.log('Validation accuracies in chronological order:', accuracies);
+        
+        // STEP 2: Calculate improvement indicators for each epoch
+        const indicators = [];
+        const descriptions = [];
+        
+        // Process each epoch in chronological order
+        for (let i = 0; i < epochData.length; i++) {
+            const currEpoch = i + 1;  // 1-based epoch numbering
+            const currAcc = accuracies[i];
+            let icon, color, tooltip, description;
+            
+            if (i === 0) {
+                // First epoch - nothing to compare with
+                icon = '<i class="bi bi-dot"></i>';
+                color = 'bg-secondary';
+                tooltip = 'First epoch - baseline measurement';
+                description = 'First epoch (baseline)';
+            } else {
+                // Compare with previous epoch
+                const prevAcc = accuracies[i-1];
+                const diff = currAcc - prevAcc;
+                const diffPct = (diff * 100).toFixed(4);
+                
+                // Log comparison for debugging
+                console.log(`Epoch ${currEpoch}: ${currAcc.toFixed(6)} vs Epoch ${currEpoch-1}: ${prevAcc.toFixed(6)} = ${diff.toFixed(6)} (${diffPct}%)`); 
+                
+                // Determine status with small epsilon for floating point comparison
+                if (diff > 0.00001) {
+                    // Improved
+                    icon = '<i class="bi bi-arrow-up"></i>';
+                    color = 'bg-success';
+                    tooltip = `Improved from ${(prevAcc*100).toFixed(4)}% to ${(currAcc*100).toFixed(4)}%`;
+                    description = `+${diffPct}% improvement from epoch ${currEpoch-1}`;
+                } else if (diff < -0.00001) {
+                    // Decreased
+                    icon = '<i class="bi bi-arrow-down"></i>';
+                    color = 'bg-danger';
+                    tooltip = `Decreased from ${(prevAcc*100).toFixed(4)}% to ${(currAcc*100).toFixed(4)}%`;
+                    description = `${diffPct}% decrease from epoch ${currEpoch-1}`;
+                } else {
+                    // No change
+                    icon = '<i class="bi bi-dot"></i>';
+                    color = 'bg-secondary';
+                    tooltip = `No change from epoch ${currEpoch-1}`;
+                    description = `No significant change from epoch ${currEpoch-1}`;
+                }
+            }
+            
+            // Store calculated indicators and descriptions
+            indicators[i] = `<span class="badge ${color}" data-bs-toggle="tooltip" title="${tooltip}">${icon}</span>`;
+            descriptions[i] = description;
+        }
+        
+        // STEP 3: Display epochs in reverse order (newest first)
+        const displayOrder = [...epochData].reverse();
+        
+        // Generate table rows
+        displayOrder.forEach((epoch, index) => {
+            // Calculate the original index from the reversed index
+            const originalIndex = epochData.length - 1 - index;
+            const epochNum = originalIndex + 1;  // 1-based epoch numbering
+            
+            // Get the pre-calculated improvement indicator and description
+            const improvementHtml = indicators[originalIndex];
+            const description = descriptions[originalIndex];
+            
+            // Highlight the newest epoch
+            const rowClass = index === 0 ? 'table-primary' : '';
+            
+            tableHtml += `<tr class="${rowClass}">
+                <td>${epochNum}</td>
+                <td>${formatNumber(epoch.loss)}</td>
+                <td>${formatNumber(epoch.accuracy * 100)}%</td>
+                <td>${formatNumber(epoch.val_loss)}</td>
+                <td>${formatNumber(epoch.val_accuracy * 100)}%</td>
+                <td>${formatNumber(epoch.lr)}</td>
+                <td class="text-center">${improvementHtml}</td>
+                <td>${description}</td>
+            </tr>`;
+        });
+        
+        tableBody.innerHTML = tableHtml;
+        
+        // Reinitialize tooltips for the newly added elements
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    }
+    
+    function updateProgress() {
+        fetch("{{ url_for('ml.training_status') }}")
+            .then(res => res.json())
+            .then(data => {
+                // Update augmentation statistics if available
+                if (data.stats && data.stats.stats) {
+                    const augStats = data.stats.stats;
+                    document.getElementById('original-samples-count').textContent = formatNumber(augStats.original_samples || 0);
+                    document.getElementById('augmented-samples-count').textContent = formatNumber(augStats.augmented_samples || 0);
+                    document.getElementById('total-samples-count').textContent = formatNumber(augStats.total_samples || 0);
+                    document.getElementById('augmentation-stats').style.display = 'block';
+                }
+
+                // Update progress bar
+                const progressBar = document.getElementById('progress-bar');
+                const progressText = document.getElementById('progress-text');
+                const statusText = document.getElementById('status-text');
+                const infoMessage = document.getElementById('info-message');
+                const progressContainer = document.getElementById('progress-container');
+                
+                // Set progress bar width
+                const progress = data.progress || 0;
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressText.textContent = progress + '%';
+                
+                // Update augmentation statistics if available
+                if (data.stats) {
+                    const originalFilesCount = document.getElementById('original-files-count');
+                    const augmentedFilesCount = document.getElementById('augmented-files-count');
+                    const totalFilesCount = document.getElementById('total-files-count');
+                    
+                    if (originalFilesCount && data.stats.original_samples !== undefined) {
+                        originalFilesCount.innerText = `${data.stats.original_samples} samples`;
+                    }
+                    
+                    if (augmentedFilesCount && data.stats.augmented_samples !== undefined) {
+                        augmentedFilesCount.innerText = `${data.stats.augmented_samples} samples`;
+                    }
+                    
+                    if (totalFilesCount && data.stats.total_samples !== undefined) {
+                        totalFilesCount.innerText = `${data.stats.total_samples} samples total`;
+                    }
+                    
+                    // Show the augmentation info section once we have stats
+                    document.getElementById('augmentation-info').style.display = 'block';
+                }
+                
+                // Update the header title with dictionary and model type if available
+                const headerElement = document.getElementById('training-header');
+                if (data.dictionary_name && data.model_type) {
+                    const modelTypeDisplay = data.model_type === 'cnn' ? 'a Convolutional Neural Network' : 
+                                           data.model_type === 'rf' ? 'a Random Forest' : 
+                                           data.model_type === 'ensemble' ? 'an Ensemble Model' : data.model_type;
+                    headerElement.innerHTML = `Training <strong>${data.dictionary_name}</strong> using ${modelTypeDisplay}`;
+                }
+                
+                // Update training statistics if available (for CNN models)
+                if (data.epoch_data && Array.isArray(data.epoch_data)) {
+                    // CRITICAL: Do NOT reverse the data or reorder it here!
+                    // Instead, preserve the original order exactly as received from the server
+                    // The epoch numbers should be 1-based (epoch 1, 2, 3, etc.)
+                    const formattedEpochData = data.epoch_data.map((epochData, index) => ({
+                        epoch: index + 1, // Epoch 1, 2, 3, etc.
+                        loss: epochData.loss,
+                        accuracy: epochData.accuracy,
+                        val_loss: epochData.val_loss,
+                        val_accuracy: epochData.val_accuracy,
+                        lr: epochData.lr
+                    }));
+                    
+                    // Dump full data to console for debugging
+                    console.clear();
+                    console.log('%c===== RAW EPOCH DATA =====', 'font-weight:bold; color:blue; font-size:16px');
+                    console.table(data.epoch_data);
+                    console.log('%c===== FORMATTED EPOCH DATA =====', 'font-weight:bold; color:green; font-size:16px');
+                    console.table(formattedEpochData);
+                    
+                    // Update the stats table with properly formatted epoch data
+                    updateTrainingStatsTable(formattedEpochData);
+                }
+                
+                // Update status text
+                if (data.status) {
+                    statusText.textContent = data.status;
+                    
+                    // Hide progress bar when training is complete
+                    if (data.status === "Training complete!" && progress >= 100) {
+                        progressContainer.style.display = 'none';
+                        // Show dataset analysis button
+                        document.getElementById('analysis-buttons').style.display = 'flex';
+                        // Make dataset visible by default when training completes
+                        document.getElementById('dataset-view').style.display = 'block';
+                        // Refresh the dataset and analysis
+                        refreshDatasetView();
+                        refreshAnalysis();
+                    }
+                    
+                    // Update debug information if available
+                    if (data.debug_logs) {
+                        document.getElementById('debug-logs').textContent = data.debug_logs;
+                        // Auto-scroll to bottom of logs
+                        const debugLogs = document.getElementById('debug-logs');
+                        debugLogs.scrollTop = debugLogs.scrollHeight;
+                    }
+                    
+                    // Update class information if available
+                    if (data.class_info) {
+                        document.getElementById('class-info').textContent = data.class_info;
+                    }
+                    
+                    // Customize info message based on status
+                    if (data.status === 'Not started') {
+                        document.getElementById('info-box').style.display = 'block';
+                        infoMessage.textContent = 'Waiting for training to start...';
+                    } else if (data.status === 'Training in progress' || progress > 0) {
+                        // Hide the waiting message completely when training starts
+                        document.getElementById('info-box').style.display = 'none';
+                    } else if (data.status === 'Completed' || data.status === 'Training complete!') {
+                        // Show the success message
+                        document.getElementById('info-box').style.display = 'block';
+                        document.getElementById('info-box').classList.remove('alert-info');
+                        document.getElementById('info-box').classList.add('alert-success');
+                        infoMessage.textContent = 'Training completed successfully! Your model is ready to use.';
+                        
+                        // Hide the progress bar when training is complete
+                        document.querySelector('.progress').style.display = 'none';
+                        
+                        // Hide training actions and show completed actions
+                        document.getElementById('training-actions').style.display = 'none';
+                        document.getElementById('completed-actions').style.display = 'block';
+                        
+                        // Set up the model stats link to go to the right page based on model type
+                        if (data.model_type === 'cnn') {
+                            document.getElementById('view-stats-link').href = "{{ url_for('ml.cnn_training_summary') }}";
+                        } else if (data.model_type === 'rf') {
+                            document.getElementById('view-stats-link').href = "{{ url_for('ml.rf_training_summary') }}";
+                        } else if (data.model_type === 'ensemble') {
+                            document.getElementById('view-stats-link').href = "{{ url_for('ml.ensemble_training_summary') }}";
+                        }
+                    } else if (data.status.includes('Error') || data.status.includes('Failed')) {
+                        infoMessage.textContent = 'An error occurred during training. Please check the logs.';
+                        // Change progress bar color to danger
+                        progressBar.classList.remove('progress-bar-animated');
+                        progressBar.classList.add('bg-danger');
+                    }
+                }
+                
+                // Continue polling if not complete
+                if (progress < 100 && !data.status.includes('Error') && !data.status.includes('Failed') && data.status !== 'Completed' && data.status !== 'Training complete!') {
+                    setTimeout(updateProgress, 2000);
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching training status:', err);
+                document.getElementById('info-message').textContent = 'Error fetching training status. Please refresh the page.';
+                setTimeout(updateProgress, 5000);  // Retry after 5 seconds
+            });
+    }
+});
+</script>
+{% endblock %} 
